@@ -7,7 +7,7 @@ export default function Home() {
     const apiURL = '/api/'; //allow cors - cross origin resource sharing
     //the effect{theFunction}, and when to run it[array] - on change for example
     useEffect(() => {
-        fetch(`${apiURL}/data`) //fetch from backend server
+        fetch(`${apiURL}/data`) //fetch from backend server - TESTING
             .then((res) => res.json()) //parse json response
             .then((dataFromServer) => setData(dataFromServer)) //set state with data from server
             .then(() => console.log("Data fetched successfully"))
