@@ -1,31 +1,31 @@
-//Libraries used 
+//Libraries used
 import express from "express";
 import mongoose from "mongoose";
-import dotenv from 'dotenv';
-import path from 'path';
+import dotenv from "dotenv";
+import path from "path";
 import app from "./middleware/express.js";
 import assetRouter from "./routes/assets-router.js";
 import router from "./routes/collections-router.js";
 import { connect } from "mongoose";
-dotenv.config({ path: path.resolve('./.env') });
+dotenv.config({ path: path.resolve("./.env") });
 
-//Connect to mongoDB using mongoose 
-mongoose.connect(process.env.MONGODB_URI); //save environment variable 
-const connection = mongoose.connection; 
+//Connect to mongoDB using mongoose
+mongoose.connect(process.env.MONGODB_URI); //save environment variable
+const connection = mongoose.connection;
 connection.once("open", () => {
-    console.log("MongoDB database connection established successfully");
+  console.log("MongoDB database connection established successfully");
 });
 connection.on("error", (err) => {
-    console.error("MongoDB connection error:", err);
+  console.error("MongoDB connection error:", err);
 });
 
-//const assetsRouter = require("./server/assets-router"); 
+//const assetsRouter = require("./server/assets-router");
 app.use("/src", router);
 app.use("/", router);
-app.use('/api/data', (req, res) => {
-    res.json({ message: 'Hello from the backend!' });
+app.use("/api/data", (req, res) => {
+  res.json({ message: "Hello from the backend!" });
 });
 app.listen(3000);
 console.log("Server running at http://localhost:3000/");
 //module.exports = app;
-export default app
+export default app;
