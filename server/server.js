@@ -8,7 +8,7 @@ import assetRouter from './routes/assets-router.js';
 import router from './routes/collections-router.js';
 import { connect } from 'mongoose';
 dotenv.config({ path: path.resolve('./.env.example') });
-
+/*
 //Connect to mongoDB using mongoose
 const mongodbUri =
   process.env.NODE_ENV == 'local_dev' ? process.env.MONGODB_URI_LOCAL : process.env.MONGODB_URI;
@@ -30,4 +30,4 @@ app.use('/api/data', (req, res) => {
 app.listen(3000);
 console.log('Server running at http://localhost:3000/');
 //module.exports = app;
-export default app;
+export default app;*/

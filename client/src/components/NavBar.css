@@ -1,0 +1,52 @@
+
+nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 150px;
+
+
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+ 
+}
+
+
+
+.navspace {
+  padding-top: 30px;
+}
+
+
+
+.navbar a{
+  color: #000000;
+  text-decoration: solid;
+  font-size: 20px ;
+  margin: 5px 5px;
+  text-align: center;
+}
+
+
+
+
+.navbar a:hover {
+  text-decoration: underline;
+}
+
+.logo{
+  width: 100px;
+  height: 100px;
+
+}
+
+.logo-div{
+  float: left;
+}
+
+
+
+

@@ -2,13 +2,21 @@
 //import reactLogo from './assets/react.svg'
 //import viteLogo from '/vite.svg'
 import { BrowserRouter as Router, Routes, Route, Link  } from 'react-router-dom'
-import 'bootstrap/dist/css/bootstrap.min.css';
+//import 'bootstrap/dist/css/bootstrap.min.css';
+import MainRouter from './MainRouter.jsx'
 
 import './App.css'
-import Home from './components/home.jsx';
+//import Home from './pages/Home.jsx';
 function App() {
 return (
-<>
+
+  <MainRouter />
+
+)
+}
+export default App
+
+/*<>
   <div>
     <Router>
       <Routes>
@@ -16,7 +24,4 @@ return (
       </Routes>
     </Router>
   </div>
-</>
-)
-}
-export default App
+</>*/ 

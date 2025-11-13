@@ -1,8 +1,18 @@
 import { useState, useEffect } from 'react';
 
 export default function Home() {
+  return (
+    <> 
+    <div>
+      <h1>StudyZone</h1>
+      <p>Your personal study helper</p>
+    </div>
+    </>
+    
+  );
+}
 
-    const [data, setData] = useState(null);
+/*const [data, setData] = useState(null);
 
     const apiURL = '/api/'; //allow cors - cross origin resource sharing
     //the effect{theFunction}, and when to run it[array] - on change for example
@@ -20,6 +30,4 @@ export default function Home() {
         <p>This is a sample home page for the application Made by Developer.</p>
         <p>{data ? data.message:'Loading...'}</p> 
         </div>
-    );
-
-}
+    );*/
