@@ -31,3 +31,4 @@ export default function Home() {
         <p>{data ? data.message:'Loading...'}</p> 
         </div>
     );*/
+    
