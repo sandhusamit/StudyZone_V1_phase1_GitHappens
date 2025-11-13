@@ -1,11 +1,24 @@
 import QuizSchema from '../model/quizModel.js';
-import express from "express";
+import QuestionSchema from '../model/questionModel.js';
+import mongoose from 'mongoose';
+import express from 'express';
 
 // CREATE a new quiz
 export const createQuiz = async (req, res) => {
   try {
     const { title, description, author, questions } = req.body;
-    const newQuiz = new QuizSchema({ title, description, author, questions });
+
+    if (!mongoose.isValidObjectId(author)) {
+      return res.status(400).json({ error: 'Invalid author id' });
+    }
+
+    const newQuiz = new QuizSchema({
+      title,
+      description,
+      author,
+      questions: new QuestionSchema({}),
+    });
+
     const savedQuiz = await newQuiz.save();
     res.status(201).json(savedQuiz);
   } catch (error) {
@@ -16,9 +29,7 @@ export const createQuiz = async (req, res) => {
 // READ all quizzes
 export const getAllQuizzes = async (req, res) => {
   try {
-    const quizzes = await QuizSchema.find()
-      .populate('author', 'name email')
-      .populate('questions');
+    const quizzes = await QuizSchema.find().populate('author', 'name email').populate('questions');
     res.status(200).json(quizzes);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -45,7 +56,7 @@ export const updateQuiz = async (req, res) => {
     const updatedQuiz = await QuizSchema.findByIdAndUpdate(
       req.params.id,
       { title, description, questions },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     );
     if (!updatedQuiz) return res.status(404).json({ message: 'Quiz not found' });
     res.status(200).json(updatedQuiz);
@@ -64,4 +75,3 @@ export const deleteQuiz = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
-
