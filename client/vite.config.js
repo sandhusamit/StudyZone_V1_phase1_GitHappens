@@ -1,5 +1,5 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -16,5 +16,24 @@ export default defineConfig({
     proxy: {
       '/api': 'http://localhost:3000',
     },
-  }
+    watch: {
+      // Be explicit about what NOT to watch
+      ignored: [
+        '**/node_modules/**',
+        '**/.git/**',
+        '**/dist/**',
+        '**/build/**',
+        '../server/**',
+        '../../**/server/**', // in case of deeper monorepo
+        '**/coverage/**',
+        '**/*.log',
+      ],
+      usePolling: true,
+      interval: 1000,
+    },
+    fs: {
+      strict: true,
+      allow: ['.'],
+    },
+  },
 });

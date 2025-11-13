@@ -1,17 +1,9 @@
 export default function quizList() {
   return (
-     <>
-    <div>
-
+    <>
+      <div>
         <h2>Quizzes go here from Mongo</h2>
-        
-
-       
-
-
-
-
-    </div>
+      </div>
     </>
   );
 }

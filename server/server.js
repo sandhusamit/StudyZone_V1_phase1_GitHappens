@@ -8,11 +8,11 @@ import assetRouter from './routes/assets-router.js';
 import router from './routes/collections-router.js';
 import { connect } from 'mongoose';
 dotenv.config({ path: path.resolve('./.env.example') });
-/*
+
 //Connect to mongoDB using mongoose
-const mongodbUri =
+const mongoUri =
   process.env.NODE_ENV == 'local_dev' ? process.env.MONGODB_URI_LOCAL : process.env.MONGODB_URI;
-mongoose.connect(mongodbUri); //save environment variable
+mongoose.connect(mongoUri); //save environment variable
 const connection = mongoose.connection;
 connection.once('open', () => {
   console.log('MongoDB database connection established successfully');
@@ -29,5 +29,5 @@ app.use('/api/data', (req, res) => {
 });
 app.listen(3000);
 console.log('Server running at http://localhost:3000/');
-//module.exports = app;
-export default app;*/
+
+export default app;
