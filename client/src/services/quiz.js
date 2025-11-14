@@ -11,7 +11,7 @@ export const getAllQuizzes = async () => {
   });
 
   if (res.status !== 200) {
-    return { error: true, message: 'A problem occured getting quizzes' };
+    return { hasError: true, message: 'A problem occured getting quizzes' };
   }
 
   return await res.json();

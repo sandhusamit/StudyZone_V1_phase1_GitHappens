@@ -1,17 +1,7 @@
-export default function quizPlay() {
+export default function QuizPlay() {
   return (
-     <>
-    <div>
-
-        <h2>Attempt Your Quiz</h2>
-        
-
-       
-
-
-
-
-    </div>
+    <>
+      <h2>Attempt Your Quiz</h2>
     </>
   );
 }

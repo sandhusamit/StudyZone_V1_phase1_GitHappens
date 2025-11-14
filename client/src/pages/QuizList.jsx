@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 // import { createQuiz, getAllQuizzes } from '../services/quiz';
 import { getAllQuizzes } from '../services/quiz';
 
-export default function quizList() {
+export default function QuizList() {
   const [quizzes, setQuizzes] = useState([]);
 
   useEffect(() => {

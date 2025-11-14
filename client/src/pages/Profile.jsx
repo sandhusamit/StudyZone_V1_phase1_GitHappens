@@ -1,12 +1,7 @@
-export default function profile() {
+export default function Profile() {
   return (
     <>
-
-
-    <h2>My Profile</h2>
-
-    
-    
+      <h2>Login to Access Profile</h2>
     </>
   );
 }

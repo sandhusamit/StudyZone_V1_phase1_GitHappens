@@ -3,10 +3,10 @@ import { useNavigate } from 'react-router';
 import { loginUser } from '../services/auth';
 
 export default function login() {
+  const navigate = useNavigate();
+
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
-  let navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -16,9 +16,10 @@ export default function login() {
       password,
     };
 
-    // const result = await loginUser(user);
-    // if (result.error) navigate('/error', { state: result.message });
-    // else navigate('/quizlist');
+    const data = await loginUser(user);
+    console.table(data);
+    if (data.hasError) navigate('/error', { state: data.message });
+    else navigate('/quizlist');
   };
 
   return (

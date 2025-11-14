@@ -1,17 +1,21 @@
 const END_POINT = '/api/users';
 
-export const registerUser = async (user) => {
+export const registerUser = async (userData) => {
   const res = await fetch(END_POINT, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify(user),
+    body: JSON.stringify(userData),
   });
 
   if (res.status !== 200) {
-    return { error: true, message: 'A problem occured during registration. Please try again.' };
+    return {
+      hasError: true,
+      message: 'A problem occured during registration. Please try again.',
+    };
   }
 
-  return await res.json();
+  const { user, token } = await res.json();
+  return { hasError: false, user, token };
 };
