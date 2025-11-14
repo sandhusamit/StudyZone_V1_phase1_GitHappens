@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
+import { registerUser } from '../services/user';
 
 export default function Register() {
   const [firstName, setFirstName] = useState('');
@@ -20,9 +21,9 @@ export default function Register() {
       password,
     };
 
-    // const result = await createUser(user);
-    // if (result.error) navigate('/error', { state: result.message });
-    // else navigate('/login');
+    const result = await registerUser(user);
+    if (result.error) navigate('/error', { state: result.message });
+    else navigate('/login');
   };
 
   return (

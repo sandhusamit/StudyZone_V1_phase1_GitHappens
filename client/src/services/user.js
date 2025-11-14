@@ -1,6 +1,6 @@
 const END_POINT = '/api/users';
 
-export const createUser = async (user) => {
+export const registerUser = async (user) => {
   const res = await fetch(END_POINT, {
     method: 'POST',
     headers: {

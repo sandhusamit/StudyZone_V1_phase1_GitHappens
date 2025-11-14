@@ -17,7 +17,7 @@
     "dev": "npm-run-all --parallel start:server start:client",
     "build:client": "vite build --cwd client",
     "preview:client": "vite preview --cwd client",
-    "dev:localserver": "cross-env NODE_ENV=local_dev nodemon server/server.js",
+    "start:localserver": "cross-env NODE_ENV=local_dev nodemon server/server.js",
     "dev:local": "npm-run-all --parallel start:localserver start:client"
   },
   "dependencies": {
