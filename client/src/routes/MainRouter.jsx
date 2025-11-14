@@ -1,15 +1,15 @@
 import { Routes, Route } from 'react-router-dom';
-import NavBar from './components/NavBar';
-import Home from './pages/Home';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
-import QuizList from './pages/QuizList';
-import QuizPlay from './pages/QuizPlay';
-import CreateQuiz from './pages/CreateQuiz';
-import Profile from './pages/Profile';
-import Leaderboard from './pages/Leaderboard';
-import ErrorPage from './pages/ErrorPage';
+import NavBar from '../components/NavBar';
+import Home from '../pages/Home';
+import Login from '../pages/Login';
+import Register from '../pages/Register';
+import Dashboard from '../pages/Dashboard';
+import QuizList from '../pages/QuizList';
+import QuizPlay from '../pages/QuizPlay';
+import CreateQuiz from '../pages/CreateQuiz';
+import Profile from '../pages/Profile';
+import Leaderboard from '../pages/Leaderboard';
+import ErrorPage from '../pages/ErrorPage';
 
 const MainRouter = () => {
   return (

@@ -16,5 +16,3 @@ export const loginUser = async (userData) => {
   const { user, token } = await res.json();
   return { hasError: false, user, token };
 };
-
-// export const logoutUser = (user) => {};

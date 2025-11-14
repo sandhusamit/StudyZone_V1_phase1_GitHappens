@@ -1,5 +1,4 @@
-// import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import MainRouter from './MainRouter.jsx';
+import MainRouter from './routes/MainRouter';
 import { AuthProvider } from './contexts/AuthContext';
 
 import './App.css';

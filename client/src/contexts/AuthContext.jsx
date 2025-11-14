@@ -1,6 +1,9 @@
 import { createContext, useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { registerUser as registerUserService } from '../services/user';
+import {
+  registerUser as registerUserService,
+  getUserDataById as getUserDataByIdService,
+} from '../services/user';
 import { loginUser as loginUserService } from '../services/auth';
 
 const AuthContext = createContext();
@@ -9,26 +12,27 @@ const AuthContext = createContext();
 export function AuthProvider({ children }) {
   const navigate = useNavigate();
 
-  const [authUser, setAuthUser] = useState(null);
+  const [authUserId, setAuthUserId] = useState('');
   const [jwtToken, setJwtToken] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
-    const user = localStorage.getItem('user');
+    const userId = localStorage.getItem('userId');
     const token = localStorage.getItem('bearer_token');
-    if (user && token) {
-      setAuthUser(JSON.parse(user));
-      setJwtToken(JSON.parse(token));
-    }
+    if (userId && token) {
+      setAuthUserId(userId);
+      setJwtToken(token);
+      setIsLoggedIn(true);
+    } // else condition
 
     setIsAuthorized(true);
-  }, []);
+  }, [jwtToken, authUserId, isLoggedIn]);
 
-  const registerUser = async (user) => {
+  const registerUser = async (userData) => {
     try {
-      const data = await registerUserService(user);
-      if (data && data.hasError) navigate('/error', { state: data.message });
+      const data = await registerUserService(userData);
+      if (data && data.hasError) navigate('/error', { state: { message: data } });
       if (data && !data.hasError) navigate('/login');
     } catch (error) {
       navigate('/error', {
@@ -37,17 +41,15 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const loginUser = async (user) => {
+  const loginUser = async (userData) => {
     try {
-      const data = await loginUserService(user); // null check for data?
-      console.log('LoGGED IN');
-      console.table(data);
-      if (data && data.hasError) navigate('/error', { state: data.message });
+      const data = await loginUserService(userData); // null check for data?
+      if (data && data.hasError) navigate('/error', { state: data });
       if (data && !data.hasError) {
         const { token, user } = data; // Should we perform null checks for token and user?
-        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('userId', user._id);
         localStorage.setItem('bearer_token', token);
-        setAuthUser(user);
+        setAuthUserId(user._id);
         setJwtToken(token);
         setIsLoggedIn(true);
       }
@@ -59,28 +61,39 @@ export function AuthProvider({ children }) {
   };
 
   const logoutUser = async () => {
-    localStorage.remove('user');
-    localStorage.remove('bearer_token');
-    setAuthUser(null);
+    localStorage.removeItem('userId');
+    localStorage.removeItem('bearer_token');
+    setAuthUserId('');
     setJwtToken('');
     setIsLoggedIn(false);
     navigate('/');
   };
 
+  const getCurrentUserData = async () => {
+    try {
+      const data = await getUserDataByIdService(authUserId, jwtToken); // null check for data?
+      if (data && data.hasError) navigate('/error', { state: data });
+      if (data && !data.hasError) {
+        return data.user;
+      }
+    } catch (error) {
+      navigate('/error', {
+        state: 'A serious error occurred.',
+      });
+    }
+  };
+
   return (
     <AuthContext
       value={{
-        authUser,
+        authUserId,
         jwtToken,
         isLoggedIn,
         isAuthorized,
-        // setAuthUser,
-        // setJwtToken,
-        // setIsLoggedIn,
-        // setIsAuthorized,
         registerUser,
         loginUser,
         logoutUser,
+        getCurrentUserData,
       }}
     >
       {children}

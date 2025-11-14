@@ -18,7 +18,7 @@ export default function QuizList() {
   let navigate = useNavigate();
 
   const handleGoToAddQuiz = () => {
-    navigate('/addquiz');
+    navigate('/create');
   };
 
   return (

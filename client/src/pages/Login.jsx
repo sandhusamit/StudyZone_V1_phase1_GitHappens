@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
-import { loginUser } from '../services/auth';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function login() {
-  const navigate = useNavigate();
+  const { loginUser } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -16,10 +15,7 @@ export default function login() {
       password,
     };
 
-    const data = await loginUser(user);
-    console.table(data);
-    if (data.hasError) navigate('/error', { state: data.message });
-    else navigate('/quizlist');
+    await loginUser(user);
   };
 
   return (
