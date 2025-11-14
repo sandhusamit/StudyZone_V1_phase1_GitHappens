@@ -20,10 +20,10 @@ function NavBar() {
             <button onClick={logoutUser}>Logout</button>
           ) : (
             <>
-              -<Link to="/login">Login</Link>-
+              -<Link to="/login">Login</Link>-<Link to="/register">Register</Link> -
+              <Link to="/dashboard">Dashboard</Link> -
             </>
           )}
-          <Link to="/register">Register</Link> -<Link to="/dashboard">Dashboard</Link> -
           <Link to="/quizlist">Quizzes</Link> -<Link to="/play">Quiz Play</Link> -
           <Link to="/create">Create Quiz</Link> -<Link to="/profile">Profile</Link> -
           <Link to="/leaderboard">Leaderboard</Link>

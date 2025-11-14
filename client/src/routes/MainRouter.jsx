@@ -10,6 +10,7 @@ import CreateQuiz from '../pages/CreateQuiz';
 import Profile from '../pages/Profile';
 import Leaderboard from '../pages/Leaderboard';
 import ErrorPage from '../pages/ErrorPage';
+import Success from '../pages/Success';
 
 const MainRouter = () => {
   return (
@@ -25,6 +26,7 @@ const MainRouter = () => {
         <Route path="/create" element={<CreateQuiz />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/success" element={<Success />} />
         <Route path="/error" element={<ErrorPage />} />
       </Routes>
     </>

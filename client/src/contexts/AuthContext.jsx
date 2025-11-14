@@ -52,6 +52,7 @@ export function AuthProvider({ children }) {
         setAuthUserId(user._id);
         setJwtToken(token);
         setIsLoggedIn(true);
+        navigate('/');
       }
     } catch (error) {
       navigate('/error', {

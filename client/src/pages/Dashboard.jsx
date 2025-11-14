@@ -15,7 +15,7 @@ export default function Dashboard() {
 
       <div>
         <Link to="/quizlist">
-          <button>View Your Quizzes</button>
+          <button>View Quizzes</button>
         </Link>
       </div>
 

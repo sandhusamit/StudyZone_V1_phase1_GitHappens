@@ -26,7 +26,7 @@ export default function Register() {
 
   return (
     <>
-      <h2>Register Here </h2>
+      <h1>Register Here </h1>
       <form onSubmit={handleSubmit} className="form">
         <input
           type="text"

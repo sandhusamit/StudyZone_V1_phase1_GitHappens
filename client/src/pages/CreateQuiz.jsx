@@ -1,11 +1,18 @@
 import { useState } from 'react';
-import Question from '../components/Question';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { createQuiz } from '../services/quiz';
+import Question from '../components/Question';
 
 export default function CreateQuiz() {
-  const { authUserId, isLoggedIn } = useAuth();
+  const navigate = useNavigate();
+  const { authUserId, isLoggedIn, jwtToken } = useAuth();
 
-  const [questions, setQuestions] = useState([{ question: '', answers: [''] }]);
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [questions, setQuestions] = useState([
+    { question: '', answers: [{ choice: '', isCorrect: true }] },
+  ]);
 
   const handleQuestionValueChange = (idx, { target: { name, value } }) => {
     const questionValues = [...questions];
@@ -25,20 +32,43 @@ export default function CreateQuiz() {
     setQuestions(updatedQuestions);
   };
 
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    const quiz = {
+      title,
+      author: authUserId,
+      description,
+      questions,
+    };
+
+    createQuiz(quiz, jwtToken);
+    navigate('/success');
+  };
+
   return isLoggedIn ? (
     <>
       <h2>Create Quiz</h2>
 
-      <form>
+      <form onSubmit={handleSubmit}>
         <label>Quiz Title:</label>
         <br />
-        <input type="text" className="form-inputs" placeholder="Enter quiz title" />
+        <input
+          type="text"
+          className="form-inputs"
+          placeholder="Enter quiz title"
+          onChange={({ target: { value } }) => setTitle(value)}
+        />
         <br />
         <br />
-
         <label>Quiz Description:</label>
         <br />
-        <textarea className="form-inputs" placeholder="Enter quiz description" />
+        <textarea
+          className="form-inputs"
+          placeholder="Enter quiz description"
+          onChange={({ target: { value } }) => setDescription(value)}
+        />
+
         <br />
         <br />
         <button onClick={handleAddQuestion}>Add Question</button>

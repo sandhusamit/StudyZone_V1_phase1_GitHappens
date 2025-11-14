@@ -1,7 +1,7 @@
 export default function Question({ id, value, onChange, onDelete }) {
   return (
     <div className="card">
-      <form className="form">
+      <div className="form">
         <label>Question {id}:</label>
         <input
           type="text"
@@ -28,7 +28,7 @@ export default function Question({ id, value, onChange, onDelete }) {
           <option value="3">Option 4</option>
         </select>
         <br />
-      </form>
+      </div>
 
       <button onClick={onDelete}>delete</button>
     </div>

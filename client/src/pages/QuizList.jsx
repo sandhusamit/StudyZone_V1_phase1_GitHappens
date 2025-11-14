@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router';
-// import { createQuiz, getAllQuizzes } from '../services/quiz';
+import { Link } from 'react-router';
 import { getAllQuizzes } from '../services/quiz';
+import { useAuth } from '../contexts/AuthContext';
+import QuizCard from '../components/QuizCard';
 
 export default function QuizList() {
+  const { isLoggedIn } = useAuth();
   const [quizzes, setQuizzes] = useState([]);
 
   useEffect(() => {
@@ -15,24 +17,20 @@ export default function QuizList() {
     fetchQuizzes();
   }, []);
 
-  let navigate = useNavigate();
-
-  const handleGoToAddQuiz = () => {
-    navigate('/create');
-  };
-
   return (
     <div>
       <h1>Quiz List</h1>
-      <div>
-        <button onClick={handleGoToAddQuiz}>Add Quiz</button>
-      </div>
+      {isLoggedIn ? (
+        <Link to="/create">
+          <button>Add Quiz</button>
+        </Link>
+      ) : (
+        <></>
+      )}
+
       <div>
         {quizzes.map((quiz) => (
-          <div key={quiz._id} className="card">
-            <h2>{quiz.title}</h2>
-            <p>{quiz.description}</p>
-          </div>
+          <QuizCard key={quiz._id} title={quiz.title} description={quiz.description} />
         ))}
       </div>
     </div>
