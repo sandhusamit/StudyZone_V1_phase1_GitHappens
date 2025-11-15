@@ -3,28 +3,48 @@ import QuestionSchema from '../model/questionModel.js';
 import mongoose from 'mongoose';
 import express from 'express';
 
-// CREATE a new quiz
+// export const createQuiz = async (req, res) => {
+//   try {
+//     const { title, description, author, questions } = req.body; //author is userID
+
+
+//     // // Validate author
+//     // if (!mongoose.isValidObjectId(author)) {
+//     //   return res.status(400).json({ error: 'Invalid author id' });
+//     // }
+
+//     // // Validate all question IDs
+//     // if (questions && !questions.every(q => mongoose.isValidObjectId(q))) {
+//     //   return res.status(400).json({ error: 'Invalid question ID detected' });
+//     // }
+
+//     const newQuiz = new Quiz({
+//       title,
+//       description,
+//       author,
+//       questions  // <-- array of ObjectIds
+//     });
+
+//     const savedQuiz = await newQuiz.save();
+//     res.status(201).json(savedQuiz);
+
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
+// Create Quiz
+
 export const createQuiz = async (req, res) => {
   try {
-    const { title, description, author, questions } = req.body;
-
-    if (!mongoose.isValidObjectId(author)) {
-      return res.status(400).json({ error: 'Invalid author id' });
-    }
-
-    const newQuiz = new QuizSchema({
-      title,
-      description,
-      author,
-      questions: new QuestionSchema({}),
-    });
-
-    const savedQuiz = await newQuiz.save();
-    res.status(201).json(savedQuiz);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    const quiz = new QuizSchema(req.body);
+    await quiz.save();
+    res.status(201).json(quiz);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
 };
+
 
 // READ all quizzes
 export const getAllQuizzes = async (req, res) => {

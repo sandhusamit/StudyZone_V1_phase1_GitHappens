@@ -56,7 +56,7 @@ router.post('/api/login', loginUser);
 // -------------------- Quiz Routes --------------------
 router.get('/api/quizzes/:id', getQuizById);
 router.get('/api/quizzes', getAllQuizzes);
-router.post('/api/quizzes', createQuiz);
+router.post('/api/quizzes', createQuiz); // feature for later - add question id's as params to link
 router.put('/api/quizzes/:id', updateQuiz);
 router.delete('/api/quizzes/:id', deleteQuiz);
 

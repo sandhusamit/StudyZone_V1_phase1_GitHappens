@@ -1,4 +1,4 @@
-import Question from '../model/questionModel.js';
+import QuestionSchema from '../model/questionModel.js';
 import express from "express";
 
 // CREATE a new question

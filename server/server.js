@@ -7,12 +7,10 @@ import app from './middleware/express.js';
 import assetRouter from './routes/assets-router.js';
 import router from './routes/collections-router.js';
 import { connect } from 'mongoose';
-dotenv.config({ path: path.resolve('./.env.example') });
+dotenv.config({ path: path.resolve('./.env') }); //load environment variables from .env file
 
-//Connect to mongoDB using mongoose
-const mongoUri =
-  process.env.NODE_ENV == 'local_dev' ? process.env.MONGODB_URI_LOCAL : process.env.MONGODB_URI;
-mongoose.connect(mongoUri); //save environment variable
+//Connect to mongoDB using mongoose 
+mongoose.connect(process.env.MONGODB_URI); //save environment variable 
 const connection = mongoose.connection;
 connection.once('open', () => {
   console.log('MongoDB database connection established successfully');
