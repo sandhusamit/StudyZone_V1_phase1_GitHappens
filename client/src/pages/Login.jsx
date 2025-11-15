@@ -16,29 +16,35 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
+
+    console.log("Submitting login with:", formData); // DEBUG: payload
+
     try {
       const response = await fetch("http://localhost:3000/api/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json"
-         },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-  
-      if (response.ok) {
-        const data = await response.json(); // assuming your server returns a token
-        localStorage.setItem("token", data.token); // save token
+
+      console.log("Response status:", response.status); // DEBUG: status
+
+      const data = await response.json();
+      console.log("Response data:", data); // DEBUG: what server sent
+
+      if (response.ok && data.token) {
+        localStorage.setItem("token", data.token);
+        console.log("Token saved to localStorage:", data.token);
+
         alert("Login successful!");
         setFormData({ username: "", email: "", password: "" });
-        window.location.href = "/"; // redirect to home after login
-    }
-    else {
-        console.error("Failed to login");
-        alert("Something went wrong. Please try again.");
+        window.location.href = "/";
+      } else {
+        console.error("Login failed:", data.message || data);
+        alert("Login failed. Check console for details.");
       }
     } catch (err) {
       console.error("Error submitting form:", err);
-      alert("Server error. Please try again later.");
+      alert("Server error. Try again later.");
     }
   };
 
