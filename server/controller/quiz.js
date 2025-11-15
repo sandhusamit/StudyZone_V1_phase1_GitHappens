@@ -3,35 +3,6 @@ import QuestionSchema from '../model/questionModel.js';
 import mongoose from 'mongoose';
 import express from 'express';
 
-// export const createQuiz = async (req, res) => {
-//   try {
-//     const { title, description, author, questions } = req.body; //author is userID
-
-
-//     // // Validate author
-//     // if (!mongoose.isValidObjectId(author)) {
-//     //   return res.status(400).json({ error: 'Invalid author id' });
-//     // }
-
-//     // // Validate all question IDs
-//     // if (questions && !questions.every(q => mongoose.isValidObjectId(q))) {
-//     //   return res.status(400).json({ error: 'Invalid question ID detected' });
-//     // }
-
-//     const newQuiz = new Quiz({
-//       title,
-//       description,
-//       author,
-//       questions  // <-- array of ObjectIds
-//     });
-
-//     const savedQuiz = await newQuiz.save();
-//     res.status(201).json(savedQuiz);
-
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// };
 
 // Create Quiz
 
@@ -49,7 +20,7 @@ export const createQuiz = async (req, res) => {
 // READ all quizzes
 export const getAllQuizzes = async (req, res) => {
   try {
-    const quizzes = await QuizSchema.find().populate('author', 'name email').populate('questions');
+    const quizzes = await QuizSchema.find().populate('author', 'name').populate('questions');
     res.status(200).json(quizzes);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -60,7 +31,7 @@ export const getAllQuizzes = async (req, res) => {
 export const getQuizById = async (req, res) => {
   try {
     const quiz = await QuizSchema.findById(req.params.id)
-      .populate('author', 'name email')
+      .populate('author', 'name')
       .populate('questions');
     if (!quiz) return res.status(404).json({ message: 'Quiz not found' });
     res.status(200).json(quiz);
