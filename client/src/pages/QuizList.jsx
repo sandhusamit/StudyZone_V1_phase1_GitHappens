@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useState, useEffect } from "react";
 
 export default function QuizList() {
@@ -34,11 +35,28 @@ export default function QuizList() {
       } finally {
         setLoading(false);
       }
+=======
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router';
+import { getAllQuizzes } from '../services/quiz';
+import { useAuth } from '../contexts/AuthContext';
+import QuizCard from '../components/QuizCard';
+
+export default function QuizList() {
+  const { isLoggedIn } = useAuth();
+  const [quizzes, setQuizzes] = useState([]);
+
+  useEffect(() => {
+    const fetchQuizzes = async () => {
+      const fetchedQuizzes = await getAllQuizzes();
+      setQuizzes(fetchedQuizzes);
+>>>>>>> 918ce62af2785af261320dc401251db48ff499c6
     };
 
     fetchQuizzes();
   }, []);
 
+<<<<<<< HEAD
   // Delete a quiz
   const handleDelete = async (quizId) => {
     const token = localStorage.getItem("token");
@@ -83,5 +101,24 @@ export default function QuizList() {
         </div>
       )}
     </section>
+=======
+  return (
+    <div>
+      <h1>Quiz List</h1>
+      {isLoggedIn ? (
+        <Link to="/create">
+          <button>Add Quiz</button>
+        </Link>
+      ) : (
+        <></>
+      )}
+
+      <div>
+        {quizzes.map((quiz) => (
+          <QuizCard key={quiz._id} title={quiz.title} description={quiz.description} />
+        ))}
+      </div>
+    </div>
+>>>>>>> 918ce62af2785af261320dc401251db48ff499c6
   );
 }

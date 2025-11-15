@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useState } from "react";
 
 export default function Login() {
@@ -14,11 +15,23 @@ export default function Login() {
     });
   };
 
+=======
+import { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+
+export default function login() {
+  const { loginUser } = useAuth();
+
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+>>>>>>> 918ce62af2785af261320dc401251db48ff499c6
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     console.log("Submitting login with:", formData); // DEBUG: payload
 
+<<<<<<< HEAD
     try {
       const response = await fetch("http://localhost:3000/api/login", {
         method: "POST",
@@ -46,6 +59,9 @@ export default function Login() {
       console.error("Error submitting form:", err);
       alert("Server error. Try again later.");
     }
+=======
+    await loginUser(user);
+>>>>>>> 918ce62af2785af261320dc401251db48ff499c6
   };
 
   return (

@@ -1,13 +1,14 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Register() {
+  const { registerUser } = useAuth();
+
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  let navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,21 +21,19 @@ export default function Register() {
       password,
     };
 
-    // const result = await createUser(user);
-    // if (result.error) navigate('/error', { state: result.message });
-    // else navigate('/login');
+    await registerUser(user);
   };
 
   return (
     <>
-      <h2>Register Here </h2>
+      <h1>Register Here </h1>
       <form onSubmit={handleSubmit} className="form">
         <input
           type="text"
           placeholder="First Name"
           className="form-inputs"
           value={firstName}
-          onChange={({ target }) => setFirstName(target.value)}
+          onChange={({ target: { value } }) => setFirstName(value)}
         />
 
         <input
@@ -42,7 +41,7 @@ export default function Register() {
           placeholder="Last Name"
           className="form-inputs"
           value={lastName}
-          onChange={({ target }) => setLastName(target.value)}
+          onChange={({ target: { value } }) => setLastName(value)}
         />
 
         <input
@@ -50,7 +49,7 @@ export default function Register() {
           placeholder="Username"
           className="form-inputs"
           value={username}
-          onChange={({ target }) => setUsername(target.value)}
+          onChange={({ target: { value } }) => setUsername(value)}
         />
 
         <input
@@ -58,7 +57,7 @@ export default function Register() {
           placeholder="Email"
           className="form-inputs"
           value={email}
-          onChange={({ target }) => setEmail(target.value)}
+          onChange={({ target: { value } }) => setEmail(value)}
         />
 
         <input
@@ -66,7 +65,7 @@ export default function Register() {
           placeholder="Password"
           className="form-inputs"
           value={password}
-          onChange={({ target }) => setPassword(target.value)}
+          onChange={({ target: { value } }) => setPassword(value)}
         />
         <button type="submit">Create Account</button>
       </form>

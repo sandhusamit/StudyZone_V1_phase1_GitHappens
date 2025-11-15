@@ -82,3 +82,17 @@ button:focus-visible {
 .form-inputs:focus {
   outline: none;
 }
+
+.card {
+  border: 1px solid black;
+  margin: 10px 5px;
+  padding: 2em;
+}
+
+.card:hover {
+  cursor: pointer;
+}
+
+/* .profile { */
+  /* display: grid */
+/* } */
