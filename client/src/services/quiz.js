@@ -1,13 +1,14 @@
 const END_POINT = '/api/quizzes';
 
-export const getAllQuizzes = async () => {
+export const getAllQuizzes = async (jwtToken) => {
   const res = await fetch(END_POINT, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
+      "Authorization": `Bearer ${jwtToken}`,
     },
   });
-
+// any status but 200 is error
   if (res.status !== 200) {
     return { hasError: true, message: 'A problem occured getting quizzes' };
   }

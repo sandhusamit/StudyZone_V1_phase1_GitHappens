@@ -1,7 +1,8 @@
 const END_POINT = '/api';
 
 export const loginUser = async (userData) => {
-  const res = await fetch(`${END_POINT}/login`, {
+  console.log('AuthService: Logging in user with data:', userData);
+  const res = await fetch(`/api/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

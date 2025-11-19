@@ -1,123 +1,52 @@
-import { useState } from "react";
+import { useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
+/*
+  Login component allows users to log into their accounts.
+  It uses the useAuth hook to access the loginUser function from AuthContext.
+  The component maintains local state for email and password inputs.
+  On form submission, it calls loginUser with the entered credentials.
+*/
+export default function login() {
+  const { loginUser } = useAuth(); // calling useAuth to get loginUser function
 
-export default function Login() {
-  const [formData, setFormData] = useState({
-    username: "",
-    email: "",
-    password: "",
-  });
-
-  const handleChange = (e) => {
-    setFormData({ 
-      ...formData, 
-      [e.target.name]: e.target.value 
-    });
-  };
+  // Local state for email and password
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log("Submitting login with:", formData); // DEBUG: payload
-
-    try {
-      const response = await fetch("http://localhost:3000/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      console.log("Response status:", response.status); // DEBUG: status
-
-      const data = await response.json();
-      console.log("Response data:", data); // DEBUG: what server sent
-
-      if (response.ok && data.token) {
-        localStorage.setItem("token", data.token);
-        console.log("Token saved to localStorage:", data.token);
-
-        alert("Login successful!");
-        setFormData({ username: "", email: "", password: "" });
-        window.location.href = "/";
-      } else {
-        console.error("Login failed:", data.message || data);
-        alert("Login failed. Check console for details.");
-      }
-    } catch (err) {
-      console.error("Error submitting form:", err);
-      alert("Server error. Try again later.");
-    }
+    const user = {
+      email,
+      password,
+    };
+// call loginUser from AuthContext - service call to backend
+    await loginUser(user);
   };
 
+  // JSX for rendering the login form
   return (
-    <section style={{ margin: "2rem auto", padding: "1rem", maxWidth: "1200px" }}>
-      <h2 style={{ color: "#0077ff", marginBottom: "1.5rem", textAlign: "center" }}>
-        Login
-      </h2>
+    <>
+    
+      <h1>Login</h1>
+      <form onSubmit={handleSubmit} className="form">
+        <input
+          type="email"
+          placeholder="Email"
+          className="form-inputs"
+          value={email}
+          onChange={({ target }) => setEmail(target.value)}
+        />
 
-      <div 
-        style={{ 
-          display: "flex", 
-          alignItems: "flex-start", 
-          justifyContent: "center", 
-          gap: "2rem", 
-          width: "100%" 
-        }}
-      >
-        <form onSubmit={handleSubmit} style={{ flex: 1, maxWidth: "500px" }}>
-          <div style={{ marginBottom: "1rem" }}>
-            <label htmlFor="username">Username</label><br />
-            <input
-              type="text"
-              id="username"
-              name="username"
-              value={formData.username}
-              onChange={handleChange}
-              required
-              style={{ width: "100%", padding: "0.5rem" }}
-            />
-          </div>
-
-          <div style={{ marginBottom: "1rem" }}>
-            <label htmlFor="email">Email</label><br />
-            <input
-              type="email"
-              id="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
-              style={{ width: "100%", padding: "0.5rem" }}
-            />
-          </div>
-
-          <div style={{ marginBottom: "1rem" }}>
-            <label htmlFor="password">Password</label><br />
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-              style={{ width: "100%", padding: "0.5rem" }}
-            />
-          </div>
-
-          <button 
-            type="submit" 
-            style={{
-              padding: "0.7rem 1.5rem",
-              backgroundColor: "#0077ff",
-              color: "#fff",
-              border: "none",
-              borderRadius: "5px",
-              cursor: "pointer"
-            }}
-          >
-            Login
-          </button>
-        </form>
-      </div>
-    </section>
+        <input
+          type="password"
+          placeholder="Password"
+          className="form-inputs"
+          value={password}
+          onChange={({ target }) => setPassword(target.value)}
+        />
+        <button type="submit">Login to StudyZone</button>
+      </form>
+    </>
   );
 }

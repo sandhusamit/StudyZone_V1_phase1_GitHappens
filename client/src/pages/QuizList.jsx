@@ -1,43 +1,59 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+
 
 export default function QuizList() {
+  const { fetchQuizzes } = useAuth();
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
   const apiURL = "http://localhost:3000/api/quizzes";
 
   // Fetch quizzes on mount
-  useEffect(() => {
-    const fetchQuizzes = async () => {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        console.warn("No token found. Cannot fetch quizzes.");
-        setLoading(false);
-        return;
-      }
+  // useEffect(() => {
+  //   const fetchQuizzes = async () => {
+  //     const token = localStorage.getItem("token");
+  //     if (!token) {
+  //       console.warn("No token found. Cannot fetch quizzes.");
+  //       setLoading(false);
+  //       return;
+  //     }
 
-      try {
-        const res = await fetch(apiURL, {
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
-          },
-        });
+  //     try {
+  //       const res = await fetch(apiURL, {
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           "Authorization": `Bearer ${token}`,
+  //         },
+  //       });
 
-        if (!res.ok) {
-          throw new Error(`Failed to fetch quizzes: ${res.status}`);
-        }
+  //       if (!res.ok) {
+  //         throw new Error(`Failed to fetch quizzes: ${res.status}`);
+  //       }
 
-        const data = await res.json();
-        setQuizzes(Array.isArray(data) ? data : data.quizzes || []);
-      } catch (err) {
-        console.error("Error fetching quizzes:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+  //       const data = await res.json();
+  //       setQuizzes(Array.isArray(data) ? data : data.quizzes || []);
+  //     } catch (err) {
+  //       console.error("Error fetching quizzes:", err);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
 
-    fetchQuizzes();
-  }, []);
+  //   fetchQuizzes();
+  // }, []);
+
+// Commented out above code to use context instead
+useEffect(() => {
+  const load = async () => {
+    const data = await fetchQuizzes();
+    setQuizzes(data);
+    console.log("Fetched quizzes:", data);
+    setLoading(false);
+  };
+
+  load();
+}, []);
 
   // Delete a quiz
   const handleDelete = async (quizId) => {
@@ -62,6 +78,20 @@ export default function QuizList() {
     }
   };
 
+  //Event handler to see which quiz clicked 
+
+  const navigate = useNavigate();
+  
+  const handleOpenQuiz = (quiz) => {
+    navigate(`/play`, {
+      state: { quiz }
+    });
+  };
+  
+
+
+
+
   if (loading) return <p>Loading quizzes...</p>;
 
   return (
@@ -74,10 +104,11 @@ export default function QuizList() {
         <div>
           {quizzes.map((quiz) => (
             <div key={quiz._id} style={{ marginBottom: "1rem" }}>
-              <button>
+              <button onClick={() => handleOpenQuiz(quiz)}>
                 <label>{quiz.title}</label>
               </button>
               <button onClick={() => handleDelete(quiz._id)}>Delete</button>
+
             </div>
           ))}
         </div>

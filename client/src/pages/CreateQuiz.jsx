@@ -1,5 +1,5 @@
 import { useState } from "react";
-
+import { createQuestion } from "../services/question";
 export default function CreateQuiz() {
   const [quizData, setQuizData] = useState({
     title: "",
@@ -85,22 +85,29 @@ export default function CreateQuiz() {
   // SUBMIT
   // ---------------------------
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); 
 
     try {
       // 1. Create each Question in the backend
       const createdQuestionIds = [];
 
       for (const q of quizData.questions) {
-        const resQ = await fetch("http://localhost:3000/api/questions", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(q)
-        });
-
-        const dataQ = await resQ.json();
+        const dataQ = await createQuestion(q);
         createdQuestionIds.push(dataQ._id);
       }
+
+      
+
+      // for (const q of quizData.questions) {
+      //   const resQ = await fetch("http://localhost:3000/api/questions", {
+      //     method: "POST",
+      //     headers: { "Content-Type": "application/json" },
+      //     body: JSON.stringify(q)
+      //   });
+
+        // const dataQ = await resQ.json();
+        // createdQuestionIds.push(dataQ._id);
+      
 
       // 2. Create Quiz using those Question IDs
       const payload = {
