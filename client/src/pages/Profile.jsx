@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import './Profile.css';
 
 export default function Profile() {
   const { isLoggedIn, authUserId, getCurrentUserData } = useAuth();
@@ -18,12 +19,15 @@ export default function Profile() {
 
   return isLoggedIn ? (
     <>
-      <h2>Profile Information</h2>
+      <h1>Profile Information</h1>
       <div className="profile">
-        <div>id: {authUserId} </div>
+        <div>ID: {authUserId} </div>
+        <br />
         <div>First Name: {userData.firstName} </div>
+        <br />
         <div>Last Name: {userData.lastName} </div>
-        <div>Email:{userData.email} </div>
+        <br />
+        <div>Email: {userData.email} </div>
       </div>
     </>
   ) : (
