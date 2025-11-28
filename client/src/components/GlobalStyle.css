@@ -1,0 +1,281 @@
+/* --------------------------------------------------------
+   RESET + ROOT
+-------------------------------------------------------- */
+* {
+    margin: 12px;
+    padding: 0;
+    box-sizing: border-box;
+    margin-bottom: 60px;
+  }
+  
+  :root {
+    --bg: #0c0f19;
+    --bg-secondary: #151a2d;
+    --card-bg: rgba(255, 255, 255, 0.06);
+    --glass: rgba(255, 255, 255, 0.12);
+  
+    --text: #e4e8ff;
+    --text-light: #9aa3c2;
+  
+    --accent: #6ab4ff;
+    --accent-bright: #9bd0ff;
+  
+    --border: rgba(255, 255, 255, 0.12);
+  
+    --radius: 14px;
+  
+    --shadow: 0 8px 20px rgba(0, 0, 0, 0.55);
+  
+    --transition: 0.25s ease;
+    --glow: 0 0 12px rgba(106, 180, 255, 0.6);
+    --glow-hover: 0 0 20px rgba(106, 180, 255, 0.9);
+  
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  
+  /* --------------------------------------------------------
+     BODY + ROOT WRAPPER
+  -------------------------------------------------------- */
+  
+  body {
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    align-items: start;
+    justify-content: center;
+    padding-top: 220px;
+  }
+  
+  #root {
+    width: 100%;
+    max-width: 1200px;
+    padding: 2rem;
+    min-height: 100vh;
+    animation: fadeIn 1.2s ease forwards;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* --------------------------------------------------------
+     NAVBAR (CORTANA GLASS)
+  -------------------------------------------------------- */
+  
+  nav {
+    width: calc(100% - 40px);
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+  
+    max-width: 1250px;
+    height: 95px;
+  
+    background: rgba(20, 26, 41, 0.55);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    box-shadow: var(--shadow);
+  
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 35px;
+  
+    border-radius: 0 0 var(--radius) var(--radius);
+    z-index: 999;
+    ;
+  }
+  
+  /* Logo */
+  .logo {
+    height: 100px;
+    width: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: var(--glow);
+    transition: var(--transition);
+  }
+  
+  .logo:hover {
+    transform: scale(1.07);
+    box-shadow: var(--glow-hover);
+  }
+  
+  /* Navigation links */
+  .navbar {
+    display: flex;
+    gap: 32px;  
+    width: auto;
+ 
+  }
+  
+  .navbar a {
+    color: var(--text-light);
+    font-weight: 500;
+    font-size: 1.7rem;
+    text-decoration: none;
+  
+    transition: var(--transition);
+    position: relative;
+  }
+  
+  /* Neon underline hover */
+  .navbar a::after {
+    content: "";
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    width: 10%;
+    height: 3px;
+    background: var(--accent);
+    box-shadow: var(--glow);
+    transition: width 0.3s ease;
+  }
+  
+  .navbar a:hover {
+    color: var(--accent-bright);
+  }
+  
+  .navbar a:hover::after {
+    width: 100%;
+  }
+  
+  /* --------------------------------------------------------
+     HEADERS
+  -------------------------------------------------------- */
+  
+  h1, h2, h3 {
+    color: var(--text);
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  
+  h1 {
+    font-size: 2.75rem;
+    margin-bottom: 10px;
+  }
+  
+  /* --------------------------------------------------------
+     BUTTONS (NEON)
+  -------------------------------------------------------- */
+  
+  button {
+    padding: 0.75em 1.6em;
+    border-radius: var(--radius);
+    border: 1px solid var(--accent);
+  
+    background: linear-gradient(
+      135deg,
+      rgba(106, 180, 255, 0.15),
+      rgba(106, 180, 255, 0.05)
+    );
+  
+    color: var(--accent-bright);
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+  
+    transition: var(--transition);
+    box-shadow: var(--glow);
+  }
+  
+  button:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--glow-hover);
+    background: rgba(106, 180, 255, 0.25);
+  }
+  
+  /* --------------------------------------------------------
+     CARDS (GLASS PANELS)
+  -------------------------------------------------------- */
+  
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    padding: 1.8rem;
+    border-radius: var(--radius);
+    margin: 1.2rem 0;
+  
+    backdrop-filter: blur(12px);
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+  }
+  
+  .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 0 24px rgba(106, 180, 255, 0.35);
+    border-color: var(--accent);
+  }
+  
+  /* --------------------------------------------------------
+     FORMS
+  -------------------------------------------------------- */
+  
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    max-width: 450px;
+    width: 100%;
+    margin: auto;
+  }
+  
+  .form-inputs {
+    padding: 14px;
+    font-size: 1rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-light);
+  
+    transition: var(--transition);
+  }
+  
+  .form-inputs:focus {
+    border-color: var(--accent);
+    box-shadow: var(--glow);
+    outline: none;
+  }
+  
+  /* --------------------------------------------------------
+     LINKS
+  -------------------------------------------------------- */
+  
+  a {
+    color: var(--accent);
+    text-decoration: none;
+    transition: var(--transition);
+  }
+  
+  a:hover {
+    color: var(--accent-bright);
+    text-shadow: var(--glow);
+  }
+  
+  /* --------------------------------------------------------
+     LAYOUT HELPERS
+  -------------------------------------------------------- */
+  .page {
+    padding: 20px 0;
+  }
+  
+  .center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .row {
+    display: flex;
+    gap: 20px;
+  }
+  
+  .col {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  

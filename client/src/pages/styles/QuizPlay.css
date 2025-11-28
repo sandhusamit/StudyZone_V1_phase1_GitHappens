@@ -1,0 +1,124 @@
+/* PlayQuiz.css - Friendly & Modern Design */
+
+.play-quiz-container {
+    max-width: 720px;
+    margin: 120px auto 60px auto;
+    padding: 30px 25px;
+    background: #1e1e2f;
+    border-radius: 20px;
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+    color: #f0f0ff;
+    font-family: 'Poppins', sans-serif;
+  }
+  
+  /* Quiz title and description */
+  .play-quiz-container h1 {
+    text-align: center;
+    color: #6cf2f5;
+    margin-bottom: 12px;
+    font-size: 28px;
+  }
+  
+  .play-quiz-container p {
+    text-align: center;
+    color: #c0e0f5;
+    margin-bottom: 30px;
+    font-size: 16px;
+  }
+  
+  /* Question cards */
+  .play-question-card {
+    background: #2c2c45;
+    padding: 22px 20px;
+    border-radius: 20px;
+    margin-bottom: 25px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    transition: all 0.25s ease;
+  }
+  
+  .play-question-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  }
+  
+  .play-question-card h3 {
+    margin-bottom: 18px;
+    color: #90f0ff;
+    font-size: 18px;
+  }
+  
+  /* Choices list */
+  .play-question-card ul {
+    list-style: none;
+    padding-left: 0;
+  }
+  
+  .play-question-card li {
+    margin-bottom: 10px;
+    background: #3a3a5a;
+    padding: 12px 18px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  
+  .play-question-card li:hover {
+    background: #4a4a70;
+  }
+  
+  /* Radio buttons */
+  .play-question-card input[type="radio"] {
+    margin-right: 12px;
+    transform: scale(1.2);
+    accent-color: #6cf2f5;
+  }
+  
+  /* Submit button */
+  .play-quiz-container button {
+    display: block;
+    margin: 25px auto 0 auto;
+    background: #6cf2f5;
+    color: #1b1b2b;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    border-radius: 16px;
+    padding: 12px 28px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+  
+  .play-quiz-container button:hover {
+    background: #52d8e0;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(108, 242, 245, 0.4);
+  }
+  
+  /* Score display */
+  .quiz-score {
+    text-align: center;
+    margin-top: 25px;
+    padding: 22px;
+    background: #2c2c45;
+    border-radius: 20px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  }
+  
+  .quiz-score h2 {
+    color: #90f0ff;
+    font-size: 22px;
+  }
+  
+  /* Correct / wrong answer highlight */
+  .correct {
+    background-color: #4caf50 !important;
+    color: #fff;
+  }
+  
+  .wrong {
+    background-color: #f44336 !important;
+    color: #fff;
+  }
+  

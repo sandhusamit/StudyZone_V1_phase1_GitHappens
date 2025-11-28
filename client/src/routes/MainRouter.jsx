@@ -11,6 +11,7 @@ import Profile from '../pages/Profile';
 import Leaderboard from '../pages/Leaderboard';
 import ErrorPage from '../pages/ErrorPage';
 import Success from '../pages/Success';
+import EditQuiz from '../pages/EditQuiz';
 
 const MainRouter = () => {
   return (
@@ -22,12 +23,14 @@ const MainRouter = () => {
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/quizlist" element={<QuizList />} />
+        <Route path="/edit" element={<EditQuiz />} />
         <Route path="/play" element={<QuizPlay />} />
         <Route path="/create" element={<CreateQuiz />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/success" element={<Success />} />
         <Route path="/error" element={<ErrorPage />} />
+        
       </Routes>
     </>
   );

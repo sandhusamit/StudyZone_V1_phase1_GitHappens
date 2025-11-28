@@ -1,0 +1,144 @@
+/* --------------------------------------------------------
+   HOME PAGE WRAPPER
+-------------------------------------------------------- */
+.home-container {
+    width: 100%;
+    max-width: 1000px;
+    margin: auto;
+    padding: 2rem;
+    animation: fadeInHome 1s ease forwards;
+  }
+  
+  @keyframes fadeInHome {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* --------------------------------------------------------
+     HEADER SECTION
+  -------------------------------------------------------- */
+  .home-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+  
+  .home-header h1 {
+    font-size: 3.5rem;
+    background: linear-gradient(135deg, #6ab4ff, #9bd0ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 18px rgba(106, 180, 255, 0.45);
+    margin-bottom: 10px;
+  }
+  
+  .home-header p {
+    color: var(--text-light);
+    font-size: 1.25rem;
+    letter-spacing: 0.4px;
+  }
+  
+  /* --------------------------------------------------------
+     FEATURES SECTION
+  -------------------------------------------------------- */
+  .home-features {
+    background: var(--glass);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(14px);
+    padding: 2rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 3rem;
+    animation: glowPanel 1.2s ease;
+  }
+  
+  @keyframes glowPanel {
+    0% { box-shadow: none; }
+    100% { box-shadow: 0 0 22px rgba(106, 180, 255, 0.25); }
+  }
+  
+  .home-features h2 {
+    text-align: center;
+    margin-bottom: 1.2rem;
+    color: var(--accent-bright);
+    text-shadow: var(--glow);
+  }
+  
+  .home-features ul {
+    list-style: none;
+    padding-left: 0;
+  }
+  
+  .home-features li {
+    margin: 10px 0;
+    font-size: 1.15rem;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.2s ease;
+  }
+  
+  .home-features li:hover {
+    transform: translateX(6px);
+    color: var(--accent);
+    text-shadow: var(--glow);
+  }
+  
+  /* --------------------------------------------------------
+     ACTION BUTTONS
+  -------------------------------------------------------- */
+  .home-actions {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-top: 1rem;
+  }
+  
+  .btn {
+    padding: 0.75em 2em;
+    border-radius: var(--radius);
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--accent-bright);
+    border: 1px solid var(--accent);
+    background: rgba(106, 180, 255, 0.12);
+    transition: var(--transition);
+    box-shadow: var(--glow);
+  }
+  
+  .btn:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--glow-hover);
+  }
+  
+  .btn-secondary {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--border);
+    color: var(--text);
+  }
+  
+  .btn-secondary:hover {
+    border-color: var(--accent);
+    color: var(--accent-bright);
+    box-shadow: var(--glow);
+  }
+  
+  /* --------------------------------------------------------
+     MOBILE RESPONSIVE
+  -------------------------------------------------------- */
+  @media (max-width: 600px) {
+    .home-header h1 {
+      font-size: 2.4rem;
+    }
+  
+    .home-container {
+      padding: 1rem;
+    }
+  
+    .home-actions {
+      flex-direction: column;
+      gap: 12px;
+    }
+  }
+  

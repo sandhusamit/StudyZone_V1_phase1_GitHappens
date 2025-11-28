@@ -1,0 +1,123 @@
+/* ===== Global Layout ===== */
+section {
+  max-width: 900px;
+  margin: 55px auto;
+  padding: 20px;
+  font-family: 'Inter', 'Orbitron', Arial, sans-serif;
+}
+
+/* ===== Title ===== */
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+  font-size: 34px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  color: #e0e6ff;
+  text-transform: uppercase;
+
+  text-shadow: 0 0 12px rgba(120,170,255,0.8);
+}
+
+
+/* ===== Quiz Card ===== */
+.quiz-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  background: rgba(20,25,40,0.75);
+  backdrop-filter: blur(8px);
+
+  padding: 20px 25px;
+  border-radius: 14px;
+  margin-bottom: 20px;
+
+  border: 1px solid rgba(90,115,255,0.35);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.4);
+
+  transition: 0.25s ease;
+}
+
+.quiz-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(120,145,255,0.65);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.55);
+}
+
+
+/* ===== Quiz Title ===== */
+.quiz-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #bfc9ff;
+  letter-spacing: 0.5px;
+}
+
+
+/* ===== Action Buttons ===== */
+.quiz-actions button {
+  margin-left: 12px;
+  padding: 8px 16px;
+
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: uppercase;
+
+  cursor: pointer;
+  letter-spacing: 0.8px;
+
+  transition: 0.25s ease;
+}
+
+/* === Button Effects: Neon Glow === */
+.quiz-actions button:hover {
+  transform: scale(1.09);
+  box-shadow: 0 0 12px currentColor;
+}
+
+/* Play (Green Neon) */
+.play-btn {
+  background: transparent;
+  color: #59ff8f;
+  border: 1px solid #59ff8f;
+}
+
+.play-btn:hover {
+  background: rgba(89,255,143,0.15);
+}
+
+/* Edit (Blue Neon) */
+.edit-btn {
+  background: transparent;
+  color: #73b2ff;
+  border: 1px solid #73b2ff;
+}
+
+.edit-btn:hover {
+  background: rgba(115,178,255,0.15);
+}
+
+/* Delete (Red Neon) */
+.delete-btn {
+  background: transparent;
+  color: #ff6969;
+  border: 1px solid #ff6969;
+}
+
+.delete-btn:hover {
+  background: rgba(255,105,105,0.15);
+}
+
+/* ===== Empty State ===== */
+.empty {
+  text-align: center;
+  margin-top: 50px;
+  font-size: 22px;
+
+  color: #9ca7d8;
+  opacity: 0.85;
+  letter-spacing: 0.8px;
+}

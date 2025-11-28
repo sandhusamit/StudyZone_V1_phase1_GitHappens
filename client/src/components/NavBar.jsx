@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import logo from '../assets/gitLogo.png';
-import './NavBar.css';
+import './GlobalStyle.css';
 
 function NavBar() {
   const { isLoggedIn, logoutUser } = useAuth();
@@ -16,11 +16,11 @@ function NavBar() {
           </Link>
         </div>
 
-        <Link to="/">Home</Link> - 
-        <Link to="/register">Register</Link> - 
+        <Link to="/">Home</Link> 
+
 
         {/* Conditional: show login OR quizzes + logout */}
-        {isLoggedIn ? (
+        {isLoggedIn && (
           <>
             <Link to="/dashboard">Dashboard</Link> - 
             <Link to="/quizlist">Quizzes</Link> - 
@@ -30,9 +30,14 @@ function NavBar() {
             <Link to="/profile">Profile</Link> 
 
           </>
-        ) : (
-          <Link to="/login">Login</Link>
         )}
+        {!isLoggedIn && (
+          <>
+            <Link to="/login">Login</Link>
+            <Link to="/register">Register</Link>
+          </>
+        )}
+        
       </nav>
     </div>
     </>

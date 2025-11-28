@@ -1,51 +1,26 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import "/Users/samitsandhu/Desktop/MERN/StudyZone_GitHappens/client/src/pages/styles/QuizList.css";
 
 
 export default function QuizList() {
+// Constants for auth context and navigation methods
+
   const { fetchQuizzes } = useAuth();
+  const { removeQuiz } = useAuth();
+  const navigate = useNavigate();
+
+
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
   const apiURL = "http://localhost:3000/api/quizzes";
 
-  // Fetch quizzes on mount
-  // useEffect(() => {
-  //   const fetchQuizzes = async () => {
-  //     const token = localStorage.getItem("token");
-  //     if (!token) {
-  //       console.warn("No token found. Cannot fetch quizzes.");
-  //       setLoading(false);
-  //       return;
-  //     }
 
-  //     try {
-  //       const res = await fetch(apiURL, {
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //           "Authorization": `Bearer ${token}`,
-  //         },
-  //       });
-
-  //       if (!res.ok) {
-  //         throw new Error(`Failed to fetch quizzes: ${res.status}`);
-  //       }
-
-  //       const data = await res.json();
-  //       setQuizzes(Array.isArray(data) ? data : data.quizzes || []);
-  //     } catch (err) {
-  //       console.error("Error fetching quizzes:", err);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   fetchQuizzes();
-  // }, []);
-
-// Commented out above code to use context instead
+// Using authContext - fetch all quizzes and load them into state
 useEffect(() => {
   const load = async () => {
+    //calls fetchQuizzes from auth context - ensures token is used
     const data = await fetchQuizzes();
     setQuizzes(data);
     console.log("Fetched quizzes:", data);
@@ -55,64 +30,72 @@ useEffect(() => {
   load();
 }, []);
 
+// EVENT HANDLERS 
   // Delete a quiz
   const handleDelete = async (quizId) => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-
-    try {
-      const res = await fetch(`${apiURL}/${quizId}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-      });
-
-      if (!res.ok) throw new Error(`Failed to delete quiz: ${res.status}`);
-
-      // Remove deleted quiz from state
+    const result = await removeQuiz(quizId);
+    if (result && !result.error) {
       setQuizzes((prev) => prev.filter((q) => q._id !== quizId));
-    } catch (err) {
-      console.error("Error deleting quiz:", err);
+    } else {
+      console.error("Error deleting quiz:", result.message);
     }
   };
 
-  //Event handler to see which quiz clicked 
-
-  const navigate = useNavigate();
-  
+  //Open specific quiz to play
   const handleOpenQuiz = (quiz) => {
     navigate(`/play`, {
       state: { quiz }
     });
   };
   
-
+// Edit a quiz
+  const handleEditQuiz = (quiz) => {
+    navigate(`/edit/${quiz._id}`, {
+      state: { quiz }
+    });
+  };
 
 
 
   if (loading) return <p>Loading quizzes...</p>;
 
   return (
-    <section>
-      <h2>Quiz List</h2>
+<section>
+  <h2 className="heading">Quiz List</h2>
 
-      {quizzes.length === 0 ? (
-        <p>No quizzes available.</p>
-      ) : (
-        <div>
-          {quizzes.map((quiz) => (
-            <div key={quiz._id} style={{ marginBottom: "1rem" }}>
-              <button onClick={() => handleOpenQuiz(quiz)}>
-                <label>{quiz.title}</label>
+  {quizzes.length === 0 ? (
+    <p className="empty">No quizzes available.</p>
+  ) : (
+    <div>
+      {quizzes.map((quiz) => (
+        <div key={quiz._id} className="quiz-card">
+          <span className="quiz-title">{quiz.title}</span>
+
+          <div className="quiz-actions">
+            <button className="play-btn" onClick={() => handleOpenQuiz(quiz)}>
+              Play
+            </button>
+
+            <button 
+                className="edit-btn"
+                onClick={() => navigate("/edit", { state: { quiz } })}
+              >
+                Edit
               </button>
-              <button onClick={() => handleDelete(quiz._id)}>Delete</button>
 
-            </div>
-          ))}
+
+            <button
+              className="delete-btn"
+              onClick={() => handleDelete(quiz._id)}
+            >
+              Delete
+            </button>
+          </div>
         </div>
-      )}
-    </section>
+      ))}
+    </div>
+  )}
+</section>
+
   );
 }

@@ -10,10 +10,15 @@ import {
   registerUser as registerUserService,
   getUserDataById as getUserDataByIdService,
 } from '../services/user';
-import { getAllQuizzes as fetchQuizzesService } from '../services/quiz.js';
+import { getAllQuizzes as fetchQuizzesService,
+          createQuiz as createQuizService,
+          removeQuiz as deleteQuizService,
+          updateQuiz as updateQuizService
+ } from '../services/quiz.js';
 import { loginUser as loginUserService } from '../services/auth';
 import { getAllQuestions as fetchQuestionsService,
-          createQuestion as createQuestionService
+          createQuestion as createQuestionService,
+          updateQuestion as updateQuestionService
 } from '../services/question.js';
 const AuthContext = createContext();
 
@@ -29,15 +34,20 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const userId = localStorage.getItem('userId');
     const token = localStorage.getItem('token');
+    if(token)
+      console.log("AuthContext: Found token in localStorage:", token);
+
     if (userId && token) {
       console.log("AuthContext: Found userId and token in localStorage.");
       setAuthUserId(userId);
+      console.log("AuthContext: Setting authUserId to:", userId);
       setJwtToken(token);
+      console.log("AuthContext: Setting jwtToken to:", token);
       setIsLoggedIn(true);
     } // else condition
 
     setIsAuthorized(true);
-  }, [jwtToken, authUserId, isLoggedIn]);
+  }, []);
 
 
   // User Management 
@@ -62,7 +72,7 @@ export function AuthProvider({ children }) {
       if (data && !data.hasError) {
         const { token, user } = data; // Should we perform null checks for token and user?
         localStorage.setItem('userId', user._id);
-        localStorage.setItem('bearer_token', token);
+        localStorage.setItem('token', token);
         setAuthUserId(user._id);
         setJwtToken(token);
         setIsLoggedIn(true);
@@ -78,7 +88,7 @@ export function AuthProvider({ children }) {
   
   const logoutUser = async () => {
     localStorage.removeItem('userId');
-    localStorage.removeItem('bearer_token');
+    localStorage.removeItem('token');
     setAuthUserId('');
     setJwtToken('');
     setIsLoggedIn(false);
@@ -101,6 +111,7 @@ export function AuthProvider({ children }) {
   
   // Quiz Management
   const fetchQuizzes = async () => {
+    console.log("AuthContext: Fetching quizzes with token:", jwtToken);
     const data = await fetchQuizzesService(jwtToken);
     if (data && data.hasError) {
       navigate('/error', { state: data });
@@ -108,6 +119,40 @@ export function AuthProvider({ children }) {
     }
     return (Array.isArray(data) ? data : data.quizzes || []);
 }
+
+  const newQuiz = async (quiz) => {
+    const data = await createQuizService(quiz);
+    if (data && data.hasError) {
+      navigate('/error', { state: data });
+      return null;
+    } 
+    navigate('/quizlist');
+    return data;
+
+}
+  const removeQuiz = async (quizId) => {
+    // Implement quiz deletion logic here, similar to other service calls
+    console.log("AuthContext: Attempting to delete quiz with ID:", quizId);
+    const data = await deleteQuizService(quizId, jwtToken);
+    if (data && data.hasError) {
+      navigate('/error', { state: data });
+      return null;
+    }
+    return data;
+  };
+
+  //update quiz
+  const updateQuiz = async (quizId, updatedQuiz) => {
+    // Implement quiz update logic here, similar to other service calls
+    console.log("AuthContext: Attempting to update quiz with ID:", quizId);
+    const data = await updateQuizService(quizId, updatedQuiz, jwtToken);
+    if (data && data.hasError) {
+      navigate('/error', { state: data });
+      return null;
+    }
+    return data;
+    return null; // Placeholder return
+  }
 
 // Question Management
 const fetchQuestions = async () => {
@@ -128,6 +173,19 @@ const createQuestion = async (question) => {
   return data;
 }
 
+
+const updateQuestion = async (questionId, updatedQuestion) => {
+  // Implement question update logic here, similar to other service calls
+  console.log("AuthContext: Attempting to update question with ID:", questionId);
+  const data = await updateQuestionService(questionId, updatedQuestion, jwtToken);
+  if (data && data.hasError) {
+    navigate('/error', { state: data });
+    return null;
+  }
+  return data;
+}
+
+
   return (
     <AuthContext.Provider
       value={{
@@ -140,9 +198,13 @@ const createQuestion = async (question) => {
         logoutUser,
         getCurrentUserData,
         fetchQuizzes,
+        removeQuiz,
         fetchQuestions,
         createQuestion,
-      }}
+        updateQuestion,
+        newQuiz,
+        updateQuiz
+        }}
     >
       {children}
     </AuthContext.Provider>

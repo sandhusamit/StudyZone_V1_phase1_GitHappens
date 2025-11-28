@@ -35,3 +35,22 @@ export const createQuestion = async (question, token) => {
     const data = await res.json();
     return data;
   };
+
+
+export const updateQuestion = async (questionId, updatedQuestion, token) => {
+    const res = await fetch(`${END_POINT}/${questionId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(updatedQuestion),
+    });
+  
+    if (res.status !== 200) {
+      return { error: true, message: 'A problem occured while updating question.' };
+    }
+  
+    const data = await res.json();
+    return data;
+  };
