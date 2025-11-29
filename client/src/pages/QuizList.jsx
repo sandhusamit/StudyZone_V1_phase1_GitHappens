@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
-import "/Users/samitsandhu/Desktop/MERN/StudyZone_GitHappens/client/src/pages/styles/QuizList.css";
+import "./styles/QuizList.css";
 
 
 export default function QuizList() {

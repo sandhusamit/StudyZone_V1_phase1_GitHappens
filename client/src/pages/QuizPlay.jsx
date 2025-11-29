@@ -1,6 +1,6 @@
 import { useLocation, useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
-import "/Users/samitsandhu/Desktop/MERN/StudyZone_GitHappens/client/src/pages/styles/QuizPlay.css";
+import "./styles/QuizPlay.css";
 
 export default function PlayQuiz() {
   const { quizId } = useParams();

@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
-import "/Users/samitsandhu/Desktop/MERN/StudyZone_GitHappens/client/src/pages/styles/Home.css";
-import { useAuth } from '/Users/samitsandhu/Desktop/MERN/StudyZone_GitHappens/client/src/contexts/AuthContext.jsx';
+import "./styles/Home.css";
+import { useAuth } from '../contexts/AuthContext.jsx';
 
 export default function Home() {
   const { isLoggedIn, logoutUser } = useAuth();

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createQuestion } from "../services/question";
 import { useAuth } from "../contexts/AuthContext";
-import "/Users/samitsandhu/Desktop/MERN/StudyZone_GitHappens/client/src/pages/styles/CreateQuiz.css";
+import "./styles/CreateQuiz.css";
 import { Navigate } from "react-router-dom";
 
 export default function CreateQuiz() {
@@ -86,7 +86,7 @@ export default function CreateQuiz() {
       }
 
       alert("Quiz created successfully!");
-      <Navigate to="/quizzes" replace={true} />;
+
     } catch (err) {
       alert("Server error.");
     }

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import '/Users/samitsandhu/Desktop/MERN/StudyZone_GitHappens/client/src/pages/styles/Dashboard.css';
+import './styles/Dashboard.css';
 export default function Dashboard() {
   return (
     <div className="dashboard-container">
