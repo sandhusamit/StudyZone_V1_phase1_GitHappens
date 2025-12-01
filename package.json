@@ -18,7 +18,8 @@
     "build:client": "vite build --cwd client",
     "preview:client": "vite preview --cwd client",
     "start:localserver": "cross-env NODE_ENV=local_dev nodemon server/server.js",
-    "dev:local": "npm-run-all --parallel start:localserver start:client"
+    "dev:local": "npm-run-all --parallel start:localserver start:client",
+    "dev:ric":"MONGODB_URI=mongodb://root:password@127.0.0.1:37017/StudyZoneDemo?authSource=admin nodemon server/server.js"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^5.1.0",
