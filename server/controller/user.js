@@ -1,13 +1,11 @@
 //CRUD USERS
 import generateToken from '../utils/jwt.js';
-import express from 'express';
 import userModel from '../model/userModel.js';
 
 //  READ all users
 export const getAllUsers = async (req, res) => {
   try {
     const msg = await userModel.find();
-    console.log(msg);
     res.status(200).json(msg);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -91,11 +89,9 @@ export const loginUser = async (req, res) => {
     if (!isPasswordValid) {
       return res.status(401).json({ message: 'Invalid password' });
     }
-
     const token = generateToken(user); // your JWT function
     return res.status(200).json({ message: 'User logged in successfully', user, token });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
-
