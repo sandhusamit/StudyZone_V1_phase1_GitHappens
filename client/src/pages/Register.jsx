@@ -30,6 +30,8 @@ export default function Register() {
       <form onSubmit={handleSubmit} className="form">
         <input
           type="text"
+          name="firstName"
+          aria-label="firstName"
           placeholder="First Name"
           className="form-inputs"
           value={firstName}
@@ -38,6 +40,8 @@ export default function Register() {
 
         <input
           type="text"
+          name="lastName"
+          aria-label="lastName"
           placeholder="Last Name"
           className="form-inputs"
           value={lastName}
@@ -46,6 +50,8 @@ export default function Register() {
 
         <input
           type="text"
+          name="username"
+          aria-label="username"
           placeholder="Username"
           className="form-inputs"
           value={username}
@@ -54,6 +60,8 @@ export default function Register() {
 
         <input
           type="email"
+          name="email"
+          aria-label="email"
           placeholder="Email"
           className="form-inputs"
           value={email}
@@ -62,6 +70,8 @@ export default function Register() {
 
         <input
           type="password"
+          name="password"
+          aria-label="password"
           placeholder="Password"
           className="form-inputs"
           value={password}
