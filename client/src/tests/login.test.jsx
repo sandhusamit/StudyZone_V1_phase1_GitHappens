@@ -49,10 +49,10 @@ describe('Login', () => {
     const loginUser = jest.fn();
 
     renderWithMockAuth(<Login />, { providerProps: { value: loginUser } });
-    const emailInput = screen.getByPlaceholderText(/Email/i);
-    const passwordInput = screen.getByPlaceholderText(/Password/i);
+    const emailInput = screen.getByLabelText(/login-email/i);
+    const passwordInput = screen.getByLabelText(/login-password/i);
 
-    fireEvent.change(passwordInput, { target: { value: 'pa$$word' } });
+    fireEvent.change(passwordInput, { target: { name: 'password', value: 'pa$$word' } });
 
     expect(emailInput).toHaveValue('');
     expect(passwordInput).toHaveValue('pa$$word');
@@ -63,10 +63,12 @@ describe('Login', () => {
     const loginUser = jest.fn();
 
     renderWithMockAuth(<Login />, { providerProps: { value: loginUser } });
-    const emailInput = screen.getByPlaceholderText(/Email/i);
-    const passwordInput = screen.getByPlaceholderText(/Password/i);
+    const emailInput = screen.getByLabelText(/login-email/i);
+    const passwordInput = screen.getByLabelText(/login-password/i);
 
-    fireEvent.change(emailInput, { target: { value: 'ellenripley@weyland.yutani' } });
+    fireEvent.change(emailInput, {
+      target: { name: 'email', value: 'ellenripley@weyland.yutani' },
+    });
 
     expect(emailInput).toHaveValue('ellenripley@weyland.yutani');
     expect(passwordInput).toHaveValue('');
@@ -79,8 +81,8 @@ describe('Login', () => {
 
     renderWithAuth(<Login />);
 
-    const emailInput = screen.getByPlaceholderText(/Email/i);
-    const passwordInput = screen.getByPlaceholderText(/Password/i);
+    const emailInput = screen.getByLabelText(/login-email/i);
+    const passwordInput = screen.getByLabelText(/login-password/i);
     const submitButton = screen.getAllByRole('button').find((button) => button.type === 'submit');
 
     fireEvent.change(emailInput, { target: { value: 'ellenripley@weyland.yutani' } });
@@ -123,8 +125,8 @@ describe('Login', () => {
 
     renderWithAuth(<Login />);
 
-    const emailInput = screen.getByPlaceholderText(/Email/i);
-    const passwordInput = screen.getByPlaceholderText(/Password/i);
+    const emailInput = screen.getByLabelText(/login-email/i);
+    const passwordInput = screen.getByLabelText(/login-password/i);
     const submitButton = screen.getAllByRole('button').find((button) => button.type === 'submit');
 
     fireEvent.change(emailInput, { target: { value: 'ellenripley@weyland.yutani' } });
@@ -154,8 +156,8 @@ describe('Login', () => {
 
     renderWithAuth(<Login />);
 
-    const emailInput = screen.getByPlaceholderText(/Email/i);
-    const passwordInput = screen.getByPlaceholderText(/Password/i);
+    const emailInput = screen.getByLabelText(/login-email/i);
+    const passwordInput = screen.getByLabelText(/login-password/i);
     const submitButton = screen.getAllByRole('button').find((button) => button.type === 'submit');
 
     fireEvent.change(emailInput, { target: { value: 'ellenripley@weyland.yutani' } });
