@@ -20,18 +20,19 @@ export default function login() {
       email,
       password,
     };
-// call loginUser from AuthContext - service call to backend
+    // call loginUser from AuthContext - service call to backend
     await loginUser(user);
   };
 
   // JSX for rendering the login form
   return (
     <>
-    
       <h1>Login</h1>
       <form onSubmit={handleSubmit} className="form">
         <input
           type="email"
+          name="email"
+          aria-label="login-email"
           placeholder="Email"
           className="form-inputs"
           value={email}
@@ -40,6 +41,8 @@ export default function login() {
 
         <input
           type="password"
+          name="password"
+          aria-label="login-password"
           placeholder="Password"
           className="form-inputs"
           value={password}

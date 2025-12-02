@@ -33,13 +33,13 @@ describe('Login', () => {
 
     // fireEvent.change(firstNameInput, { target: { name: 'firstName', value: 'Ellen' } });
     renderWithMockAuth(<Login />, { providerProps });
-    const emailInput = screen.getByPlaceholderText(/Email/i);
-    const passwordInput = screen.getByPlaceholderText(/Password/i);
+    const emailInput = screen.getByLabelText(/login-email/i);
+    const passwordInput = screen.getByLabelText(/login-password/i);
 
     fireEvent.change(emailInput, {
-      target: { value: 'ellenripley@weyland.yutani' },
+      target: { name: 'email', value: 'ellenripley@weyland.yutani' },
     });
-    fireEvent.change(passwordInput, { target: { value: 'pa$$word' } });
+    fireEvent.change(passwordInput, { target: { name: 'password', value: 'pa$$word' } });
 
     expect(emailInput).toHaveValue('ellenripley@weyland.yutani');
     expect(passwordInput).toHaveValue('pa$$word');
