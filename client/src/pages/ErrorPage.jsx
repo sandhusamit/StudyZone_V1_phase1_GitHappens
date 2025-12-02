@@ -5,10 +5,10 @@ export default function ErrorPage() {
   const { message, hasError } = state;
 
   return (
-    <div>
-      <h1>Error</h1>
+    <section>
+      <h1 className="heading">Error</h1>
       {hasError && <p>{message}</p>}
       <Link to="/">Home</Link>
-    </div>
+    </section>
   );
 }

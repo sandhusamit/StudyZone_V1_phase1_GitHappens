@@ -29,27 +29,34 @@ export const AuthContext = createContext();
 export function AuthProvider({ children }) {
   const navigate = useNavigate();
 
+  const [isLoading, setIsLoading] = useState(true);
   const [authUserId, setAuthUserId] = useState('');
   const [jwtToken, setJwtToken] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
-    const userId = localStorage.getItem('userId');
-    const token = localStorage.getItem('token');
-    if (token) console.log('AuthContext: Found token in localStorage:', token);
+    const runOnLoad = () => {
+      const userId = localStorage.getItem('userId');
+      const token = localStorage.getItem('token');
 
-    if (userId && token) {
-      console.log('AuthContext: Found userId and token in localStorage.');
-      setAuthUserId(userId);
-      console.log('AuthContext: Setting authUserId to:', userId);
-      setJwtToken(token);
-      console.log('AuthContext: Setting jwtToken to:', token);
-      setIsLoggedIn(true);
-    } // else condition
+      if (token) console.log('AuthContext: Found token in localStorage:', token);
 
-    setIsAuthorized(true);
-  }, []);
+      if (userId && token) {
+        console.log('AuthContext: Found userId and token in localStorage.');
+        setAuthUserId(userId);
+        console.log('AuthContext: Setting authUserId to:', userId);
+        setJwtToken(token);
+        console.log('AuthContext: Setting jwtToken to:', token);
+        setIsLoggedIn(true);
+      }
+
+      setIsAuthorized(true);
+      setIsLoading(false);
+    };
+
+    runOnLoad();
+  }, [authUserId, jwtToken, isLoggedIn]);
 
   // User Management
 
@@ -111,6 +118,13 @@ export function AuthProvider({ children }) {
 
   // Quiz Management
   const fetchQuizzes = async () => {
+    if (isLoading || !isLoggedIn) return;
+
+    if (!jwtToken) {
+      const jwtTkn = localStorage.getItem('token');
+      setJwtToken(jwtTkn);
+    }
+
     console.log('AuthContext: Fetching quizzes with token:', jwtToken);
     const data = await fetchQuizzesService(jwtToken);
     if (data && data.hasError) {
@@ -129,6 +143,7 @@ export function AuthProvider({ children }) {
     navigate('/quizlist');
     return data;
   };
+
   const removeQuiz = async (quizId) => {
     // Implement quiz deletion logic here, similar to other service calls
     console.log('AuthContext: Attempting to delete quiz with ID:', quizId);
@@ -190,6 +205,7 @@ export function AuthProvider({ children }) {
         jwtToken,
         isLoggedIn,
         isAuthorized,
+        isLoading,
         registerUser,
         loginUser,
         logoutUser,

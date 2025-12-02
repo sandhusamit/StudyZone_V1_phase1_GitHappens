@@ -1,4 +1,5 @@
 import { Routes, Route } from 'react-router-dom';
+import ProtectRoute from './ProtectRoute';
 import NavBar from '../components/NavBar';
 import Home from '../pages/Home';
 import Login from '../pages/Login';
@@ -22,15 +23,49 @@ const MainRouter = () => {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/quizlist" element={<QuizList />} />
-        <Route path="/edit" element={<EditQuiz />} />
-        <Route path="/play" element={<QuizPlay />} />
-        <Route path="/create" element={<CreateQuiz />} />
-        <Route path="/profile" element={<Profile />} />
+        <Route
+          path="/quizlist"
+          element={
+            <ProtectRoute>
+              <QuizList />
+            </ProtectRoute>
+          }
+        />
+        <Route
+          path="/edit"
+          element={
+            <ProtectRoute>
+              <EditQuiz />
+            </ProtectRoute>
+          }
+        />
+        <Route
+          path="/play"
+          element={
+            <ProtectRoute>
+              <QuizPlay />
+            </ProtectRoute>
+          }
+        />
+        <Route
+          path="/create"
+          element={
+            <ProtectRoute>
+              <CreateQuiz />
+            </ProtectRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectRoute>
+              <Profile />
+            </ProtectRoute>
+          }
+        />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/success" element={<Success />} />
         <Route path="/error" element={<ErrorPage />} />
-        
       </Routes>
     </>
   );
