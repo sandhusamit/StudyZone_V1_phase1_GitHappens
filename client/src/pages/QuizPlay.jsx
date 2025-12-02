@@ -1,6 +1,7 @@
-import { useLocation, useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
-import "./styles/QuizPlay.css";
+import { useLocation, useParams } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import './styles/QuizPlay.css';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function PlayQuiz() {
   const { quizId } = useParams();
@@ -8,39 +9,40 @@ export default function PlayQuiz() {
   const [quiz, setQuiz] = useState(state?.quiz || null);
   const [answers, setAnswers] = useState({}); // track selected choice per question
   const [score, setScore] = useState(null);
+  const { isLoading } = useAuth();
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token');
     if (!token) return;
 
     if (!quiz) {
       const fetchQuiz = async () => {
         try {
           const res = await fetch(`http://localhost:3000/api/quizzes/${quizId}`, {
-            method: "GET",
+            method: 'GET',
             headers: {
-              "Content-Type": "application/json",
-              "Authorization": `Bearer ${token}`,
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
             },
           });
 
-          if (!res.ok) throw new Error("Failed to fetch quiz");
+          if (!res.ok) throw new Error('Failed to fetch quiz');
 
           const data = await res.json();
           setQuiz(data);
         } catch (err) {
-          console.error("Error fetching quiz:", err);
+          console.error('Error fetching quiz:', err);
         }
       };
 
-      fetchQuiz();
+      if (!isLoading) fetchQuiz();
     }
-  }, [quiz, quizId]);
+  }, [quiz, quizId, isLoading]);
 
   if (!quiz) return <p>Loading...</p>;
 
   const handleSelect = (qIndex, choiceIndex) => {
-    setAnswers(prev => ({ ...prev, [qIndex]: choiceIndex }));
+    setAnswers((prev) => ({ ...prev, [qIndex]: choiceIndex }));
   };
 
   const handleSubmit = () => {
@@ -86,7 +88,9 @@ export default function PlayQuiz() {
 
       {score ? (
         <div className="quiz-score">
-          <h2>Score: {score.earned} / {score.total}</h2>
+          <h2>
+            Score: {score.earned} / {score.total}
+          </h2>
         </div>
       ) : (
         <button onClick={handleSubmit}>Submit Quiz</button>
