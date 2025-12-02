@@ -28,17 +28,19 @@ describe('Register', () => {
     };
 
     renderWithMockAuth(<Register />, { providerProps });
-    const firstNameInput = screen.getByPlaceholderText(/First\sName/i);
-    const lastNameInput = screen.getByPlaceholderText(/Last\sName/i);
-    const usernameInput = screen.getByPlaceholderText(/Username/i);
-    const emailInput = screen.getByPlaceholderText(/Email/i);
-    const passwordInput = screen.getByPlaceholderText(/Password/i);
+    const firstNameInput = screen.getByLabelText(/firstName/);
+    const lastNameInput = screen.getByLabelText(/lastName/);
+    const usernameInput = screen.getByLabelText(/username/);
+    const emailInput = screen.getByLabelText(/email/);
+    const passwordInput = screen.getByLabelText(/password/);
 
-    fireEvent.change(firstNameInput, { target: { value: 'Ellen' } });
-    fireEvent.change(lastNameInput, { target: { value: 'Ripley' } });
-    fireEvent.change(usernameInput, { target: { value: 'ellenripley' } });
-    fireEvent.change(emailInput, { target: { value: 'ellenripley@weyland.yutani' } });
-    fireEvent.change(passwordInput, { target: { value: 'pa$$word' } });
+    fireEvent.change(firstNameInput, { target: { name: 'firstName', value: 'Ellen' } });
+    fireEvent.change(lastNameInput, { target: { name: 'lastName', value: 'Ripley' } });
+    fireEvent.change(usernameInput, { target: { name: 'username', value: 'ellenripley' } });
+    fireEvent.change(emailInput, {
+      target: { name: 'email', value: 'ellenripley@weyland.yutani' },
+    });
+    fireEvent.change(passwordInput, { target: { name: 'password', value: 'pa$$word' } });
 
     expect(firstNameInput).toHaveValue('Ellen');
     expect(lastNameInput).toHaveValue('Ripley');
@@ -52,19 +54,21 @@ describe('Register', () => {
 
     renderWithAuth(<Register />);
 
-    const firstNameInput = screen.getByPlaceholderText(/First\sName/i);
-    const lastNameInput = screen.getByPlaceholderText(/Last\sName/i);
-    const usernameInput = screen.getByPlaceholderText(/Username/i);
-    const emailInput = screen.getByPlaceholderText(/Email/i);
-    const passwordInput = screen.getByPlaceholderText(/Password/i);
+    const firstNameInput = screen.getByLabelText(/firstName/);
+    const lastNameInput = screen.getByLabelText(/lastName/);
+    const usernameInput = screen.getByLabelText(/username/);
+    const emailInput = screen.getByLabelText(/email/);
+    const passwordInput = screen.getByLabelText(/password/);
 
     const submitButton = screen.getAllByRole('button').find((button) => button.type === 'submit');
 
-    fireEvent.change(firstNameInput, { target: { value: 'Ellen' } });
-    fireEvent.change(lastNameInput, { target: { value: 'Ripley' } });
-    fireEvent.change(usernameInput, { target: { value: 'ellenripley' } });
-    fireEvent.change(emailInput, { target: { value: 'ellenripley@weyland.yutani' } });
-    fireEvent.change(passwordInput, { target: { value: 'pa$$word' } });
+    fireEvent.change(firstNameInput, { target: { name: 'firstName', value: 'Ellen' } });
+    fireEvent.change(lastNameInput, { target: { name: 'lastName', value: 'Ripley' } });
+    fireEvent.change(usernameInput, { target: { name: 'username', value: 'ellenripley' } });
+    fireEvent.change(emailInput, {
+      target: { name: 'email', value: 'ellenripley@weyland.yutani' },
+    });
+    fireEvent.change(passwordInput, { target: { name: 'password', value: 'pa$$word' } });
 
     fireEvent.click(submitButton);
 
@@ -109,19 +113,21 @@ describe('Register', () => {
 
     renderWithAuth(<Register />);
 
-    const firstNameInput = screen.getByPlaceholderText(/First\sName/i);
-    const lastNameInput = screen.getByPlaceholderText(/Last\sName/i);
-    const usernameInput = screen.getByPlaceholderText(/Username/i);
-    const emailInput = screen.getByPlaceholderText(/Email/i);
-    const passwordInput = screen.getByPlaceholderText(/Password/i);
+    const firstNameInput = screen.getByLabelText(/firstName/);
+    const lastNameInput = screen.getByLabelText(/lastName/);
+    const usernameInput = screen.getByLabelText(/username/);
+    const emailInput = screen.getByLabelText(/email/);
+    const passwordInput = screen.getByLabelText(/password/);
 
     const submitButton = screen.getAllByRole('button').find((button) => button.type === 'submit');
 
-    fireEvent.change(firstNameInput, { target: { value: 'Ellen' } });
-    fireEvent.change(lastNameInput, { target: { value: 'Ripley' } });
-    fireEvent.change(usernameInput, { target: { value: 'ellenripley' } });
-    fireEvent.change(emailInput, { target: { value: 'ellenripley@weyland.yutani' } });
-    fireEvent.change(passwordInput, { target: { value: 'pa$$word' } });
+    fireEvent.change(firstNameInput, { target: { name: 'firstName', value: 'Ellen' } });
+    fireEvent.change(lastNameInput, { target: { name: 'lastName', value: 'Ripley' } });
+    fireEvent.change(usernameInput, { target: { name: 'username', value: 'ellenripley' } });
+    fireEvent.change(emailInput, {
+      target: { name: 'email', value: 'ellenripley@weyland.yutani' },
+    });
+    fireEvent.change(passwordInput, { target: { name: 'password', value: 'pa$$word' } });
 
     fireEvent.click(submitButton);
 
@@ -156,19 +162,21 @@ describe('Register', () => {
 
     renderWithAuth(<Register />);
 
-    const firstNameInput = screen.getByPlaceholderText(/First\sName/i);
-    const lastNameInput = screen.getByPlaceholderText(/Last\sName/i);
-    const usernameInput = screen.getByPlaceholderText(/Username/i);
-    const emailInput = screen.getByPlaceholderText(/Email/i);
-    const passwordInput = screen.getByPlaceholderText(/Password/i);
+    const firstNameInput = screen.getByLabelText(/firstName/);
+    const lastNameInput = screen.getByLabelText(/lastName/);
+    const usernameInput = screen.getByLabelText(/username/);
+    const emailInput = screen.getByLabelText(/email/);
+    const passwordInput = screen.getByLabelText(/password/);
 
     const submitButton = screen.getAllByRole('button').find((button) => button.type === 'submit');
 
-    fireEvent.change(firstNameInput, { target: { value: 'Ellen' } });
-    fireEvent.change(lastNameInput, { target: { value: 'Ripley' } });
-    fireEvent.change(usernameInput, { target: { value: 'ellenripley' } });
-    fireEvent.change(emailInput, { target: { value: 'ellenripley@weyland.yutani' } });
-    fireEvent.change(passwordInput, { target: { value: 'pa$$word' } });
+    fireEvent.change(firstNameInput, { target: { name: 'firstName', value: 'Ellen' } });
+    fireEvent.change(lastNameInput, { target: { name: 'lastName', value: 'Ripley' } });
+    fireEvent.change(usernameInput, { target: { name: 'username', value: 'ellenripley' } });
+    fireEvent.change(emailInput, {
+      target: { name: 'email', value: 'ellenripley@weyland.yutani' },
+    });
+    fireEvent.change(passwordInput, { target: { name: 'password', value: 'pa$$word' } });
 
     fireEvent.click(submitButton);
 
