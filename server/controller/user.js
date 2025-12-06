@@ -28,6 +28,13 @@ export const getUserById = async (req, res) => {
 // CREATE a new user
 export const createUser = async (req, res) => {
   try {
+    const existingUser = await userModel.findOne({ email: req.body.email });
+
+    if (existingUser) {
+      return res.status(409).json({ 
+        message: "Email already in use" 
+      });
+    }
     const newUser = new userModel(req.body);
     const savedUser = await newUser.save();
 

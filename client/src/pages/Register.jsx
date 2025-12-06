@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
+
 
 export default function Register() {
   const { registerUser } = useAuth();
+  const navigate = useNavigate();
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -21,7 +24,8 @@ export default function Register() {
       password,
     };
 
-    await registerUser(user);
+    const data = await registerUser(user);
+
   };
 
   return (

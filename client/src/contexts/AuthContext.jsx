@@ -63,6 +63,13 @@ export function AuthProvider({ children }) {
   const registerUser = async (userData) => {
     try {
       const data = await registerUserService(userData);
+      console.log('AuthContext: registerUser response data:', data.status );
+      if (data || data.status === 409) {
+        alert('Email already exists. Redirecting you to login.');
+        navigate('/login');
+        console.log('returning data from registerUser:', data);
+        return data;
+      }
       if (data && data.hasError) navigate('/error', { state: { message: data } });
       if (data && !data.hasError) navigate('/login');
     } catch (error) {
