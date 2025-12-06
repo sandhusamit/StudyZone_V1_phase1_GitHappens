@@ -63,6 +63,13 @@ export function AuthProvider({ children }) {
   const registerUser = async (userData) => {
     try {
       const data = await registerUserService(userData);
+      console.log('AuthContext: registerUser response data:', data.status );
+      if (data?.status === 409) {
+        alert("Email already in use. Please use a different email.");
+        navigate('/login');
+        return data;
+    }
+    
       if (data && data.hasError) navigate('/error', { state: { message: data } });
       if (data && !data.hasError) navigate('/login');
     } catch (error) {

@@ -9,6 +9,10 @@ export const registerUser = async (userData) => {
     body: JSON.stringify(userData),
   });
 
+  if (res.status === 409) {
+    console.log('registerUser: Email already exists');
+    return { status: 409 };
+  }
   if (res.status !== 200) {
     return {
       hasError: true,
