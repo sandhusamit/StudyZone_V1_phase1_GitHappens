@@ -15,11 +15,11 @@
     "start:server": "nodemon server/server.js",
     "start:client": "npm --prefix client run dev",
     "dev": "npm-run-all --parallel start:server start:client",
-    "build:client": "vite build --cwd client",
+    "build": "npm --prefix client run build",
     "preview:client": "vite preview --cwd client",
     "start:localserver": "cross-env NODE_ENV=local_dev nodemon server/server.js",
     "dev:local": "npm-run-all --parallel start:localserver start:client",
-    "dev:ric":"MONGODB_URI=mongodb://root:password@127.0.0.1:37017/StudyZoneDemo?authSource=admin JWT_SECRET=test nodemon server/server.js"
+    "dev:ric": "MONGODB_URI=mongodb://root:password@127.0.0.1:37017/StudyZoneDemo?authSource=admin JWT_SECRET=test nodemon server/server.js"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^5.1.0",
@@ -42,8 +42,22 @@
   },
   "devDependencies": {
     "cross-env": "^10.1.0",
+    "prettier": "^3.6.2",
+    "@babel/core": "^7.28.4",
+    "@babel/node": "^7.28.0",
+    "@babel/preset-env": "^7.28.3",
+    "@eslint/js": "^9.33.0",
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
+    "@vitejs/plugin-react": "^5.0.0",
+    "cypress": "^15.7.1",
+    "eslint": "^9.33.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-react-refresh": "^0.4.20",
+    "globals": "^16.3.0",
     "nodemon": "^3.1.10",
     "npm-run-all": "^4.1.5",
-    "prettier": "^3.6.2"
+    "patch-package": "^8.0.1",
+    "vite": "^7.1.2"
   }
 }
