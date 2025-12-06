@@ -31,20 +31,34 @@ export const createUser = async (req, res) => {
     const existingUser = await userModel.findOne({ email: req.body.email });
 
     if (existingUser) {
-      return res.status(409).json({ 
-        message: "Email already in use" 
+      return res.status(409).json({
+        hasError: true,
+        status: 409,
+        message: "Email already in use"
       });
     }
+
     const newUser = new userModel(req.body);
     const savedUser = await newUser.save();
 
     const token = generateToken(savedUser);
 
-    res.status(200).json({ message: 'User registered successfully', user: savedUser, token });
+    return res.status(200).json({
+      hasError: false,
+      message: 'User registered successfully',
+      user: savedUser,
+      token
+    });
+
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    return res.status(500).json({
+      hasError: true,
+      status: 500,
+      message: error.message
+    });
   }
 };
+
 
 // UPDATE an existing user by ID
 export const updateUserById = async (req, res) => {
