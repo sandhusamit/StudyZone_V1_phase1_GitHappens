@@ -1,0 +1,18 @@
+{
+  "index.html": {
+    "file": "assets/index-BmKjrV8P.js",
+    "name": "index",
+    "src": "index.html",
+    "isEntry": true,
+    "css": [
+      "assets/index-CZPEVZ0C.css"
+    ],
+    "assets": [
+      "assets/gitLogo-CMO3cMTm.png"
+    ]
+  },
+  "src/assets/gitLogo.png": {
+    "file": "assets/gitLogo-CMO3cMTm.png",
+    "src": "src/assets/gitLogo.png"
+  }
+}
