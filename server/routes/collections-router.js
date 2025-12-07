@@ -59,7 +59,7 @@ router.post('/api/login', loginUser);
 // 2FA routes 
 router.post('/api/setup-2fa', setup2FA);
 router.post('/api/verify-2fa', verify2FA );
-router.post('/api/veruft-2fa-login', verifyOTP);
+router.post('/api/verify-2fa-login', verifyOTP);
 
 
 // -------------------- Quiz Routes --------------------
