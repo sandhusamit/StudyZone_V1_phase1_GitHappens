@@ -34,6 +34,7 @@ export function AuthProvider({ children }) {
   const [jwtToken, setJwtToken] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
+  
 
   useEffect(() => {
     const runOnLoad = () => {
@@ -71,7 +72,8 @@ export function AuthProvider({ children }) {
     }
     
       if (data && data.hasError) navigate('/error', { state: { message: data } });
-      if (data && !data.hasError) navigate('/login');
+      if (data && !data.hasError) alert('Registration successful! 2FA ...');
+        //navigate('/login');
     } catch (error) {
       navigate('/error', {
         state: 'A serious error occurred while registering.\nPlease try again.',

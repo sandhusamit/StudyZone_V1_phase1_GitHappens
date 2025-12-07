@@ -9,6 +9,9 @@ import {
   deleteUserById,
   deleteAllUsers,
   loginUser,
+  setup2FA,
+  verify2FA,
+  verifyOTP,
 } from '../controller/user.js';
 
 // Quiz controller
@@ -52,6 +55,12 @@ router.put('/api/users/:id', authMiddleware, authSelf, updateUserById);
 router.delete('/api/users/:id', authMiddleware, authSelf, deleteUserById);
 router.delete('/api/users', authMiddleware, deleteAllUsers);
 router.post('/api/login', loginUser);
+
+// 2FA routes 
+router.post('/api/setup-2fa', setup2FA);
+router.post('/api/verify-2fa', verify2FA );
+router.post('/api/veruft-2fa-login', verifyOTP);
+
 
 // -------------------- Quiz Routes --------------------
 router.get('/api/quizzes/:id', authMiddleware, getQuizById);
