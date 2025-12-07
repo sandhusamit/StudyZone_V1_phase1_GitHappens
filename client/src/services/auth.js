@@ -15,5 +15,7 @@ export const loginUser = async (userData) => {
   }
 
   const { user, token } = await res.json();
+  // console.log('AuthService: Login successful, received user and token:', user, token);
+  // console.log("AuthService: User's ID is:", user._id);
   return { hasError: false, user, token };
 };

@@ -72,8 +72,11 @@ export function AuthProvider({ children }) {
     }
     
       if (data && data.hasError) navigate('/error', { state: { message: data } });
-      if (data && !data.hasError) alert('Registration successful! 2FA ...');
+      if (data && !data.hasError) {
+        alert('Registration successful! 2FA ...');
+        return data;
         //navigate('/login');
+      }
     } catch (error) {
       navigate('/error', {
         state: 'A serious error occurred while registering.\nPlease try again.',
@@ -85,20 +88,24 @@ export function AuthProvider({ children }) {
     try {
       console.log('AuthContext: Attempting to log in user:', userData.email);
       const data = await loginUserService(userData); // null check for data?
+      console.log('AuthContext: loginUser response data:', data);
       if (data && data.hasError) navigate('/error', { state: data });
       if (data && !data.hasError) {
+        console.log("AuthContext: Login successful, storing user data.");
         const { token, user } = data; // Should we perform null checks for token and user?
         localStorage.setItem('userId', user._id);
         localStorage.setItem('token', token);
         setAuthUserId(user._id);
         setJwtToken(token);
         setIsLoggedIn(true);
-        navigate('/');
+        return data.user;
+        
       }
     } catch (error) {
-      navigate('/error', {
-        state: 'A serious error occurred while logging in.\nPlease try again.',
-      });
+      // navigate('/error', {
+      //   state: 'A serious error occurred while logging in.\nPlease try again.',
+      // });
+      console.error('AuthContext: Error during loginUser:', error);
     }
   };
 
