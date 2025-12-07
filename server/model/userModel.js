@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 
+
 const userModel = new mongoose.Schema({
   firstName: {
     type: String,
@@ -28,6 +29,14 @@ const userModel = new mongoose.Schema({
   password: {
     type: String,
     required: true,
+  },
+  otpSecret: {
+    type: String,
+    default: null,
+  },
+  is2FAEnabled: {
+    type: Boolean,
+    default: false,
   },
   createdAt: {
     type: Date,
