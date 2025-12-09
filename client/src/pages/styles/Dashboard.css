@@ -57,7 +57,7 @@ body {
 }
 
 /* Optional: Neon glow effect on hover */
-.dashboard-container button::after {
+/* .dashboard-container button::after {
   /* content: ''; */
   /* display: block; */
   /* position: absolute; */
@@ -69,7 +69,7 @@ body {
   /* opacity: 0; */
   /* box-shadow: 0 0 20px #6cf2f5, 0 0 40px #3da7ff; */
   /* transition: opacity 0.3s ease; */
-}
+  
 
 .dashboard-container button:hover::after {
   opacity: 0.5;
