@@ -1,11 +1,11 @@
 const END_POINT = '/api/quizzes';
 
-export const getAllQuizzes = async (jwtToken) => {
+export const getAllQuizzes = async () => {
   const res = await fetch(END_POINT, {
     method: 'GET',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      "Authorization": `Bearer ${jwtToken}`,
     },
   });
 // any status but 200 is error
@@ -19,9 +19,7 @@ export const getAllQuizzes = async (jwtToken) => {
 export const createQuiz = async (quiz) => {
   const res = await fetch(END_POINT, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    credentials: 'include',
     body: JSON.stringify(quiz),
   });
 
@@ -34,13 +32,10 @@ export const createQuiz = async (quiz) => {
 };
 
 
-export const removeQuiz = async (quizId, token) => {
+export const removeQuiz = async (quizId) => {
   const res = await fetch(`${END_POINT}/${quizId}`, {
     method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-      "Authorization": `Bearer ${token}`,
-    },
+    credentials: 'include',
   });
 
   if (res.status !== 200) {
@@ -55,10 +50,7 @@ export const removeQuiz = async (quizId, token) => {
 export const updateQuiz = async (quizId, updatedQuiz, token) => {
   const res = await fetch(`${END_POINT}/${quizId}`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      "Authorization": `Bearer ${token}`,
-    },
+    credentials: 'include',
     body: JSON.stringify(updatedQuiz),
   });
 

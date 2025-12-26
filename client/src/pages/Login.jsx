@@ -3,7 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 export default function Login() {
-  const { loginUser } = useAuth();
+  const { loginUser, verifyOTP } = useAuth();
   const navigate = useNavigate();
 
   const [email, setEmail] = useState('');
@@ -13,28 +13,23 @@ export default function Login() {
   const [otpCode, setOtpCode] = useState('');
   const [step, setStep] = useState(1); // 1: login, 2: OTP
 
-  const handleVerifyOTP = async () => {
-    try {
-      const res = await fetch("/api/verify-2fa-login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, token: otpCode }),
-      });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        alert(data.message || "Invalid OTP");
-        return;
-      }
-
-      alert("Login successful.");
-      navigate("/");
-
-    } catch (err) {
-      alert("Failed to verify OTP");
+  const handleVerifyOTP = async (e) => {
+    e.preventDefault();
+  
+    const result = await verifyOTP(email, otpCode);
+  
+    console.log("OTP Result:", result);
+  
+    if (result?.hasError) {
+      alert("Invalid OTP. Try again.");
+      return;
     }
+  
+    // OTP success → user is authenticated
+    navigate("/");
   };
+  
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -52,7 +47,7 @@ export default function Login() {
     }
 
     // If login succeeded normally:
-    if (data && !data.is2FAEnabled && !data.hasError) {
+    if (userData && !userData.is2FAEnabled && !userData.hasError) {
       navigate("/");
     }
   };
@@ -108,3 +103,4 @@ export default function Login() {
     </>
   );
 }
+

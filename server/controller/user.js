@@ -4,6 +4,7 @@ import qrcode from 'qrcode';
 import generateToken from '../utils/jwt.js';
 import userModel from '../model/userModel.js';
 
+
 //  READ all users
 export const getAllUsers = async (req, res) => {
   try {
@@ -45,6 +46,14 @@ export const createUser = async (req, res) => {
 
     const token = generateToken(savedUser);
 
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60 * 1000 // 1 day
+    }
+    )
+
     return res.status(200).json({
       hasError: false,
       message: 'User registered successfully',
@@ -60,6 +69,47 @@ export const createUser = async (req, res) => {
     });
   }
 };
+
+
+import { Resend } from 'resend';
+
+const resend = new Resend("re_ZwzPGNyG_3yZUoWnRunR2rE6gkjW2nPqA");
+
+export const sendEmailOTP = async (req, res) => {
+  console.log("RESEND KEY:", process.env.RESEND_API_KEY ? "LOADED" : "MISSING");
+  console.log("ENV CHECK:", process.env.RESEND_API_KEY);
+
+  try {
+    const { email } = req.body;
+    console.log("sending to email:", email);
+
+    await resend.emails.send({
+      from: 'StudyZone <onboarding@resend.dev>',
+      to: email,
+      subject: 'StudyZone - Email Verification',
+      html: `<h1>Your OTP is 1234</h1>`
+    });
+
+    
+    res.status(200).json({ message: "OTP sent" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to send OTP" });
+  }
+};
+
+
+export const verifyEmailOTP = async (req, res) => {
+  const { email, otp } = req.body;
+  if (!email || !otp) return res.status(400).json({ message: 'Email and OTP are required' });
+
+  if (otp === '1234') {
+    return res.status(200).json({ message: 'Email verified successfully' });
+  } else {
+    return res.status(400).json({ message: 'Invalid OTP' });
+  }
+};
+
 
 
 // UPDATE an existing user by ID
@@ -119,11 +169,54 @@ export const loginUser = async (req, res) => {
 
     const token = generateToken(user); // your JWT function
     console.log("User's ID during login:", user._id);
+
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+      sameSite: 'Strict',
+      maxAge: 24 * 60 * 60 * 1000 // 1 day
+  });
+
+
     return res.status(200).json({ message: 'User logged in successfully', user, token});
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
+//logout user
+export const logoutUser = async (req, res) => {
+  try {
+    try{
+        res.clearCookie('token', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'Strict',
+        });
+        return res.status(200).json({ message: "Logged out successfully" });
+    } catch (error) {
+        console.error("Error clearing cookie:", error);
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Cookie helper
+
+export const getCurrentUser = async (req, res) => {
+  try {
+    const user = await userModel.findById(req.user.id); // Exclude sensitive fields
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    return res.status(200).json({ username: user.username, email: user.email, firstName: user.firstName, lastName: user.lastName, role: user.role });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
 
 
 //Generate and return a QR code for 2fa setup

@@ -3,6 +3,7 @@ const END_POINT = '/api/users';
 export const registerUser = async (userData) => {
   const res = await fetch(END_POINT, {
     method: 'POST',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
     },
@@ -10,36 +11,38 @@ export const registerUser = async (userData) => {
   });
 
   if (res.status === 409) {
-    console.log('registerUser: Email already exists');
     return { status: 409 };
   }
-  if (res.status !== 200) {
+
+  if (!res.ok) {
     return {
       hasError: true,
-      message: 'A problem occured during registration. Please try again.',
+      message: 'A problem occurred during registration.',
     };
   }
 
-  const { user, token } = await res.json();
-  return { hasError: false, user, token };
+  const { user } = await res.json();
+  return { hasError: false, user };
 };
 
-export const getUserDataById = async (userId, token) => {
+
+export const getUserDataById = async (userId) => {
   const res = await fetch(`${END_POINT}/${userId}`, {
     method: 'GET',
+    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      Authorization: `$Bearer ${token}`,
     },
   });
 
-  if (res.status !== 200) {
+  if (!res.ok) {
     return {
       hasError: true,
-      message: 'A problem occured during registration. Please try again.',
+      message: 'Failed to fetch user data.',
     };
   }
 
   const user = await res.json();
   return { hasError: false, user };
 };
+

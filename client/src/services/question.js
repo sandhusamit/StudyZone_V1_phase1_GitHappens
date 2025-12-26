@@ -3,9 +3,9 @@ const END_POINT = '/api/questions';
 export const getAllQuestions = async (jwtToken) => {
     const res = await fetch(END_POINT, {
       method: 'GET',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${jwtToken}`,
       },
     });
   
@@ -18,12 +18,12 @@ export const getAllQuestions = async (jwtToken) => {
   }
 
 
-export const createQuestion = async (question, token) => {
+export const createQuestion = async (question) => {
     const res = await fetch(END_POINT, {
       method: 'POST',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(question),
     });
@@ -40,9 +40,9 @@ export const createQuestion = async (question, token) => {
 export const updateQuestion = async (questionId, updatedQuestion, token) => {
     const res = await fetch(`${END_POINT}/${questionId}`, {
       method: 'PUT',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(updatedQuestion),
     });

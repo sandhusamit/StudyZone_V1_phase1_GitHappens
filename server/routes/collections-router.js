@@ -12,6 +12,10 @@ import {
   setup2FA,
   verify2FA,
   verifyOTP,
+  getCurrentUser,
+  logoutUser,
+  sendEmailOTP,
+  verifyEmailOTP,
 } from '../controller/user.js';
 
 // Quiz controller
@@ -55,11 +59,19 @@ router.put('/api/users/:id', authMiddleware, authSelf, updateUserById);
 router.delete('/api/users/:id', authMiddleware, authSelf, deleteUserById);
 router.delete('/api/users', authMiddleware, deleteAllUsers);
 router.post('/api/login', loginUser);
+router.post('/')
+router.post("/api/me", getCurrentUser);
+router.post('/api/logout', logoutUser);
 
 // 2FA routes 
 router.post('/api/setup-2fa', setup2FA);
 router.post('/api/verify-2fa', verify2FA );
 router.post('/api/verify-2fa-login', verifyOTP);
+
+// Email verification route
+router.post('/api/otp-email', sendEmailOTP);
+router.post('/api/verify-email', verifyEmailOTP);
+
 
 
 // -------------------- Quiz Routes --------------------
