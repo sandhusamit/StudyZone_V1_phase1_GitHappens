@@ -72,41 +72,61 @@ export const createUser = async (req, res) => {
 
 
 import { Resend } from 'resend';
+import { generateAndSaveOTP } from '../utils/otp.js';
 
-const resend = new Resend("re_ZwzPGNyG_3yZUoWnRunR2rE6gkjW2nPqA");
+const resendKey = process.env.RESEND_API_KEY;
+
+if (!resendKey) {
+  console.error('🚨 Resend API key missing! Set RESEND_API_KEY in .env');
+}
+
+const resend = resendKey ? new Resend(resendKey) : null;
 
 export const sendEmailOTP = async (req, res) => {
-  console.log("RESEND KEY:", process.env.RESEND_API_KEY ? "LOADED" : "MISSING");
-  console.log("ENV CHECK:", process.env.RESEND_API_KEY);
-
   try {
+    if (!resend) {
+      return res.status(500).json({ message: 'Email service not configured' });
+    }
+
     const { email } = req.body;
-    console.log("sending to email:", email);
+    if (!email) return res.status(400).json({ message: 'Email is required' });
+
+    const otp = await generateAndSaveOTP(email);
 
     await resend.emails.send({
       from: 'StudyZone <onboarding@resend.dev>',
       to: email,
       subject: 'StudyZone - Email Verification',
-      html: `<h1>Your OTP is 1234</h1>`
+      html: `<h1>Your OTP is ${otp}</h1>`
     });
 
-    
-    res.status(200).json({ message: "OTP sent" });
+    res.status(200).json({ message: 'OTP sent' });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Failed to send OTP" });
+    console.error('Failed to send OTP:', err);
+    res.status(500).json({ message: 'Failed to send OTP' });
   }
 };
 
+import EmailOTP from '../model/otpModel.js';
 
 export const verifyEmailOTP = async (req, res) => {
   const { email, otp } = req.body;
   if (!email || !otp) return res.status(400).json({ message: 'Email and OTP are required' });
 
-  if (otp === '1234') {
-    return res.status(200).json({ message: 'Email verified successfully' });
-  } else {
-    return res.status(400).json({ message: 'Invalid OTP' });
+  try {
+    const otpEntry = await EmailOTP.findOne({ email }).sort({ expiresAt: -1 }); // get latest
+
+    if (!otpEntry) return res.status(400).json({ message: 'OTP not found. Request a new one.' });
+    if (otpEntry.expiresAt < new Date()) return res.status(400).json({ message: 'OTP expired' });
+    if (otpEntry.otp !== otp) return res.status(400).json({ message: 'Invalid OTP' });
+
+    // Optional: delete used OTP
+    await EmailOTP.deleteMany({ email });
+
+    res.status(200).json({ message: 'Email verified successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
   }
 };
 

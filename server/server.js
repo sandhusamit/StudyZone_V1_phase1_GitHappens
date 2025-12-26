@@ -2,6 +2,8 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import 'dotenv/config'; // ESM style
+
 import path from 'path';
 import { fileURLToPath } from "url";
 import app from './middleware/express.js';
