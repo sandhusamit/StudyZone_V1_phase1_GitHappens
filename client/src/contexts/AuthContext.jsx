@@ -22,7 +22,7 @@ import {
 } from '../services/quiz';
 
 import { loginUser as loginUserService,
-  logoutUser as logoutService
+  logoutUser as logoutService,
  } from '../services/auth';
 
 import {
@@ -98,6 +98,8 @@ export function AuthProvider({ children }) {
       });
     }
   };
+
+
 
   const loginUser = async (userData) => {
     try {
@@ -258,7 +260,7 @@ export function AuthProvider({ children }) {
         fetchQuestions,
         createQuestion,
         updateQuestion,
-        verifyOTP,
+        verifyOTP
       }}
     >
       {children}

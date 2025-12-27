@@ -29,3 +29,31 @@ export const logoutUser = async () => {
   });
   return { hasError: false, message: 'Logged out successfully.' };
 }
+
+
+export const emailOtp = async (email) => {
+  const res = await fetch("/api/otp-email", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+
+  if (res.status === 403) {
+    return {
+      hasError: true,
+      message: "3 maximum attempts reached. Please wait 1 hour.",
+    };
+  }
+
+  if (!res.ok) {
+    return {
+      hasError: true,
+      message: "A problem occurred sending OTP.",
+    };
+  }
+
+  return {
+    hasError: false,
+    message: "OTP sent successfully.",
+  };
+};

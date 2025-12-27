@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { emailOtp } from '../services/auth';
 
 export default function Register() {
   const { registerUser } = useAuth();
@@ -12,6 +13,7 @@ export default function Register() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
   // 2FA & email verification states
   const [step, setStep] = useState(1);
@@ -19,29 +21,28 @@ export default function Register() {
   const [otpCode, setOtpCode] = useState('');
   const [qrCode, setQrCode] = useState('');
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     try {
-      const res = await fetch("/api/otp-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        alert(data.message || "Error sending OTP");
+      const result = await emailOtp(email);
+  
+      if (result?.hasError) {
+        setError(result.message);
+        alert(result.message);
+        console.log(result.message);
         return;
       }
-
+  
       alert("OTP sent to email!");
-      setStep(2); // Move to email verification
+      setStep(2);
     } catch (err) {
-      alert("Error sending OTP");
+      alert("Error sending OTP: " + error);
     }
   };
+  
+  
 
   const handleVerifyEmail = async () => {
     try {
@@ -189,6 +190,8 @@ export default function Register() {
             onChange={(e) => setEmailOtpCode(e.target.value)}
           />
           <button onClick={handleVerifyEmail}>Verify Email</button>
+          <button onClick={handleSubmit}>Resend Code</button>
+
         </div>
       )}
 

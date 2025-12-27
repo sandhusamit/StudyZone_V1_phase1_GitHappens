@@ -73,6 +73,7 @@ export const createUser = async (req, res) => {
 
 import { Resend } from 'resend';
 import { generateAndSaveOTP } from '../utils/otp.js';
+import SuspendedEmailSchema from '../model/suspendedEmailModel.js';
 
 const resendKey = process.env.RESEND_API_KEY;
 
@@ -84,12 +85,40 @@ const resend = resendKey ? new Resend(resendKey) : null;
 
 export const sendEmailOTP = async (req, res) => {
   try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+
     if (!resend) {
       return res.status(500).json({ message: 'Email service not configured' });
     }
 
-    const { email } = req.body;
-    if (!email) return res.status(400).json({ message: 'Email is required' });
+    const now = new Date();
+
+    let record = await SuspendedEmailSchema.findOne({ email });
+
+    // If record exists and user hit limit
+    if (!record) {
+      // First attempt
+      await SuspendedEmailSchema.create({
+        email,
+        lastAttempt: now,
+      });    
+
+
+    } else {
+
+      if (record.attempts >= 3) {
+        return res.status(403).json({
+          message: 'Too many attempts. Try again in 1 hour.',
+        });
+      }
+
+      record.attempts += 1;
+      record.lastAttempt = now;
+      await record.save();
+    }
 
     const otp = await generateAndSaveOTP(email);
 
@@ -100,9 +129,10 @@ export const sendEmailOTP = async (req, res) => {
       html: `<h1>Your OTP is ${otp}</h1>`
     });
 
-    res.status(200).json({ message: 'OTP sent' });
+    res.status(200).json({ message: 'OTP sent successfully' });
+
   } catch (err) {
-    console.error('Failed to send OTP:', err);
+    console.error('OTP error:', err);
     res.status(500).json({ message: 'Failed to send OTP' });
   }
 };

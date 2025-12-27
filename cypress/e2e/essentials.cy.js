@@ -7,7 +7,7 @@ describe('template spec', () => {
 it('loginDirect', function() {
   cy.visit('http://localhost:3000/login')
   cy.get('#root [name="email"]').click();
-  cy.get('#root [name="email"]').type('samit@gmail.com');
+  cy.get('#root [name="email"]').type('ssand139@my.centennialcollege.ca');
   cy.get('#root [name="password"]').type('sam123');
   cy.get('#root button').click();
   cy.url().should('eq', 'http://localhost:3000/');
