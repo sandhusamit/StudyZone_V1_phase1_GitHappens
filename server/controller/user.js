@@ -70,6 +70,59 @@ export const createUser = async (req, res) => {
   }
 };
 
+export const getUserByEmail = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const existingUser = await userModel.findOne({ email: req.body.email });
+
+    if (!existingUser) {
+      return res.status(200).json({
+        hasError: false,
+        user: null
+      });
+    }
+    
+    return res.status(200).json({
+      hasError: false,
+      user: existingUser
+    });
+    
+
+  } catch (error) {
+    return res.status(500).json({
+      hasError: true,
+      status: 500,
+      message: error.message
+    });
+  }
+};
+export const getUserByUsername = async (req, res) => {
+  const { username } = req.body;
+  try {
+    const existingUser = await userModel.findOne({ username: req.body.username });
+
+
+    if (!existingUser) {
+      return res.status(200).json({
+        hasError: false,
+        user: null
+      });
+    }
+    
+    return res.status(200).json({
+      hasError: false,
+      user: existingUser
+    });
+    
+
+  } catch (error) {
+    return res.status(500).json({
+      hasError: true,
+      status: 500,
+      message: error.message
+    });
+  }
+};
 
 import { Resend } from 'resend';
 import { generateAndSaveOTP } from '../utils/otp.js';

@@ -16,6 +16,8 @@ import {
   logoutUser,
   sendEmailOTP,
   verifyEmailOTP,
+  getUserByEmail,
+  getUserByUsername,
 } from '../controller/user.js';
 
 // Quiz controller
@@ -54,7 +56,8 @@ const router = express.Router();
 // -------------------- User Routes --------------------
 router.get('/api/users/:id', authMiddleware, getUserById);
 router.get('/api/users', getAllUsers);
-router.post('/api/users', createUser);
+router.post('/api/users/email', getUserByEmail);
+router.post('/api/users/username', getUserByUsername);
 router.put('/api/users/:id', authMiddleware, authSelf, updateUserById);
 router.delete('/api/users/:id', authMiddleware, authSelf, deleteUserById);
 router.delete('/api/users', authMiddleware, deleteAllUsers);
@@ -70,7 +73,7 @@ router.post('/api/verify-2fa-login', verifyOTP);
 
 // Email verification route
 router.post('/api/otp-email', sendEmailOTP);
-router.post('/api/verify-email', verifyEmailOTP);
+router.post('/api/verify-otp-email', verifyEmailOTP);
 
 
 

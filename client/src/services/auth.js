@@ -57,3 +57,86 @@ export const emailOtp = async (email) => {
     message: "OTP sent successfully.",
   };
 };
+
+export const verifyEmailOtp = async (email, otp) => {
+  const res = await fetch("/api/verify-otp-email", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, otp }),
+  });
+
+  if (!res.ok) {
+    return {
+      hasError: true,
+      message: "Invalid OTP code.",
+    };
+  }
+
+  return {
+    hasError: false,
+    message: "Email verified successfully.",
+  };
+}
+
+export const setup2fa = async (email) => {
+  const res = await fetch('/api/setup-2fa', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+
+  if (!res.ok) {
+    return {
+      hasError: true,
+      message: 'A problem occurred setting up 2FA.',
+    };
+  }
+
+  const data = await res.json();
+  return {
+    hasError: false,
+    qrCodeImageUrl: data.qrCodeImageUrl,
+  };
+}
+
+export const verify2fa = async (email, token) => {
+  const res = await fetch('/api/verify-2fa', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, token }),
+  });
+
+  if (!res.ok) {
+    return {
+      hasError: true,
+      message: 'Invalid OTP code.',
+    };
+  }
+
+  return {
+    hasError: false,
+    message: '2FA verified successfully.',
+  };
+} 
+
+export const verifyOTP = async (email, token) => {
+  const res = await fetch('/api/verify-2fa-login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, token }),
+  });
+
+  if (!res.ok) {
+    return {
+      hasError: true,
+      message: 'Invalid OTP code.',
+    };
+  }
+
+  const data = await res.json();
+  return {
+    hasError: false,
+    message: 'Login successful.',
+    user: data.user,
+  };
+}

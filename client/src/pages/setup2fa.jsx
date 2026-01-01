@@ -81,6 +81,9 @@ export default function Setup2FA() {
             className="form-inputs"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            required
+
+            //
           />
 
           <button onClick={handleGenerateQR}>
