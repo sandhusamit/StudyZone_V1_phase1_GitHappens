@@ -78,13 +78,13 @@ export const getUserByEmail = async (req, res) => {
     if (!existingUser) {
       return res.status(200).json({
         hasError: false,
-        user: null
+        email: null
       });
     }
     
     return res.status(200).json({
       hasError: false,
-      user: existingUser
+      email: existingUser.email
     });
     
 
@@ -336,8 +336,15 @@ export const setup2FA = async (req, res) => {
     try {
       const qrCodeImageUrl = await qrcode.toDataURL(otpauth);
       // Save the secret to the user's record
-      const user = await userModel.findOneAndUpdate({email}, { otpSecret: secret });
-
+      const user = await userModel.findOneAndUpdate(
+        { email },
+        {
+          otpSecret: secret,
+          is2FAEnabled: true
+        },
+        { new: true }
+      );      
+      
 
       if (!user) {
         return res.status(404).json({ message: 'User not found' });

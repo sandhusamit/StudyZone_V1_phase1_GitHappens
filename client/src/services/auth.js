@@ -65,10 +65,16 @@ export const verifyEmailOtp = async (email, otp) => {
     body: JSON.stringify({ email, otp }),
   });
 
-  if (!res.ok) {
+  if (res.status === 401) {
     return {
       hasError: true,
       message: "Invalid OTP code.",
+    };
+  }
+  if (res.status === 400) {
+    return {
+      hasError: true,
+      message: "Something went wrong. Please try again.",
     };
   }
 

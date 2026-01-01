@@ -56,6 +56,7 @@ const router = express.Router();
 // -------------------- User Routes --------------------
 router.get('/api/users/:id', authMiddleware, getUserById);
 router.get('/api/users', getAllUsers);
+router.post('/api/users', createUser);
 router.post('/api/users/email', getUserByEmail);
 router.post('/api/users/username', getUserByUsername);
 router.put('/api/users/:id', authMiddleware, authSelf, updateUserById);
@@ -70,6 +71,7 @@ router.post('/api/logout', logoutUser);
 router.post('/api/setup-2fa', setup2FA);
 router.post('/api/verify-2fa', verify2FA );
 router.post('/api/verify-2fa-login', verifyOTP);
+
 
 // Email verification route
 router.post('/api/otp-email', sendEmailOTP);

@@ -8,6 +8,7 @@ import {
   verifyOTP
 } from '../services/auth';
 import { getUserByUsername, getUserByEmail } from '../services/user';
+import { set } from 'mongoose';
 
 export default function Register() {
   const { registerUser } = useAuth();
@@ -21,6 +22,7 @@ export default function Register() {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [existingUserEmail, setExistingUserEmail] = useState(null);
 
   // --------------------
   // FLOW STATE
@@ -49,9 +51,14 @@ export default function Register() {
 
     if (!input.checkValidity()) return;
 
+    //Returns email
     const result = await getUserByEmail(input.value);
 
-    if (result?.user) {
+    console.log("Email validation result:", result.email);
+
+    setExistingUserEmail(result.email);
+
+    if (existingUserEmail) {
       input.setCustomValidity('Email already in use.');
     } else {
       input.setCustomValidity('');
@@ -117,6 +124,7 @@ export default function Register() {
   const handleVerifyEmail = async () => {
     const res = await verifyEmailOtp(email, emailOtpCode);
 
+    console.log("Email OTP verification result:", res);
     if (res?.hasError) {
       alert(res.message);
       return;
@@ -128,7 +136,6 @@ export default function Register() {
       username,
       email,
       password,
-      is2FAEnabled: false
     };
 
     const registration = await registerUser(user);

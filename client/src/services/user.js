@@ -3,7 +3,6 @@ const END_POINT = '/api/users';
 export const registerUser = async (userData) => {
   const res = await fetch(END_POINT, {
     method: 'POST',
-    credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
     },
@@ -46,7 +45,8 @@ export const getUserDataById = async (userId) => {
   return { hasError: false, user };
 };
 
-
+// Security RISK --- Make sure this is used in a secure context 
+// SOLUTION: return only the email from the backend when this call is made.
 export const getUserByEmail = async (email) => {
   const res = await fetch(`${END_POINT}/email`, {
     method: 'POST',
@@ -62,8 +62,8 @@ export const getUserByEmail = async (email) => {
     };
   }
 
-  const user = await res.json();
-  return { hasError: false, user };
+  const existingEmail = await res.json();
+  return { hasError: false, existingEmail };
 }
 
 export const getUserByUsername = async (username) => {
