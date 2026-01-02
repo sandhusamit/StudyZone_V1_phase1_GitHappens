@@ -111,9 +111,14 @@ export function AuthProvider({ children }) {
         navigate('/error', { state: data });
         return;
       }
-
       // Cookie is set by backend
       setAuthUserId(data.user._id);
+      console.log('AuthContext: login successful for user:', data.user._id);
+
+      if (!data.user.is2FAEnabled) {
+        setIsLoggedIn(true);
+        navigate('/');
+      }
       return data.user;
     } catch (err) {
       console.error('AuthContext: login failed', err);

@@ -13,6 +13,7 @@ export default function QuizListPublic() {
   const [quizzes, setQuizzes] = useState([]);
   const [viewTitle, setViewTitle] = useState('Click to View Your Own Quizzes');
 
+
   // Using authContext - fetch all quizzes and load them into state
   useEffect(() => {
     const load = async () => {
@@ -82,19 +83,30 @@ export default function QuizListPublic() {
             <div key={quiz._id} className="quiz-card">
               <span className="quiz-title">{quiz.title}</span>
 
-              <div className="quiz-actions">
-                <button className="play-btn" onClick={() => handleOpenQuiz(quiz)}>
-                  Play
-                </button>
+                <div className="quiz-actions">
+                  <button className="play-btn" onClick={() => handleOpenQuiz(quiz)}>
+                    Play
+                  </button>
 
-                <button className="edit-btn" onClick={() => navigate('/edit', { state: { quiz } })}>
-                  Edit
-                </button>
-                
-                <button className="delete-btn" onClick={() => handleDelete(quiz._id)}>
-                  Delete
-                </button>
-              </div>
+                  {!isPublic && (
+                    <>
+                      <button
+                        className="edit-btn"
+                        onClick={() => navigate('/edit', { state: { quiz } })}
+                      >
+                        Edit
+                      </button>
+
+                      <button
+                        className="delete-btn"
+                        onClick={() => handleDelete(quiz._id)}
+                      >
+                        Delete
+                      </button>
+                    </>
+                  )}
+                </div>
+
             </div>
           ))}
         </div>

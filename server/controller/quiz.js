@@ -74,12 +74,15 @@ export const deleteQuiz = async (req, res) => {
     const userId = req.user.id; // from JWT
     const quizId = req.params.id;
 
+    console.log(`User ${userId} is attempting to delete quiz ${quizId}`);
+
     const quiz = await QuizSchema.findById(quizId);
 
     if (!quiz) {
       return res.status(404).json({ message: "Quiz not found" });
     }
 
+    console.log("Quiz ownership:", quiz.author.toString());
     // 🔐 Ownership check
     if (quiz.author.toString() !== userId) {
       return res.status(403).json({ message: "Not authorized to delete this quiz" });

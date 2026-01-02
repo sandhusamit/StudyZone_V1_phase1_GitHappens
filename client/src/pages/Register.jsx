@@ -7,7 +7,7 @@ import {
   verifyEmailOtp,
   verifyOTP
 } from '../services/auth';
-import { getUserByUsername, getUserByEmail } from '../services/user';
+import { getUserByUsername, emailExists } from '../services/user';
 import { set } from 'mongoose';
 
 export default function Register() {
@@ -46,26 +46,20 @@ export default function Register() {
   const validateEmail = async (e) => {
     const input = e.target;
     validateRequired(e);
-
-    console.log("Validating email:", input.value);
-
+  
     if (!input.checkValidity()) return;
-
-    //Returns email
-    const result = await getUserByEmail(input.value);
-
-    console.log("Email validation result:", result.email);
-
-    setExistingUserEmail(result.email);
-
-    if (existingUserEmail) {
+  
+    const result = await emailExists(input.value);
+  
+    if (result?.exists) {
       input.setCustomValidity('Email already in use.');
     } else {
       input.setCustomValidity('');
     }
-
+  
     input.reportValidity();
   };
+  
 
   let usernameTimer;
 

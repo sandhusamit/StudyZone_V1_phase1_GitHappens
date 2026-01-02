@@ -16,7 +16,7 @@ import {
   logoutUser,
   sendEmailOTP,
   verifyEmailOTP,
-  getUserByEmail,
+  checkEmailExists,
   getUserByUsername,
 } from '../controller/user.js';
 
@@ -59,7 +59,7 @@ const router = express.Router();
 router.get('/api/users/:id', authMiddleware, getUserById);
 router.get('/api/users', getAllUsers);
 router.post('/api/users', createUser);
-router.post('/api/users/email', getUserByEmail);
+router.post('/api/auth/check-email', checkEmailExists);
 router.post('/api/users/username', getUserByUsername);
 router.put('/api/users/:id', authMiddleware, authSelf, updateUserById);
 router.delete('/api/users/:id', authMiddleware, authSelf, deleteUserById);

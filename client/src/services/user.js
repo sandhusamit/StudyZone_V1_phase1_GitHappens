@@ -47,24 +47,25 @@ export const getUserDataById = async (userId) => {
 
 // Security RISK --- Make sure this is used in a secure context 
 // SOLUTION: return only the email from the backend when this call is made.
-export const getUserByEmail = async (email) => {
-  const res = await fetch(`${END_POINT}/email`, {
+export const emailExists = async (email) => {
+  const res = await fetch('/api/auth/check-email', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ email }),
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email })
   });
+
   if (!res.ok) {
-    return {
-      hasError: true,
-      message: 'A problem occurred during fetching user using email.',
-    };
+    return { hasError: true };
   }
 
-  const existingEmail = await res.json();
-  return { hasError: false, existingEmail };
-}
+  const data = await res.json();
+
+  return {
+    hasError: false,
+    exists: data.exists
+  };
+};
+
 
 export const getUserByUsername = async (username) => {
   const res = await fetch('/api/users/username', {

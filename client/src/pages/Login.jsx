@@ -46,9 +46,10 @@ export default function Login() {
       return;
     }
 
-    // If login succeeded normally:
-    if (userData && !userData.is2FAEnabled && !userData.hasError) {
-      navigate("/");
+    if (userData && !userData.hasError && !userData.is2FAEnabled) {
+      // Login successful without 2FA
+
+      navigate('/');
     }
   };
 
@@ -99,6 +100,11 @@ export default function Login() {
 
           <button onClick={handleVerifyOTP}>Verify OTP</button>
         </>
+      )}
+
+      {step === 3 && (
+        <p>Login successful! Redirecting...</p>
+        
       )}
     </>
   );

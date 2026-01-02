@@ -70,32 +70,18 @@ export const createUser = async (req, res) => {
   }
 };
 
-export const getUserByEmail = async (req, res) => {
-  const { email } = req.body;
+export const checkEmailExists = async (req, res) => {
   try {
-    const existingUser = await userModel.findOne({ email: req.body.email });
+    const { email } = req.body;
 
-    if (!existingUser) {
-      return res.status(200).json({
-        hasError: false,
-        email: null
-      });
-    }
-    
-    return res.status(200).json({
-      hasError: false,
-      email: existingUser.email
-    });
-    
+    const exists = await userModel.exists({ email });
 
-  } catch (error) {
-    return res.status(500).json({
-      hasError: true,
-      status: 500,
-      message: error.message
-    });
+    return res.json({ exists: !!exists });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
   }
 };
+
 export const getUserByUsername = async (req, res) => {
   const { username } = req.body;
   try {
