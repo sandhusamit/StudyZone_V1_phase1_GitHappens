@@ -1,5 +1,5 @@
 const END_POINT = '/api/quizzes';
-
+//all quizzes
 export const getAllQuizzes = async () => {
   const res = await fetch(END_POINT, {
     method: 'GET',
@@ -16,10 +16,46 @@ export const getAllQuizzes = async () => {
   return await res.json();
 };
 
-export const createQuiz = async (quiz) => {
-  const res = await fetch(END_POINT, {
-    method: 'POST',
+//my quizzes
+export const getQuizzesByAuthorID = async (authorId) => {
+  const res = await fetch(`/api/quizzes/author/${authorId}`, {
+    method: 'GET',
     credentials: 'include',
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    return { hasError: true, message: data.message };
+  }
+
+  return data;
+};
+//public quizzes
+export const getPublicQuizzes = async () => {
+  const res = await fetch('/api/public/quizzes', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (res.status !== 200) {
+    return { hasError: true, message: 'A problem occured getting public quizzes' };
+  }
+
+  const data = await res.json();
+  return data;
+}
+
+
+
+export const createQuiz = async (quiz) => {
+  const res = await fetch('/api/quizzes', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify(quiz),
   });
 
@@ -38,9 +74,13 @@ export const removeQuiz = async (quizId) => {
     credentials: 'include',
   });
 
+  if (res.status == 404) {
+    return { error: true, message: 'Quiz not found.' };
+  }
   if (res.status !== 200) {
     return { error: true, message: 'A problem occured while deleting quiz.' };
   }
+
 
   const data = await res.json();
   return data;

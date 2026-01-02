@@ -19,6 +19,8 @@ import {
   createQuiz as createQuizService,
   removeQuiz as deleteQuizService,
   updateQuiz as updateQuizService,
+  getQuizzesByAuthorID as fetchUserQuizzesService,
+  getPublicQuizzes as fetchPublicQuizzesService,
 } from '../services/quiz';
 
 import { loginUser as loginUserService,
@@ -182,8 +184,29 @@ export function AuthProvider({ children }) {
     }
     return Array.isArray(data) ? data : data.quizzes || [];
   };
+  const fetchQuizzesByUser = async () => {
+    if (!isLoggedIn) return [];
+
+    const data = await fetchUserQuizzesService(authUserId);
+    if (data?.hasError) {
+      navigate('/error', { state: data });
+      return [];
+    }
+    return Array.isArray(data) ? data : data.quizzes || [];
+  };
+
+  const fetchPublicQuizzes = async () => {
+    const data = await fetchPublicQuizzesService();
+    if (data?.hasError) {
+      navigate('/error', { state: data });
+      return [];
+    }
+    return Array.isArray(data) ? data : data.quizzes || [];
+  }
 
   const newQuiz = async (quiz) => {
+    console.log("Creating quiz for user:", authUserId);
+    console.log("Quiz visibility:", quiz.visibility);
     const data = await createQuizService(quiz);
     if (data?.hasError) {
       navigate('/error', { state: data });
@@ -260,7 +283,9 @@ export function AuthProvider({ children }) {
         fetchQuestions,
         createQuestion,
         updateQuestion,
-        verifyOTP
+        verifyOTP,
+        fetchQuizzesByUser,
+        fetchPublicQuizzes,
       }}
     >
       {children}

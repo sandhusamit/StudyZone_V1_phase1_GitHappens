@@ -27,6 +27,18 @@ export const getAllQuizzes = async (req, res) => {
   }
 };
 
+export const getAllPublicQuizzes = async (req, res) => {
+  try {
+    const quizzes = await QuizSchema.find({ visibility: { $in: ['public'] }
+    })
+      .populate('author', 'name')
+      .populate('questions');
+    res.status(200).json(quizzes);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
 // READ a single quiz by ID
 export const getQuizById = async (req, res) => {
   try {
@@ -59,10 +71,49 @@ export const updateQuiz = async (req, res) => {
 // DELETE a quiz by ID
 export const deleteQuiz = async (req, res) => {
   try {
-    const deletedQuiz = await QuizSchema.findByIdAndDelete(req.params.id);
-    if (!deletedQuiz) return res.status(404).json({ message: 'Quiz not found' });
-    res.status(200).json({ message: 'Quiz deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    const userId = req.user.id; // from JWT
+    const quizId = req.params.id;
+
+    const quiz = await QuizSchema.findById(quizId);
+
+    if (!quiz) {
+      return res.status(404).json({ message: "Quiz not found" });
+    }
+
+    // 🔐 Ownership check
+    if (quiz.author.toString() !== userId) {
+      return res.status(403).json({ message: "Not authorized to delete this quiz" });
+    }
+
+    await quiz.deleteOne();
+
+    res.status(200).json({ message: "Quiz deleted successfully" });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
   }
 };
+
+
+
+
+export const getAllQuizzesByAuthorId = async (req, res) => {
+  try {
+    const { authorId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(authorId)) {
+      return res.status(400).json({ message: 'Invalid author ID' });
+    }
+
+    const quizzes = await QuizSchema.find({ author: authorId })
+      .populate('author', 'name')
+      .populate('questions');
+
+    res.status(200).json(quizzes);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to fetch quizzes' });
+  }
+};
+

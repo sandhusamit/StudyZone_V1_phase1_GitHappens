@@ -10,7 +10,9 @@ export default function CreateQuiz() {
   const [quizData, setQuizData] = useState({
     title: "",
     description: "",
-    questions: []
+    questions: [],
+    author: "",
+    visibility: "private"
   });
 
   const authorId = authUserId;
@@ -32,6 +34,12 @@ export default function CreateQuiz() {
       ]
     });
   };
+
+  const handleVisibility = (e) => {
+    setQuizData({ ...quizData, visibility: e.target.value });
+  };
+
+    
 
   const updateQuestion = (index, e) => {
     const updated = [...quizData.questions];
@@ -66,6 +74,7 @@ export default function CreateQuiz() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+
     try {
       const created = await Promise.all(
         quizData.questions.map((q) => createQuestion(q))
@@ -75,8 +84,10 @@ export default function CreateQuiz() {
         title: quizData.title,
         description: quizData.description,
         author: authorId,
+        visibility: quizData.visibility, 
         questions: created.map((q) => q._id)
       };
+      
 
       const result = await newQuiz(payload);
 
@@ -108,6 +119,21 @@ export default function CreateQuiz() {
           className="cq-input"
           required
         />
+
+        {/* VISIBILITY */}
+        <label>Visibility</label>
+        <select
+          name="visibility"
+          value={quizData.visibility}
+          onChange={handleVisibility}
+          className="cq-select"
+        >
+          <option value="public">Public</option>
+          <option value="unlisted">Unlisted</option>
+          <option value="private">Private</option>
+        </select>
+
+
 
         {/* DESCRIPTION */}
         <label>Description</label>
