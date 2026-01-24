@@ -99,7 +99,38 @@ export const deleteQuiz = async (req, res) => {
 };
 
 
+//share quiz by id
+export const shareQuizById = async (req, res) => {
+  try {
+    const { email } = req.body;
 
+    //Generate URL 
+    const { id: quizId } = req.params;
+  
+    // optional: ensure user owns quiz
+    // if (quiz.owner.toString() !== req.user.id) return 403
+  
+    const payload = {
+      quizId,
+      scope: 'guest_play'
+    };
+  
+    const token = jwt.sign(payload, process.env.QUIZ_SHARE_SECRET, {
+      expiresIn: '1h' // industry standard
+    });
+  
+    const shareUrl = `${process.env.CLIENT_URL}/play/quiz/${quizId}?access=${token}`;
+
+    //Send URL to email
+    
+
+
+    // This is a placeholder response for demonstration purposes.
+    res.status(200).json({ message: `Quiz ${quizId} shared with ${email}` });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
 
 export const getAllQuizzesByAuthorId = async (req, res) => {
   try {

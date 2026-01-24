@@ -39,6 +39,11 @@ export default function Login() {
     // loginUser now returns backend data
     const userData = await loginUser(creds);
 
+    if (userData?.hasError) {
+      alert(userData.message || 'Login failed. Please try again.');
+      return;
+    }
+
     console.log("Login: Received userData:", userData);
     // If login requires 2FA:
     if (userData && userData.is2FAEnabled) {

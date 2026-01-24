@@ -106,11 +106,11 @@ export function AuthProvider({ children }) {
   const loginUser = async (userData) => {
     try {
       const data = await loginUserService(userData);
-
-      if (data?.hasError) {
-        navigate('/error', { state: data });
-        return;
+      if (data.hasError) {
+        console.log((data.message || 'Login failed.'));
+        return data;
       }
+
       // Cookie is set by backend
       setAuthUserId(data.user._id);
       console.log('AuthContext: login successful for user:', data.user._id);

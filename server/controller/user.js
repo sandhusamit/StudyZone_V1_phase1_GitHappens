@@ -111,9 +111,9 @@ export const getUserByUsername = async (req, res) => {
 };
 
 import { Resend } from 'resend';
-import { generateAndSaveOTP } from '../utils/otp.js';
+import { generateOTP } from '../utils/otp.js';
 import SuspendedEmailSchema from '../model/suspendedEmailModel.js';
-
+import otpSchema from '../model/otpModel.js';
 const resendKey = process.env.RESEND_API_KEY;
 
 if (!resendKey) {
@@ -137,7 +137,7 @@ export const sendEmailOTP = async (req, res) => {
 
     let record = await SuspendedEmailSchema.findOne({ email });
 
-    // If record exists and user hit limit
+    //If record doesnt exist, create new
     if (!record) {
       // First attempt
       await SuspendedEmailSchema.create({
@@ -154,13 +154,35 @@ export const sendEmailOTP = async (req, res) => {
         });
       }
 
+      //exists but under limit - increment
       record.attempts += 1;
       record.lastAttempt = now;
       await record.save();
-    }
+    };
 
-    const otp = await generateAndSaveOTP(email);
+        //check to see if email has otp already - if so then delete
+    try {    
+      const exists = await otpSchema.findOneAndDelete({ email });
+      console.log('Deleted existing OTP record:', exists);
+    } catch (err) {
+      if (err.status === 404) {
+      console.error('Error deleting existing OTP:', err);
+    }};
 
+    
+
+    const otp = await generateOTP(email);
+    // Set expiry: 2 minutes from now
+    const expiresAt = new Date(Date.now() + 2 * 60 * 1000); //2 minutes
+
+
+
+    // Save to DB
+    console.log('Saving OTP to DB:', { email, otp, expiresAt });
+    const otpEntry = new otpSchema({ email, otp, expiresAt });
+    const otpRecord = await otpEntry.save();
+
+    console.log('OTP saved:', otpRecord);
     await resend.emails.send({
       from: 'StudyZone <onboarding@resend.dev>',
       to: email,
@@ -168,6 +190,8 @@ export const sendEmailOTP = async (req, res) => {
       html: `<h1>Your OTP is ${otp}</h1>`
     });
 
+
+    
     res.status(200).json({ message: 'OTP sent successfully' });
 
   } catch (err) {
@@ -177,17 +201,16 @@ export const sendEmailOTP = async (req, res) => {
 };
 
 import EmailOTP from '../model/otpModel.js';
+import otpModel from '../model/otpModel.js';
 
 export const verifyEmailOTP = async (req, res) => {
   const { email, otp } = req.body;
-  if (!email || !otp) return res.status(400).json({ message: 'Email and OTP are required' });
-
   try {
     const otpEntry = await EmailOTP.findOne({ email }).sort({ expiresAt: -1 }); // get latest
 
-    if (!otpEntry) return res.status(400).json({ message: 'OTP not found. Request a new one.' });
-    if (otpEntry.expiresAt < new Date()) return res.status(400).json({ message: 'OTP expired' });
-    if (otpEntry.otp !== otp) return res.status(400).json({ message: 'Invalid OTP' });
+    if (!otpEntry) return res.status(404).json({ message: 'OTP not found. Request a new one.' });
+    if (otpEntry.expiresAt < new Date()) return res.status(401).json({ message: 'OTP expired' });
+    if (otpEntry.otp !== otp) return res.status(401).json({ message: 'Invalid OTP' });
 
     // Optional: delete used OTP
     await EmailOTP.deleteMany({ email });

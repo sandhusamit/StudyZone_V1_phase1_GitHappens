@@ -90,6 +90,7 @@ router.post('/api/quizzes', createQuiz);
 router.put('/api/quizzes/:id', authMiddleware,updateQuiz);
 router.delete('/api/quizzes/:id', authMiddleware, deleteQuiz);
 router.get('/api/quizzes/author/:authorId', getAllQuizzesByAuthorId);
+router.post('/api/quizzes/:id/share', authMiddleware, shareQuiz);
 
 // -------------------- Question Routes --------------------
 router.get('/api/questions/:id', getQuestionById);

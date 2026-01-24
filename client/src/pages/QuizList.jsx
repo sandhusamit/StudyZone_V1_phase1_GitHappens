@@ -13,6 +13,7 @@ export default function QuizListPublic() {
   const [quizzes, setQuizzes] = useState([]);
   const [viewTitle, setViewTitle] = useState('Click to View Your Own Quizzes');
 
+  const [shareToEmail, setShareToEmail] = useState('');
 
   // Using authContext - fetch all quizzes and load them into state
   useEffect(() => {
@@ -56,6 +57,16 @@ export default function QuizListPublic() {
     });
   };
 
+  const handleShareQuiz = async (quiz) => {
+
+    //alert message with input for email
+
+    setShareToEmail(prompt('Enter the email address to share the quiz with:'));
+    console.log(shareToEmail);
+    const result = await shareQuiz(quiz._id, shareToEmail);
+
+  }
+
   const handleVisibility = () => {
     if (isPublic) {
       setVisibility(false);
@@ -83,6 +94,7 @@ export default function QuizListPublic() {
             <div key={quiz._id} className="quiz-card">
               <span className="quiz-title">{quiz.title}</span>
 
+
                 <div className="quiz-actions">
                   <button className="play-btn" onClick={() => handleOpenQuiz(quiz)}>
                     Play
@@ -103,6 +115,7 @@ export default function QuizListPublic() {
                       >
                         Delete
                       </button>
+
                     </>
                   )}
                 </div>

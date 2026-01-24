@@ -1,5 +1,5 @@
-import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   emailOtp,
@@ -90,6 +90,32 @@ export default function Register() {
     }, 400);
   };
 
+  const [otpTimeLeft, setOtpTimeLeft] = useState(0);
+  const otpTimerRef = useRef(null);
+  
+  const startOtpTimer = (duration = 120) => {
+    clearInterval(otpTimerRef.current);
+  
+    setOtpTimeLeft(duration);
+  
+    otpTimerRef.current = setInterval(() => {
+      setOtpTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(otpTimerRef.current);
+          onOtpExpired();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+  
+  const onOtpExpired = () => {
+    alert("OTP expired. Please request a new one.");
+  };
+  
+
+
   // --------------------
   // STEP 1 — SEND EMAIL OTP
   // --------------------
@@ -109,13 +135,28 @@ export default function Register() {
     }
 
     alert('OTP sent to email');
+    startOtpTimer(); // Restart timer
     setStep(2);
+
   };
+
+  const handleResendOtp = async () => {
+    const result = await emailOtp(email);
+
+    if (result?.hasError) {
+      alert(result.message);
+      return;
+    }
+
+    alert('OTP resent to email');
+    startOtpTimer(); // Restart timer
+  }
 
   // --------------------
   // STEP 2 — VERIFY EMAIL
   // --------------------
   const handleVerifyEmail = async () => {
+    console.log("Verifying email OTP for:", email, emailOtpCode);
     const res = await verifyEmailOtp(email, emailOtpCode);
 
     console.log("Email OTP verification result:", res);
@@ -249,7 +290,19 @@ export default function Register() {
             value={emailOtpCode}
             onChange={(e) => setEmailOtpCode(e.target.value)}
           />
+          <span>
+            {String(Math.floor(otpTimeLeft / 60)).padStart(2, '0')}:
+            {String(otpTimeLeft % 60).padStart(2, '0')}
+          </span>
+
+
           <button onClick={handleVerifyEmail}>Verify Email</button>
+          
+          <button
+            onClick={handleResendOtp}
+          >
+            Resend OTP
+          </button>
         </div>
       )}
 

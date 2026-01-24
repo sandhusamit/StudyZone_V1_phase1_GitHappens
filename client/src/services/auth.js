@@ -12,6 +12,13 @@ export const loginUser = async (userData) => {
     body: JSON.stringify(userData),
   });
 
+  if (res.status === 404) {
+    return { hasError: true, message: 'User not found.' };
+  }
+  if (res.status === 401) {
+    return { hasError: true, message: 'Invalid credentials.' };
+  }
+
   if (!res.ok) {
     return { hasError: true, message: 'A problem occurred logging in.' };
   }
@@ -68,20 +75,29 @@ export const verifyEmailOtp = async (email, otp) => {
   if (res.status === 401) {
     return {
       hasError: true,
-      message: "Invalid OTP code.",
+      message: res.message || "Invalid OTP code.",
     };
   }
   if (res.status === 400) {
     return {
       hasError: true,
-      message: "Something went wrong. Please try again.",
+      message: res.message || "Something went wrong verifying OTP.",
+    };
+  }
+  if (res.status === 404) {
+    return {
+      hasError: true,
+      message: "OTP not found. Please request a new one.",
     };
   }
 
-  return {
-    hasError: false,
-    message: "Email verified successfully.",
-  };
+  if (res.status === 200) {
+    const data = await res.json();
+    return {
+      hasError: false,
+      message: data.message || "Email verified successfully.",
+    };
+  }
 }
 
 export const setup2fa = async (email) => {

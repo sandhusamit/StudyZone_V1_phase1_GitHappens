@@ -45,8 +45,6 @@ export const getUserDataById = async (userId) => {
   return { hasError: false, user };
 };
 
-// Security RISK --- Make sure this is used in a secure context 
-// SOLUTION: return only the email from the backend when this call is made.
 export const emailExists = async (email) => {
   const res = await fetch('/api/auth/check-email', {
     method: 'POST',
