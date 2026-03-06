@@ -60,3 +60,12 @@ export const deleteQuestion = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const deleteAllQuestions = async (req, res) => {
+  try {
+    await QuestionSchema.deleteMany({});
+    res.status(200).json({ message: 'All questions deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  } 
+};

@@ -12,6 +12,7 @@ export default function EditQuiz() {
 
   const [title, setTitle] = useState(selectedQuiz?.title || "");
   const [description, setDesc] = useState(selectedQuiz?.description || "");
+  const [visibility, setVisibility] = useState(selectedQuiz?.visibility || "private");
   const [questions, setQuestions] = useState(
     selectedQuiz?.questions || []
   );
@@ -43,6 +44,8 @@ export default function EditQuiz() {
     updated[index].text = newValue;
     setQuestions(updated);
   };
+
+
 
   /** Update points for a question */
   const handlePointsChange = (index, newValue) => {
@@ -85,42 +88,40 @@ export default function EditQuiz() {
   };
 
   /** Update quiz in backend */
-  const handleUpdate = async () => {
-    try {
-      const questionIds = await Promise.all(
-        questions.map(async (q) => {
-          if (q._id) {
-            // Existing question → update it
-            await updateQuestion(q._id, q);
-            return q._id;
-          } else {
-            // New question → create it
-            const created = await createQuestion(q);
-            return created._id;
-          }
-        })
-      );
-  
-      const updatedQuiz = {
-        ...selectedQuiz,
-        title,
-        description,
-        questions: questionIds,
-      };
-  
-      console.log("Updating quiz with data:", updatedQuiz);
-  
-      const response = await updateQuiz(selectedQuiz._id, updatedQuiz);
-  
-      if (!response.error) {
-        navigate("/quizlist");
-      } else {
-        console.error("Update failed:", response.message);
-      }
-    } catch (err) {
-      console.error("Error while updating quiz:", err);
+const handleUpdate = async () => {
+  try {
+    const questionIds = await Promise.all(
+      questions.map(async (q) => {
+        if (q._id) {
+          await updateQuestion(q._id, q);
+          return q._id;
+        } else {
+          const created = await createQuestion(q);
+          return created._id;
+        }
+      })
+    );
+
+    const updatedQuiz = {
+      title,
+      description,
+      visibility,
+      questions: questionIds,
+    };
+
+    console.log("Updating quiz with data:", updatedQuiz);
+
+    const response = await updateQuiz(selectedQuiz._id, updatedQuiz);
+
+    if (!response?.message && response?._id) {
+      navigate("/quizlist");
+    } else if (response?.message && !response?._id) {
+      console.error("Update failed:", response.message);
     }
-  };
+  } catch (err) {
+    console.error("Error while updating quiz:", err);
+  }
+};
 
   return (
     <section className="edit-quiz-container">
@@ -131,6 +132,17 @@ export default function EditQuiz() {
 
       <label>Description</label>
       <textarea value={description} onChange={e => setDesc(e.target.value)} />
+
+      <label>Visibility</label>
+      <select
+        name="visibility"
+        value={visibility}
+        onChange={(e) => setVisibility(e.target.value)}
+      >
+        <option value="private">Private</option>
+        <option value="public">Public</option>
+        <option value="unlisted">Unlisted</option>
+      </select>
 
       <h3>Questions</h3>
 

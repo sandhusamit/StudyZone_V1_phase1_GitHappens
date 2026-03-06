@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import "./styles/Login.css";
+
 
 export default function Login() {
   const { loginUser, verifyOTP } = useAuth();
@@ -58,60 +60,68 @@ export default function Login() {
     }
   };
 
-  return (
-    <>
-      <h1>Login</h1>
+return (
+  <div className="login-page">
+
+    <div className="login-container">
+
+      <h1 className="login-title">Login</h1>
 
       {step === 1 && (
-        <form onSubmit={handleSubmit} className="form">
+        <form onSubmit={handleSubmit} className="login-form">
+
           <input
             type="email"
-            name="email"
-            aria-label="login-email"
             placeholder="Email"
-            className="form-inputs"
+            className="form-inputs login-input"
             value={email}
             onChange={({ target }) => setEmail(target.value)}
           />
 
           <input
             type="password"
-            name="password"
-            aria-label="login-password"
             placeholder="Password"
-            className="form-inputs"
+            className="form-inputs login-input"
             value={password}
             onChange={({ target }) => setPassword(target.value)}
           />
 
-          <button type="submit">Login to StudyZone</button>
+          <button type="submit" className="login-button">
+            Login to StudyZone
+          </button>
+
         </form>
       )}
 
       {step === 2 && (
-        <>
+        <div className="otp-section">
+
           <h2>Two-Factor Authentication</h2>
           <p>Enter the 6-digit code from your authenticator app:</p>
 
           <input
             type="text"
-            name="otpCode"
-            aria-label="otp-code"
-            placeholder="Enter OTP Code"
-            className="form-inputs"
+            className="form-inputs otp-input"
             value={otpCode}
             onChange={({ target }) => setOtpCode(target.value)}
           />
 
-          <button onClick={handleVerifyOTP}>Verify OTP</button>
-        </>
+          <button onClick={handleVerifyOTP}>
+            Verify OTP
+          </button>
+
+        </div>
       )}
 
       {step === 3 && (
-        <p>Login successful! Redirecting...</p>
-        
+        <p className="login-status">
+          Login successful! Redirecting...
+        </p>
       )}
-    </>
-  );
+
+    </div>
+
+  </div>
+);
 }
 

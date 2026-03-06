@@ -1,154 +1,456 @@
-/* === Container === */
+/* ========================================================
+   CREATE QUIZ — HALO / CORTANA STYLE
+======================================================== */
+
+/* === Main Container === */
 .cq-container {
-    max-width: 850px;
-    margin: 80px auto;
-    padding: 20px;
-    color: #e0e8ff;
-    font-family: "Inter", "Orbitron", sans-serif;
+  max-width: 960px;
+  margin: 70px auto;
+  padding: 28px;
+  color: #e0e8ff;
+  font-family: "Inter", "Orbitron", sans-serif;
+  background: linear-gradient(
+    180deg,
+    rgba(18, 24, 40, 0.82),
+    rgba(10, 15, 28, 0.88)
+  );
+  border: 1px solid rgba(110, 150, 255, 0.22);
+  border-radius: 18px;
+  box-shadow:
+    0 14px 40px rgba(0, 0, 0, 0.45),
+    0 0 24px rgba(100, 140, 255, 0.08);
+  backdrop-filter: blur(14px);
+}
+
+/* === Page Header === */
+.cq-title {
+  text-align: center;
+  font-size: 2.4rem;
+  margin-bottom: 10px;
+  letter-spacing: 1.6px;
+  color: #eef3ff;
+  text-shadow:
+    0 0 12px rgba(120, 150, 255, 0.65),
+    0 0 26px rgba(120, 150, 255, 0.25);
+}
+
+.cq-subtitle {
+  text-align: center;
+  color: #9eb3e8;
+  font-size: 1rem;
+  margin-bottom: 28px;
+  line-height: 1.6;
+}
+
+/* === Top Info Panel === */
+.cq-top-panel {
+  background: rgba(20, 25, 40, 0.58);
+  border: 1px solid rgba(120, 150, 255, 0.18);
+  border-radius: 16px;
+  padding: 22px;
+  margin-bottom: 26px;
+  box-shadow: inset 0 0 12px rgba(120, 150, 255, 0.04);
+}
+
+.cq-section-title {
+  font-size: 1.1rem;
+  margin-bottom: 16px;
+  color: #d9e5ff;
+  letter-spacing: 0.7px;
+}
+
+/* === Form Layout === */
+.cq-form {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.cq-form label {
+  font-weight: 600;
+  margin-bottom: 8px;
+  display: block;
+  color: #c8d4ff;
+  letter-spacing: 0.3px;
+}
+
+.cq-row {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.cq-field {
+  flex: 1;
+  min-width: 220px;
+}
+
+.cq-field.small {
+  max-width: 160px;
+}
+
+/* === Inputs === */
+.cq-input,
+.cq-textarea,
+.cq-select {
+  width: 100%;
+  padding: 13px 14px;
+  margin-top: 4px;
+  background: rgba(20, 25, 40, 0.72);
+  border: 1px solid rgba(90, 115, 255, 0.34);
+  border-radius: 12px;
+  color: #edf2ff;
+  font-size: 15px;
+  transition: 0.22s ease;
+  outline: none;
+}
+
+.cq-input::placeholder,
+.cq-textarea::placeholder {
+  color: #90a1ca;
+}
+
+.cq-input:focus,
+.cq-textarea:focus,
+.cq-select:focus {
+  border-color: rgba(120, 150, 255, 0.95);
+  box-shadow:
+    0 0 0 1px rgba(120, 150, 255, 0.22),
+    0 0 12px rgba(120, 150, 255, 0.6);
+}
+
+.cq-input.small {
+  max-width: 120px;
+}
+
+.cq-textarea {
+  min-height: 120px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.cq-select {
+  cursor: pointer;
+}
+
+/* === Action Buttons Row === */
+.cq-action-row {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+/* === General Button Base === */
+.cq-btn {
+  padding: 11px 18px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: 0.24s ease;
+  background: transparent;
+}
+
+/* === Add Buttons (blue neon) === */
+.add-btn,
+.add-choice-btn {
+  color: #73b2ff;
+  border: 1px solid rgba(115, 178, 255, 0.75);
+  background: rgba(70, 120, 255, 0.06);
+}
+
+.add-btn:hover,
+.add-choice-btn:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 10px rgba(115, 178, 255, 0.65),
+    0 0 22px rgba(115, 178, 255, 0.15);
+  background: rgba(70, 120, 255, 0.1);
+}
+
+/* === Secondary Button === */
+.secondary-btn {
+  color: #c3d3ff;
+  border: 1px solid rgba(195, 211, 255, 0.35);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.secondary-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 10px rgba(195, 211, 255, 0.15);
+  border-color: rgba(195, 211, 255, 0.55);
+}
+
+/* === Danger Button === */
+.danger-btn {
+  color: #ff6b6b;
+  border: 1px solid rgba(255, 93, 93, 0.85);
+  background: rgba(255, 70, 70, 0.05);
+}
+
+.danger-btn:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 10px rgba(255, 93, 93, 0.55),
+    0 0 20px rgba(255, 93, 93, 0.12);
+  background: rgba(255, 70, 70, 0.08);
+}
+
+/* === Submit Button === */
+.submit-btn {
+  width: 100%;
+  margin-top: 12px;
+  padding: 15px;
+  font-size: 1rem;
+  color: #4dff9a;
+  border: 1px solid rgba(77, 255, 154, 0.85);
+  background: linear-gradient(
+    180deg,
+    rgba(77, 255, 154, 0.08),
+    rgba(77, 255, 154, 0.03)
+  );
+}
+
+.submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 12px rgba(77, 255, 154, 0.55),
+    0 0 28px rgba(77, 255, 154, 0.12);
+  background: rgba(77, 255, 154, 0.08);
+}
+
+.submit-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* === Empty State === */
+.cq-empty {
+  margin-top: 6px;
+  padding: 26px 20px;
+  text-align: center;
+  color: #95a9d6;
+  border: 1px dashed rgba(120, 150, 255, 0.22);
+  border-radius: 14px;
+  background: rgba(18, 24, 40, 0.42);
+}
+
+.cq-empty-title {
+  color: #d9e5ff;
+  font-size: 1.05rem;
+  margin-bottom: 8px;
+}
+
+.cq-empty-text {
+  line-height: 1.6;
+  font-size: 0.96rem;
+}
+
+/* === Question Meta / Counter === */
+.cq-question-count {
+  font-size: 0.95rem;
+  color: #9eb3e8;
+  margin-top: 6px;
+}
+
+/* === Question Card === */
+.cq-question-card {
+  background: linear-gradient(
+    180deg,
+    rgba(20, 25, 40, 0.72),
+    rgba(16, 21, 35, 0.82)
+  );
+  border: 1px solid rgba(120, 150, 255, 0.28);
+  padding: 22px;
+  margin-top: 22px;
+  border-radius: 16px;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.34);
+  transition: 0.24s ease;
+}
+
+.cq-question-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(120, 150, 255, 0.62);
+  box-shadow:
+    0 12px 28px rgba(0, 0, 0, 0.36),
+    0 0 20px rgba(120, 150, 255, 0.08);
+}
+
+/* === Question Header === */
+.cq-q-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.cq-q-title {
+  font-size: 1.1rem;
+  color: #ebf1ff;
+  letter-spacing: 0.5px;
+}
+
+/* === Question Body === */
+.cq-question-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* === Choices Section === */
+.cq-choices-title {
+  margin-top: 6px;
+  margin-bottom: 10px;
+  font-size: 0.98rem;
+  color: #d7e4ff;
+  letter-spacing: 0.5px;
+}
+
+.cq-choice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 10px 0;
+  padding: 12px;
+  border: 1px solid rgba(120, 150, 255, 0.14);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.025);
+  transition: 0.2s ease;
+}
+
+.cq-choice:hover {
+  border-color: rgba(120, 150, 255, 0.35);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.choice-input {
+  flex: 1;
+  margin: 0;
+}
+
+.cq-radio {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+  color: #b9caf1;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.cq-radio input[type="radio"] {
+  accent-color: #73b2ff;
+  transform: scale(1.1);
+}
+
+/* === Choice Remove Button === */
+.cq-choice-remove {
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 0.82rem;
+  letter-spacing: 0.8px;
+  margin: 0;
+}
+
+/* === Divider / Section Spacing === */
+.cq-divider {
+  height: 1px;
+  margin: 20px 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(120, 150, 255, 0.28),
+    transparent
+  );
+}
+
+/* === Success / Info Banner === */
+.cq-status {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(115, 178, 255, 0.3);
+  background: rgba(115, 178, 255, 0.08);
+  color: #cfe0ff;
+  line-height: 1.5;
+}
+
+.cq-status.success {
+  border-color: rgba(77, 255, 154, 0.3);
+  background: rgba(77, 255, 154, 0.08);
+  color: #b7ffd4;
+}
+
+.cq-status.error {
+  border-color: rgba(255, 93, 93, 0.3);
+  background: rgba(255, 93, 93, 0.08);
+  color: #ffc0c0;
+}
+
+/* === Bulk Import Highlight Button === */
+.cq-bulk-btn {
+  color: #9cc7ff;
+  border: 1px solid rgba(156, 199, 255, 0.72);
+  background: linear-gradient(
+    180deg,
+    rgba(156, 199, 255, 0.08),
+    rgba(156, 199, 255, 0.03)
+  );
+}
+
+.cq-bulk-btn:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 0 12px rgba(156, 199, 255, 0.45),
+    0 0 26px rgba(156, 199, 255, 0.12);
+}
+
+/* === Responsive === */
+@media (max-width: 768px) {
+  .cq-container {
+    margin: 30px auto;
+    padding: 18px;
   }
-  
-  /* === Title === */
+
   .cq-title {
-    text-align: center;
-    font-size: 36px;
-    margin-bottom: 30px;
-    text-shadow: 0 0 12px rgba(120, 150, 255, 0.7);
-    letter-spacing: 1.4px;
+    font-size: 2rem;
   }
-  
-  /* === Form === */
-  .cq-form label {
-    font-weight: 600;
-    margin-top: 15px;
-    display: block;
-    color: #c8d4ff;
+
+  .cq-row {
+    flex-direction: column;
+    gap: 14px;
   }
-  
-  .cq-input,
-  .cq-textarea {
-    width: 100%;
-    padding: 12px;
-    margin-top: 6px;
-  
-    background: rgba(20, 25, 40, 0.7);
-    border: 1px solid rgba(90,115,255,0.35);
-    border-radius: 10px;
-  
-    color: #e9eeff;
-    font-size: 15px;
-  
-    transition: 0.2s ease;
+
+  .cq-field,
+  .cq-field.small {
+    max-width: 100%;
   }
-  
-  .cq-input:focus,
-  .cq-textarea:focus {
-    border-color: rgba(120,150,255,0.9);
-    box-shadow: 0 0 10px rgba(120,150,255,0.7);
-  }
-  
-  /* Smaller input */
-  .cq-input.small {
-    max-width: 120px;
-  }
-  
-  /* === Buttons === */
-  .cq-btn {
-    padding: 10px 18px;
-    margin-top: 20px;
-    border: 1px solid transparent;
-  
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-  
-    transition: 0.25s ease;
-  }
-  
-  /* Add buttons (blue neon) */
-  .add-btn,
-  .add-choice-btn {
-    background: transparent;
-    color: #73b2ff;
-    border: 1px solid #73b2ff;
-  }
-  
-  .add-btn:hover,
-  .add-choice-btn:hover {
-    box-shadow: 0 0 10px #73b2ff;
-    transform: scale(1.05);
-  }
-  
-  /* Remove (red neon) */
-  .danger-btn {
-    background: transparent;
-    color: #ff5d5d;
-    border: 1px solid #ff5d5d;
-  }
-  
-  .danger-btn:hover {
-    box-shadow: 0 0 10px #ff5d5d;
-    transform: scale(1.05);
-  }
-  
-  /* Submit (green neon) */
-  .submit-btn {
-    background: transparent;
-    color: #4dff9a;
-    border: 1px solid #4dff9a;
-    width: 100%;
-    margin-top: 30px;
-    padding: 14px;
-    font-size: 18px;
-  }
-  
-  .submit-btn:hover {
-    box-shadow: 0 0 12px #4dff9a;
-    transform: scale(1.03);
-  }
-  
-  /* === Question Card === */
-  .cq-question-card {
-    background: rgba(20, 25, 40, 0.65);
-    border: 1px solid rgba(120,150,255,0.35);
-  
-    padding: 20px;
-    margin-top: 25px;
-  
-    border-radius: 12px;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.4);
-  
-    transition: 0.25s ease;
-  }
-  
-  .cq-question-card:hover {
-    transform: translateY(-4px);
-    border-color: rgba(120,150,255,0.7);
-  }
-  
-  /* === Header inside question card === */
+
   .cq-q-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
   }
-  
-  /* === Choice layout === */
+
   .cq-choice {
-    display: flex;
-    align-items: center;
-    margin: 10px 0;
+    flex-direction: column;
+    align-items: stretch;
   }
-  
-  .choice-input {
-    flex: 1;
-  }
-  
+
   .cq-radio {
-    margin-left: 12px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    justify-content: flex-start;
   }
-  
+
+  .cq-action-row {
+    flex-direction: column;
+  }
+
+  .cq-btn {
+    width: 100%;
+  }
+}

@@ -1,4 +1,5 @@
 import { useAuth } from '../contexts/AuthContext';
+import './styles/Register.css';
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -210,17 +211,18 @@ export default function Register() {
   // --------------------
   // UI
   // --------------------
-  return (
-    <>
-      <h1>Register Here</h1>
+return (
+  <div className="register-page">
+    <div className="register-container">
+      <h1 className="register-title">Register Here</h1>
+      <p className="register-subtitle">Create your StudyZone account</p>
 
       {step === 1 && (
-        <form className="form" onSubmit={handleSubmit} noValidate>
-
+        <form className="register-form" onSubmit={handleSubmit} noValidate>
           <input
             type="text"
             placeholder="First Name"
-            className="form-inputs"
+            className="form-inputs register-input"
             value={firstName}
             onChange={(e) => setFirstName(e.target.value)}
             onBlur={validateRequired}
@@ -230,7 +232,7 @@ export default function Register() {
           <input
             type="text"
             placeholder="Last Name"
-            className="form-inputs"
+            className="form-inputs register-input"
             value={lastName}
             onChange={(e) => setLastName(e.target.value)}
             onBlur={validateRequired}
@@ -240,7 +242,7 @@ export default function Register() {
           <input
             type="text"
             placeholder="Username"
-            className="form-inputs"
+            className="form-inputs register-input"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             onBlur={validateUsername}
@@ -250,7 +252,7 @@ export default function Register() {
           <input
             type="email"
             placeholder="Email"
-            className="form-inputs"
+            className="form-inputs register-input"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             onBlur={validateEmail}
@@ -260,73 +262,95 @@ export default function Register() {
           <input
             type="password"
             placeholder="Password"
-            className="form-inputs"
+            className="form-inputs register-input"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
             minLength={6}
           />
 
-          <button type="submit">Create Account</button>
-          <button type="button" onClick={() => {
-            setFirstName('');
-            setLastName('');
-            setUsername('');
-            setEmail('');
-            setPassword('');
-          }}>
-            Clear
-          </button>
+          <div className="register-button-row">
+            <button type="submit" className="register-button">
+              Create Account
+            </button>
+
+            <button
+              type="button"
+              className="register-button register-button-secondary"
+              onClick={() => {
+                setFirstName("");
+                setLastName("");
+                setUsername("");
+                setEmail("");
+                setPassword("");
+              }}
+            >
+              Clear
+            </button>
+          </div>
         </form>
       )}
 
       {step === 2 && (
-        <div className="verify-email">
+        <div className="verify-email-section">
           <h2>Verify Email</h2>
+          <p className="verify-email-text">
+            Enter the 6-digit code sent to your email.
+          </p>
+
           <input
             type="text"
-            className="form-inputs"
+            className="form-inputs verify-email-input"
             placeholder="6-digit code"
             value={emailOtpCode}
             onChange={(e) => setEmailOtpCode(e.target.value)}
           />
-          <span>
-            {String(Math.floor(otpTimeLeft / 60)).padStart(2, '0')}:
-            {String(otpTimeLeft % 60).padStart(2, '0')}
+
+          <span className="verify-email-timer">
+            {String(Math.floor(otpTimeLeft / 60)).padStart(2, "0")}:
+            {String(otpTimeLeft % 60).padStart(2, "0")}
           </span>
 
+          <div className="register-button-row">
+            <button onClick={handleVerifyEmail} className="register-button">
+              Verify Email
+            </button>
 
-          <button onClick={handleVerifyEmail}>Verify Email</button>
-          
-          <button
-            onClick={handleResendOtp}
-          >
-            Resend OTP
-          </button>
+            <button
+              onClick={handleResendOtp}
+              className="register-button register-button-secondary"
+            >
+              Resend OTP
+            </button>
+          </div>
         </div>
       )}
 
       {step === 3 && (
-        <div className="twofa-container">
+        <div className="twofa-section">
           <h2>Two-Factor Authentication</h2>
+          <p className="twofa-text">
+            Scan the QR code with your authenticator app, then enter the 6-digit code.
+          </p>
 
           {qrCode && (
-            <img src={qrCode} alt="QR Code" width={250} />
+            <img src={qrCode} alt="QR Code" className="twofa-qr" />
           )}
 
           <input
             type="text"
-            className="form-inputs"
+            className="form-inputs twofa-input"
             placeholder="6-digit code"
             value={otpCode}
             onChange={(e) => setOtpCode(e.target.value)}
           />
 
-          <button onClick={handleVerifyOTP}>
+          <button onClick={handleVerifyOTP} className="register-button">
             Complete Setup
           </button>
         </div>
       )}
-    </>
-  );
+    </div>
+  </div>
+);
 }

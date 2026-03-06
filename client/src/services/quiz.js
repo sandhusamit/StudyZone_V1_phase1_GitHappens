@@ -67,6 +67,23 @@ export const createQuiz = async (quiz) => {
   return data;
 };
 
+export const createBulkQuiz = async (quizData) => {
+
+  const res = await fetch('/api/quizzes/bulk-create', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(quizData),
+    });
+
+    
+  if (res.status !== 201) {
+    return { error: true, message: 'A problem occured while adding quiz.' };
+  }
+  const data = await res.json();
+  return data;
+  };
 
 export const removeQuiz = async (quizId) => {
   const res = await fetch(`${END_POINT}/${quizId}`, {
@@ -88,14 +105,19 @@ export const removeQuiz = async (quizId) => {
 
 //update quiz
 export const updateQuiz = async (quizId, updatedQuiz, token) => {
+  console.log("VISIBILITY:", updatedQuiz.visibility);
+
   const res = await fetch(`${END_POINT}/${quizId}`, {
-    method: 'PUT',
-    credentials: 'include',
+    method: "PUT",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify(updatedQuiz),
   });
 
   if (res.status !== 200) {
-    return { error: true, message: 'A problem occured while updating quiz.' };
+    return { error: true, message: "A problem occured while updating quiz." };
   }
 
   const data = await res.json();

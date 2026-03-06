@@ -2,10 +2,13 @@ import { useState } from "react";
 import { createQuestion } from "../services/question";
 import { useAuth } from "../contexts/AuthContext";
 import "./styles/CreateQuiz.css";
-import { Navigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 
 export default function CreateQuiz() {
   const { newQuiz, authUserId } = useAuth();
+  const navigate = useNavigate();
+  const [step, setStep] = useState(1);
+
 
   const [quizData, setQuizData] = useState({
     title: "",
@@ -107,6 +110,24 @@ export default function CreateQuiz() {
     <section className="cq-container">
       <h2 className="cq-title">Create Quiz</h2>
 
+      {step === 1 && (
+        <div className="cq-step">
+          <h3>Do you want to create quiz using bulk question entry?</h3>
+          <button onClick={() => navigate('/bulk-import')} className="cq-btn submit-btn">
+            Yes
+          </button>
+          <button onClick={() => setStep(2)} className="cq-btn submit-btn">
+            No
+          </button>
+
+          
+        </div>
+      )
+      }
+
+      {step === 2 && (
+
+
       <form onSubmit={handleSubmit} className="cq-form">
 
         {/* TITLE */}
@@ -148,7 +169,9 @@ export default function CreateQuiz() {
         <button type="button" onClick={addQuestion} className="cq-btn add-btn">
           + Add Question
         </button>
-
+        <button type="button" onClick={() => navigate('/bulk-import')} className="cq-btn add-btn">
+          + Add Questions Using Bulk Entry
+        </button>
         {/* QUESTIONS LIST */}
         {quizData.questions.map((q, qIndex) => (
           <div className="cq-question-card" key={qIndex}>
@@ -223,6 +246,7 @@ export default function CreateQuiz() {
           Create Quiz
         </button>
       </form>
+      )}
     </section>
   );
 }

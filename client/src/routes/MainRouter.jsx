@@ -65,10 +65,18 @@ const MainRouter = () => {
             </ProtectRoute>
           }
         />
+        <Route
+          path="/bulk-import"
+          element={
+            <ProtectRoute>
+              <BulkQuizImportPage />
+            </ProtectRoute>
+          }
+        />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/success" element={<Success />} />
         <Route path="/error" element={<ErrorPage />} />
-        <Route path="/bulk-import" element={<BulkQuizImportPage />} />
+        {/* <Route path="/bulk-import" element={<BulkQuizImportPage />} /> */}
       </Routes>
     </>
   );

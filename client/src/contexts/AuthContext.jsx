@@ -7,7 +7,7 @@
 */
 
 import { createContext, useState, useEffect, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { data, useNavigate } from 'react-router-dom';
 
 import {
   registerUser as registerUserService,
@@ -21,6 +21,7 @@ import {
   updateQuiz as updateQuizService,
   getQuizzesByAuthorID as fetchUserQuizzesService,
   getPublicQuizzes as fetchPublicQuizzesService,
+  createBulkQuiz as createBulkQuizService,
 } from '../services/quiz';
 
 import { loginUser as loginUserService,
@@ -239,6 +240,19 @@ export function AuthProvider({ children }) {
     return data;
   };
 
+  const createBulkQuiz = async (quizData) => {
+    const res = await createBulkQuizService(quizData);
+
+    if (res.status !== 201) {
+      return { error: true, message: 'A problem occured while adding quiz.' };
+    }
+    if (res.status === 201) {
+      return { error: false, message: 'Quiz created successfully.', data: await res.json() };
+    }
+    return { error: true, message: 'Unexpected response from server.' };
+  };
+
+
   /* =========================
      QUESTION ACTIONS
      ========================= */
@@ -283,6 +297,7 @@ export function AuthProvider({ children }) {
         getCurrentUserData,
         fetchQuizzes,
         newQuiz,
+        createBulkQuiz,
         removeQuiz,
         updateQuiz,
         fetchQuestions,

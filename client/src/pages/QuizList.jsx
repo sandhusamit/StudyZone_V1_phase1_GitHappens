@@ -84,8 +84,11 @@ export default function QuizListPublic() {
   return (
     <section>
 
-      <h2 className="heading"><button onClick={handleVisibility}>{viewTitle}</button></h2>
 
+      <h2 className="heading"><button onClick={handleVisibility}>{viewTitle}</button></h2>
+      <button className="play-btn" onClick={() => navigate('/create')}>
+        Create New Quiz
+      </button>
       {quizzes.length === 0 ? (
         <p className="empty">No quizzes available.</p>
       ) : (
@@ -123,7 +126,9 @@ export default function QuizListPublic() {
             </div>
           ))}
         </div>
+        
       )}
+
     </section>
   );
 }

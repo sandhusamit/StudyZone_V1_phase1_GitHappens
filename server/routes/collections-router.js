@@ -29,7 +29,8 @@ import {
   deleteQuiz,
   getAllQuizzesByAuthorId,
   getAllPublicQuizzes,
-  createQuizWithQuestions
+  createQuizWithQuestions,
+  deleteAllQuizzes,
 } from '../controller/quiz.js';
 
 // Question controller
@@ -39,6 +40,7 @@ import {
   getQuestionById,
   updateQuestion,
   deleteQuestion,
+  deleteAllQuestions,
 } from '../controller/question.js';
 
 // Answer controller
@@ -86,6 +88,7 @@ router.post('/api/verify-otp-email', verifyEmailOTP);
 router.get('/api/quizzes/:id', authMiddleware, getQuizById);
 router.get("/api/public/quizzes", getAllPublicQuizzes);
 router.post("/api/quizzes/bulk-create", createQuizWithQuestions);
+// router.delete("/api/quizzes/bulk-delete", deleteAllQuizzes);
 
 
 
@@ -102,6 +105,7 @@ router.get('/api/questions', getAllQuestions);
 router.post('/api/questions', createQuestion);
 router.put('/api/questions/:id', updateQuestion);
 router.delete('/api/questions/:id', deleteQuestion);
+// router.delete('/api/questions', deleteAllQuestions);
 
 // -------------------- Answer Routes --------------------
 router.get('/api/answers/:id', getAnswerById);

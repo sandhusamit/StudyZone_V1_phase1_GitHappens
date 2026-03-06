@@ -83,19 +83,25 @@ export const getQuizById = async (req, res) => {
 // UPDATE a quiz by ID
 export const updateQuiz = async (req, res) => {
   try {
-    const { title, description, questions } = req.body;
+    console.log("FULL req.body:", req.body);
+
+    const { title, description, visibility, questions } = req.body;
+
     const updatedQuiz = await QuizSchema.findByIdAndUpdate(
       req.params.id,
-      { title, description, questions },
-      { new: true, runValidators: true },
+      { title, description, visibility, questions },
+      { new: true, runValidators: true }
     );
-    if (!updatedQuiz) return res.status(404).json({ message: 'Quiz not found' });
+
+    if (!updatedQuiz) {
+      return res.status(404).json({ message: "Quiz not found" });
+    }
+
     res.status(200).json(updatedQuiz);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
-
 // DELETE a quiz by ID
 export const deleteQuiz = async (req, res) => {
   try {
@@ -116,10 +122,24 @@ export const deleteQuiz = async (req, res) => {
       return res.status(403).json({ message: "Not authorized to delete this quiz" });
     }
 
+    // delete questions first
+    await QuestionSchema.deleteMany({ _id: { $in: quiz.questions } });
+
     await quiz.deleteOne();
 
     res.status(200).json({ message: "Quiz deleted successfully" });
 
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// nuke quizzes
+export const deleteAllQuizzes = async (req, res) => {
+  try {
+    await QuizSchema.deleteMany({});
+    res.status(200).json({ message: "All quizzes deleted successfully" });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });

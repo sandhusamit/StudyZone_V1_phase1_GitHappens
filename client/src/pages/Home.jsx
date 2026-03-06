@@ -19,6 +19,8 @@ export default function Home() {
         <ul>
           <li>✔ Create quizzes with multiple questions</li>
           <li>✔ Manage your questions independently</li>
+          <li>✔ Create Questions in bulk with a single paste.</li>
+
           <li>✔ Take quizzes and track results</li>
           <li>✔ Secure login with JWT authentication</li>
           <li>✔ Profile page to manage your account</li>

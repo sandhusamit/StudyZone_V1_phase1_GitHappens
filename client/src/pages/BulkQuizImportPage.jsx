@@ -1,12 +1,18 @@
 import React, { useMemo, useState } from "react";
-import "../components/GlobalStyle.css";
+import "./styles/BulkQuizImportPage.css";
+import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from 'react-router-dom';
 
 const BulkQuizImportPage = () => {
+  const navigate = useNavigate();
+  const { createBulkQuiz } = useAuth();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [visibility, setVisibility] = useState("private");
   const [rawText, setRawText] = useState("");
   const [points, setPoints] = useState(1);
+  const [quizCreated, setQuizCreated] = useState(false);
+  const [createdQuizId, setCreatedQuizId] = useState(null);
 
   const [parsedQuestions, setParsedQuestions] = useState([]);
   const [parseErrors, setParseErrors] = useState([]);
@@ -35,6 +41,14 @@ Answer: B`;
       !loading
     );
   }, [title, parsedQuestions, parseErrors, loading]);
+
+  const confirmLoseData = () => {
+      const result = window.confirm("You will lose any unsaved changes. Are you sure?");
+      if (result) {
+        navigate('/create');
+      }
+    };
+
 
   const parseBulkQuestions = (input) => {
     const lines = input
@@ -160,22 +174,15 @@ Answer: B`;
         questions: parsedQuestions,
       };
 
-      const response = await fetch("/api/quizzes/bulk-create", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await createBulkQuiz(payload);
 
-      const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to create quiz.");
+      if (response.hasError) {
+        throw new Error(response.message || "Failed to create quiz.");
       }
 
       setStatus("Quiz created successfully.");
-      console.log("Created quiz", data);
+      console.log("Created quiz", response);
 
       setTitle("");
       setDescription("");
@@ -184,6 +191,9 @@ Answer: B`;
       setParsedQuestions([]);
       setParseErrors([]);
       setPoints(1);
+      setStatus("Quiz created successfully.");
+      setQuizCreated(true);
+      setCreatedQuizId(response._id); // if backend returns quiz
     } catch (error) {
       setStatus(error.message || "Something went wrong while saving quiz.");
     } finally {
@@ -198,6 +208,10 @@ Answer: B`;
         <p className="bulk-quiz-subheading">
           Paste questions in the required format, preview them, then save the quiz.
         </p>
+        <button className="bulk-quiz-button" onClick={confirmLoseData}>
+          &larr; Back to Create Quiz
+        </button>
+
 
         <form onSubmit={handleSubmit} className="bulk-quiz-form">
           <div className="bulk-quiz-section">
@@ -282,9 +296,17 @@ Answer: B`;
             >
               {loading ? "Saving..." : "Create Quiz"}
             </button>
+                        
           </div>
         </form>
-
+        {quizCreated && (
+          <button
+            className="bulk-quiz-button bulk-quiz-button-primary"
+            onClick={() => navigate(`/quizzes/${createdQuizId}`)}
+          >
+            Go to Quiz
+          </button>
+        )}
         {status && <div className="bulk-quiz-status">{status}</div>}
 
         {parseErrors.length > 0 && (
