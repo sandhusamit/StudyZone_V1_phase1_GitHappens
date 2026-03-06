@@ -13,12 +13,14 @@ export const registerUser = async (userData) => {
     return { status: 409 };
   }
 
+
   if (!res.ok) {
     return {
       hasError: true,
       message: 'A problem occurred during registration.',
     };
   }
+  
 
   const { user } = await res.json();
   return { hasError: false, user };

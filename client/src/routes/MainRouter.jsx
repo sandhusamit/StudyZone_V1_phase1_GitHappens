@@ -13,6 +13,7 @@ import Leaderboard from '../pages/Leaderboard';
 import ErrorPage from '../pages/ErrorPage';
 import Success from '../pages/Success';
 import EditQuiz from '../pages/EditQuiz';
+import BulkQuizImportPage from '../pages/BulkQuizImportPage';
 
 
 const MainRouter = () => {
@@ -67,6 +68,7 @@ const MainRouter = () => {
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/success" element={<Success />} />
         <Route path="/error" element={<ErrorPage />} />
+        <Route path="/bulk-import" element={<BulkQuizImportPage />} />
       </Routes>
     </>
   );

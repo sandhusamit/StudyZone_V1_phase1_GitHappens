@@ -2,288 +2,526 @@
    RESET + ROOT
 -------------------------------------------------------- */
 * {
-    margin: 12px;
-    padding: 0;
-    box-sizing: border-box;
-    margin-bottom: 60px;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #0c0f19;
+  --bg-secondary: #151a2d;
+  --card-bg: rgba(255, 255, 255, 0.06);
+  --glass: rgba(255, 255, 255, 0.12);
+
+  --text: #e4e8ff;
+  --text-light: #9aa3c2;
+
+  --accent: #6ab4ff;
+  --accent-bright: #9bd0ff;
+
+  --border: rgba(255, 255, 255, 0.12);
+
+  --radius: 14px;
+
+  --shadow: 0 8px 20px rgba(0, 0, 0, 0.55);
+
+  --transition: 0.25s ease;
+  --glow: 0 0 12px rgba(106, 180, 255, 0.6);
+  --glow-hover: 0 0 20px rgba(106, 180, 255, 0.9);
+
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+/* --------------------------------------------------------
+   BODY + ROOT WRAPPER
+-------------------------------------------------------- */
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 20px;
+}
+
+#root {
+  width: 100%;
+  max-width: 1200px;
+  padding: 2rem;
+  padding-top: 120px; /* space for navbar */
+  min-height: 100vh;
+  animation: fadeIn 1.2s ease forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
   }
-  
-  :root {
-    --bg: #0c0f19;
-    --bg-secondary: #151a2d;
-    --card-bg: rgba(255, 255, 255, 0.06);
-    --glass: rgba(255, 255, 255, 0.12);
-  
-    --text: #e4e8ff;
-    --text-light: #9aa3c2;
-  
-    --accent: #6ab4ff;
-    --accent-bright: #9bd0ff;
-  
-    --border: rgba(255, 255, 255, 0.12);
-  
-    --radius: 14px;
-  
-    --shadow: 0 8px 20px rgba(0, 0, 0, 0.55);
-  
-    --transition: 0.25s ease;
-    --glow: 0 0 12px rgba(106, 180, 255, 0.6);
-    --glow-hover: 0 0 20px rgba(106, 180, 255, 0.9);
-  
-    font-family: 'Inter', system-ui, sans-serif;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
-  
-  /* --------------------------------------------------------
-     BODY + ROOT WRAPPER
-  -------------------------------------------------------- */
-  
+}
+
+/* --------------------------------------------------------
+   NAVBAR (CORTANA GLASS)
+-------------------------------------------------------- */
+
+nav {
+  width: calc(100% - 40px);
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+
+  max-width: 1250px;
+  height: 95px;
+
+  background: rgba(20, 26, 41, 0.55);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow);
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 35px;
+
+  border-radius: 0 0 var(--radius) var(--radius);
+  z-index: 999;
+}
+
+.logo {
+  height: 100px;
+  width: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: var(--glow);
+  transition: var(--transition);
+}
+
+.logo:hover {
+  transform: scale(1.07);
+  box-shadow: var(--glow-hover);
+}
+
+.navbar {
+  display: flex;
+  gap: 32px;
+  width: auto;
+  padding-left: 220px;
+  padding-right: 220px;
+}
+
+.navbar a {
+  color: var(--text-light);
+  font-weight: 500;
+  font-size: 1.7rem;
+  text-decoration: none;
+  transition: var(--transition);
+  position: relative;
+}
+
+.navbar a::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 10%;
+  height: 3px;
+  background: var(--accent);
+  box-shadow: var(--glow);
+  transition: width 0.3s ease;
+}
+
+.navbar a:hover {
+  color: var(--accent-bright);
+}
+
+.navbar a:hover::after {
+  width: 100%;
+}
+
+/* --------------------------------------------------------
+   HEADERS
+-------------------------------------------------------- */
+
+h1,
+h2,
+h3 {
+  color: var(--text);
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin-bottom: 10px;
+}
+
+h1 {
+  font-size: 2.75rem;
+}
+
+/* --------------------------------------------------------
+   BUTTONS (NEON)
+-------------------------------------------------------- */
+
+button {
+  padding: 0.75em 1.6em;
+  border-radius: var(--radius);
+  border: 1px solid var(--accent);
+
+  background: linear-gradient(
+    135deg,
+    rgba(106, 180, 255, 0.15),
+    rgba(106, 180, 255, 0.05)
+  );
+
+  color: var(--accent-bright);
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+
+  transition: var(--transition);
+  box-shadow: var(--glow);
+}
+
+button:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--glow-hover);
+  background: rgba(106, 180, 255, 0.25);
+}
+
+button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* --------------------------------------------------------
+   CARDS (GLASS PANELS)
+-------------------------------------------------------- */
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  padding: 1.8rem;
+  border-radius: var(--radius);
+  margin: 1.2rem 0;
+
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0 24px rgba(106, 180, 255, 0.35);
+  border-color: var(--accent);
+}
+
+/* --------------------------------------------------------
+   FORMS
+-------------------------------------------------------- */
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  max-width: 450px;
+  width: 100%;
+  margin: auto;
+}
+
+.form-inputs,
+input,
+textarea,
+select {
+  padding: 14px;
+  font-size: 1rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+  transition: var(--transition);
+  font-family: inherit;
+}
+
+.form-inputs:focus,
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--accent);
+  box-shadow: var(--glow);
+  outline: none;
+}
+
+textarea {
+  resize: vertical;
+}
+
+/* --------------------------------------------------------
+   LINKS
+-------------------------------------------------------- */
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: var(--transition);
+}
+
+a:hover {
+  color: var(--accent-bright);
+  text-shadow: var(--glow);
+}
+
+/* --------------------------------------------------------
+   LAYOUT HELPERS
+-------------------------------------------------------- */
+
+.page {
+  padding: 20px 0;
+}
+
+.center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.row {
+  display: flex;
+  gap: 20px;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.otp-timer {
+  margin-top: 10px;
+  font-weight: bold;
+  color: #ff4d4f;
+}
+
+/* --------------------------------------------------------
+   BULK QUIZ IMPORT
+-------------------------------------------------------- */
+
+.bulk-quiz-page {
+  width: 100%;
+}
+
+.bulk-quiz-container {
+  width: 100%;
+  max-width: 950px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--shadow);
+}
+
+.bulk-quiz-heading {
+  margin-bottom: 8px;
+}
+
+.bulk-quiz-subheading {
+  color: var(--text-light);
+  margin-bottom: 24px;
+}
+
+.bulk-quiz-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.bulk-quiz-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bulk-quiz-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.bulk-quiz-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.bulk-quiz-field-grow {
+  flex: 1;
+}
+
+.bulk-quiz-field-points {
+  width: 140px;
+}
+
+.bulk-quiz-label {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.bulk-quiz-input,
+.bulk-quiz-textarea {
+  width: 100%;
+}
+
+.bulk-quiz-textarea-small {
+  min-height: 90px;
+}
+
+.bulk-quiz-textarea-large {
+  min-height: 360px;
+  line-height: 1.5;
+}
+
+.bulk-quiz-example-box {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  color: var(--text-light);
+  white-space: pre-wrap;
+  overflow-x: auto;
+  line-height: 1.6;
+}
+
+.bulk-quiz-button-row {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.bulk-quiz-button-primary {
+  border-color: var(--accent-bright);
+}
+
+.bulk-quiz-button-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.bulk-quiz-status {
+  margin-top: 22px;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(106, 180, 255, 0.25);
+  background: rgba(106, 180, 255, 0.08);
+  color: var(--accent-bright);
+}
+
+.bulk-quiz-error-box {
+  margin-top: 22px;
+  padding: 18px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 90, 90, 0.3);
+  background: rgba(255, 90, 90, 0.08);
+}
+
+.bulk-quiz-error-heading {
+  color: #ff7b7b;
+  margin-bottom: 10px;
+}
+
+.bulk-quiz-preview-section {
+  margin-top: 28px;
+}
+
+.bulk-quiz-preview-heading {
+  margin-bottom: 18px;
+}
+
+.bulk-quiz-question-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 16px;
+  transition: var(--transition);
+}
+
+.bulk-quiz-question-card:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 18px rgba(106, 180, 255, 0.2);
+}
+
+.bulk-quiz-question-title {
+  margin-bottom: 12px;
+}
+
+.bulk-quiz-list {
+  padding-left: 20px;
+  margin: 0;
+}
+
+.bulk-quiz-choice-item {
+  margin-bottom: 8px;
+  color: var(--text-light);
+}
+
+.bulk-quiz-correct-badge {
+  color: #72e49a;
+  margin-left: 8px;
+}
+
+.bulk-quiz-points-text {
+  margin-top: 14px;
+  color: var(--text-light);
+  font-size: 0.95rem;
+}
+
+/* --------------------------------------------------------
+   RESPONSIVE
+-------------------------------------------------------- */
+
+@media (max-width: 768px) {
   body {
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    display: flex;
-    align-items: start;
-    justify-content: center;
-    padding-top: 220px;
+    padding-top: 180px;
   }
-  
+
   #root {
-    width: 100%;
-    max-width: 1200px;
-    padding: 2rem;
-    min-height: 100vh;
-    animation: fadeIn 1.2s ease forwards;
+    padding: 1rem;
   }
-  
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(15px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  
-  /* --------------------------------------------------------
-     NAVBAR (CORTANA GLASS)
-  -------------------------------------------------------- */
-  
-  nav {
-    width: calc(100% - 40px);
-    position: fixed;
-    top: 0;
-    left: 50%;
-    transform: translateX(-50%);
-  
-    max-width: 1250px;
-    height: 95px;
-  
-    background: rgba(20, 26, 41, 0.55);
-    backdrop-filter: blur(16px);
-    border-bottom: 1px solid var(--border);
-    box-shadow: var(--shadow);
-  
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 35px;
-  
-    border-radius: 0 0 var(--radius) var(--radius);
-    z-index: 999;
-    ;
-  }
-  
-  /* Logo */
-  .logo {
-    height: 100px;
-    width: 100px;
-    border-radius: 50%;
-    object-fit: cover;
-    box-shadow: var(--glow);
-    transition: var(--transition);
-  }
-  
-  .logo:hover {
-    transform: scale(1.07);
-    box-shadow: var(--glow-hover);
-  }
-  
-  /* Navigation links */
+
   .navbar {
-    display: flex;
-    gap: 32px;  
-    width: auto;
- 
-  }
-  
-  .navbar a {
-    color: var(--text-light);
-    font-weight: 500;
-    font-size: 1.7rem;
-    text-decoration: none;
-  
-    transition: var(--transition);
-    position: relative;
-  }
-  
-  /* Neon underline hover */
-  .navbar a::after {
-    content: "";
-    position: absolute;
-    bottom: -4px;
-    left: 0;
-    width: 10%;
-    height: 3px;
-    background: var(--accent);
-    box-shadow: var(--glow);
-    transition: width 0.3s ease;
-  }
-  
-  .navbar a:hover {
-    color: var(--accent-bright);
-  }
-  
-  .navbar a:hover::after {
-    width: 100%;
-  }
-  
-  /* --------------------------------------------------------
-     HEADERS
-  -------------------------------------------------------- */
-  
-  h1, h2, h3 {
-    color: var(--text);
-    font-weight: 700;
-    letter-spacing: -0.5px;
-  }
-  
-  h1 {
-    font-size: 2.75rem;
-    margin-bottom: 10px;
-  }
-  
-  /* --------------------------------------------------------
-     BUTTONS (NEON)
-  -------------------------------------------------------- */
-  
-  button {
-    padding: 0.75em 1.6em;
-    border-radius: var(--radius);
-    border: 1px solid var(--accent);
-  
-    background: linear-gradient(
-      135deg,
-      rgba(106, 180, 255, 0.15),
-      rgba(106, 180, 255, 0.05)
-    );
-  
-    color: var(--accent-bright);
-    font-weight: 600;
-    font-size: 1rem;
-    cursor: pointer;
-  
-    transition: var(--transition);
-    box-shadow: var(--glow);
-  }
-  
-  button:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--glow-hover);
-    background: rgba(106, 180, 255, 0.25);
-  }
-  
-  /* --------------------------------------------------------
-     CARDS (GLASS PANELS)
-  -------------------------------------------------------- */
-  
-  .card {
-    background: var(--card-bg);
-    border: 1px solid var(--border);
-    padding: 1.8rem;
-    border-radius: var(--radius);
-    margin: 1.2rem 0;
-  
-    backdrop-filter: blur(12px);
-    box-shadow: var(--shadow);
-    transition: var(--transition);
-  }
-  
-  .card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 0 24px rgba(106, 180, 255, 0.35);
-    border-color: var(--accent);
-  }
-  
-  /* --------------------------------------------------------
-     FORMS
-  -------------------------------------------------------- */
-  
-  .form {
-    display: flex;
-    flex-direction: column;
     gap: 18px;
-    max-width: 450px;
-    width: 100%;
-    margin: auto;
   }
-  
-  .form-inputs {
-    padding: 14px;
-    font-size: 1rem;
-    border-radius: var(--radius);
-    border: 1px solid var(--border);
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--text-light);
-  
-    transition: var(--transition);
+
+  .navbar a {
+    font-size: 1.1rem;
   }
-  
-  .form-inputs:focus {
-    border-color: var(--accent);
-    box-shadow: var(--glow);
-    outline: none;
+
+  .bulk-quiz-container {
+    padding: 1.25rem;
   }
-  
-  /* --------------------------------------------------------
-     LINKS
-  -------------------------------------------------------- */
-  
-  a {
-    color: var(--accent);
-    text-decoration: none;
-    transition: var(--transition);
-  }
-  
-  a:hover {
-    color: var(--accent-bright);
-    text-shadow: var(--glow);
-  }
-  
-  /* --------------------------------------------------------
-     LAYOUT HELPERS
-  -------------------------------------------------------- */
-  .page {
-    padding: 20px 0;
-  }
-  
-  .center {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .row {
-    display: flex;
-    gap: 20px;
-  }
-  
-  .col {
-    display: flex;
+
+  .bulk-quiz-row {
     flex-direction: column;
-    gap: 20px;
+    align-items: stretch;
   }
-  
 
-
-  .otp-timer {
-    margin-top: 10px;
-    font-weight: bold;
-    color: #ff4d4f;
+  .bulk-quiz-field-points {
+    width: 100%;
   }
-  
+
+  .bulk-quiz-button-row {
+    flex-direction: column;
+  }
+
+  .bulk-quiz-button-row button {
+    width: 100%;
+  }
+}

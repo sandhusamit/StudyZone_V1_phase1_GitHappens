@@ -28,7 +28,8 @@ import {
   updateQuiz,
   deleteQuiz,
   getAllQuizzesByAuthorId,
-  getAllPublicQuizzes
+  getAllPublicQuizzes,
+  createQuizWithQuestions
 } from '../controller/quiz.js';
 
 // Question controller
@@ -84,13 +85,16 @@ router.post('/api/verify-otp-email', verifyEmailOTP);
 // -------------------- Quiz Routes --------------------
 router.get('/api/quizzes/:id', authMiddleware, getQuizById);
 router.get("/api/public/quizzes", getAllPublicQuizzes);
+router.post("/api/quizzes/bulk-create", createQuizWithQuestions);
+
+
 
 router.get('/api/quizzes', authMiddleware, getAllQuizzes);
 router.post('/api/quizzes', createQuiz); 
 router.put('/api/quizzes/:id', authMiddleware,updateQuiz);
 router.delete('/api/quizzes/:id', authMiddleware, deleteQuiz);
 router.get('/api/quizzes/author/:authorId', getAllQuizzesByAuthorId);
-router.post('/api/quizzes/:id/share', authMiddleware, shareQuiz);
+// router.post('/api/quizzes/:id/share', authMiddleware, shareQuiz);
 
 // -------------------- Question Routes --------------------
 router.get('/api/questions/:id', getQuestionById);

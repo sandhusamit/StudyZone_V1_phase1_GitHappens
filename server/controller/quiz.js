@@ -16,6 +16,34 @@ export const createQuiz = async (req, res) => {
   }
 };
 
+// create quiz with bulk questions
+export const createQuizWithQuestions = async (req, res) => {
+  try {
+    
+
+    for (const question of req.body.questions) {
+      console.log('Received question:', question);
+
+    }
+
+
+    
+    const createdQuestions = await QuestionSchema.insertMany(req.body.questions);
+    const quiz = await QuizSchema.create({
+      title: req.body.title,
+      description: req.body.description,
+      visibility: req.body.visibility,
+      author: "69ab1b05df466e0ce3ac4f0b",
+      questions: createdQuestions.map(q => q._id)
+    });
+
+    await quiz.save();
+    res.status(201).json(quiz);
+  }
+  catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
 
 // READ all quizzes
 export const getAllQuizzes = async (req, res) => {
@@ -150,4 +178,5 @@ export const getAllQuizzesByAuthorId = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch quizzes' });
   }
 };
+
 
