@@ -1,252 +1,647 @@
-import { useState } from "react";
-import { createQuestion } from "../services/question";
-import { useAuth } from "../contexts/AuthContext";
+import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "./styles/CreateQuiz.css";
-import { useNavigate } from 'react-router-dom';
+import { useAuth } from "../contexts/AuthContext.jsx";
+import { validateQuiz } from "../utils/QuizValidation.js";
+import Step1QuizInfo from "../components/CreateQuiz/Steps/Step1QuizInfo.jsx";
+import Step2BuildQuestions from "../components/CreateQuiz/Steps/Step2/Step2BuildQuestions.jsx";
+import Step3QuestionPool from "../components/CreateQuiz/Steps/Step3/Step3QuestionPool.jsx";
+
+const makeId = (prefix) =>
+  `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+const makeMcqQuestion = () => ({
+  text: "",
+  choices: [
+    { text: "", isCorrect: false },
+    { text: "", isCorrect: false },
+  ],
+  points: 1,
+  explanation: "",
+  subject: "General",
+  questionType: "mcq",
+});
+
+const makeDdqQuestion = () => {
+  const box1 = makeId("box");
+  const box2 = makeId("box");
+
+  return {
+    text: "",
+    points: 1,
+    explanation: "",
+    subject: "General",
+    questionType: "ddq",
+    dragItems: [{ id: makeId("item"), text: "", dropboxId: box1 }],
+    dropboxes: [
+      { id: box1, title: "" },
+      { id: box2, title: "" },
+    ],
+  };
+};
 
 export default function CreateQuiz() {
-  const { newQuiz, authUserId } = useAuth();
   const navigate = useNavigate();
-  const [step, setStep] = useState(1);
+  const { newQuiz, createQuestion, fetchQuestions } = useAuth();
 
+  const [step, setStep] = useState(1);
+  const [rotationClicked, setRotationClicked] = useState(false);
+  const [showBulkImport, setShowBulkImport] = useState(false);
 
   const [quizData, setQuizData] = useState({
     title: "",
     description: "",
+    visibility: "private",
+    rotation: 0,
     questions: [],
-    author: "",
-    visibility: "private"
   });
 
-  const authorId = authUserId;
+  const [questionPool, setQuestionPool] = useState([]);
+  const [poolLoading, setPoolLoading] = useState(false);
+  const [poolError, setPoolError] = useState("");
+  const [submitError, setSubmitError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [createdQuizId, setCreatedQuizId] = useState(null);
 
-  const handleChange = (e) => {
-    setQuizData({ ...quizData, [e.target.name]: e.target.value });
+
+  useEffect(() => {
+    const loadQuestions = async () => {
+      try {
+        setPoolLoading(true);
+        setPoolError("");
+        const data = await fetchQuestions?.();
+        setQuestionPool(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Failed to load question pool:", err);
+        setPoolError("Failed to load question pool.");
+      } finally {
+        setPoolLoading(false);
+      }
+    };
+
+    loadQuestions();
+
+
+  }, [fetchQuestions]);
+
+  useEffect(() => {
+    
+    if (!rotationClicked) {
+      updateQuizField("rotation", quizData.questions.length);
+    }
+  }, [quizData.questions.length]);
+
+
+  const selectedPoolIds = useMemo(
+    () => new Set(quizData.questions.filter((q) => q._id).map((q) => q._id)),
+    [quizData.questions]
+  );
+
+  const updateQuizField = (field, value) => {
+    setQuizData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
 
-  const addQuestion = () => {
-    setQuizData({
-      ...quizData,
-      questions: [
-        ...quizData.questions,
-        {
-          text: "",
-          points: 1,
-          choices: [{ text: "", isCorrect: false }]
-        }
-      ]
+  const addMcqQuestion = () => {
+    setQuizData((prev) => {
+      const nextQuestions = [...prev.questions, makeMcqQuestion()];
+      return {
+        ...prev,
+        rotation:
+          !rotationClicked && Number(prev.rotation) === 0
+            ? nextQuestions.length
+            : prev.rotation,
+        questions: nextQuestions,
+      };
     });
   };
 
-  const handleVisibility = (e) => {
-    setQuizData({ ...quizData, visibility: e.target.value });
+  const addDdqQuestion = () => {
+    setQuizData((prev) => {
+      const nextQuestions = [...prev.questions, makeDdqQuestion()];
+      return {
+        ...prev,
+        rotation:
+          !rotationClicked && Number(prev.rotation) === 0
+            ? nextQuestions.length
+            : prev.rotation,
+        questions: nextQuestions,
+      };
+    });
   };
 
-    
+  const handleBulkImport = (importedQuestions) => {
+    setQuizData((prev) => {
+      const nextQuestions = [...prev.questions, ...importedQuestions];
+      return {
+        ...prev,
+        rotation:
+          !rotationClicked && Number(prev.rotation) === 0
+            ? nextQuestions.length
+            : prev.rotation,
+        questions: nextQuestions,
+      };
+    });
 
-  const updateQuestion = (index, e) => {
-    const updated = [...quizData.questions];
-    updated[index][e.target.name] = e.target.value;
-    setQuizData({ ...quizData, questions: updated });
+    setShowBulkImport(false);
   };
 
+  const removeQuestion = (qIndex) => {
+    setQuizData((prev) => ({
+      ...prev,
+      questions: prev.questions.filter((_, i) => i !== qIndex),
+    }));
+  };
+
+  const updateQuestionField = (qIndex, field, value) => {
+    setQuizData((prev) => {
+      const updatedQuestions = [...prev.questions];
+      updatedQuestions[qIndex] = {
+        ...updatedQuestions[qIndex],
+        [field]: value,
+      };
+      return {
+        ...prev,
+        questions: updatedQuestions,
+      };
+    });
+  };
+
+  // MCQ helpers
   const addChoice = (qIndex) => {
-    const updated = [...quizData.questions];
-    updated[qIndex].choices.push({ text: "", isCorrect: false });
-    setQuizData({ ...quizData, questions: updated });
+    setQuizData((prev) => {
+      const updatedQuestions = [...prev.questions];
+      const question = updatedQuestions[qIndex];
+
+      updatedQuestions[qIndex] = {
+        ...question,
+        choices: [...question.choices, { text: "", isCorrect: false }],
+      };
+
+      return {
+        ...prev,
+        questions: updatedQuestions,
+      };
+    });
+  };
+
+  const removeChoice = (qIndex, cIndex) => {
+    setQuizData((prev) => {
+      const updatedQuestions = [...prev.questions];
+      const question = updatedQuestions[qIndex];
+
+      updatedQuestions[qIndex] = {
+        ...question,
+        choices: question.choices.filter((_, i) => i !== cIndex),
+      };
+
+      return {
+        ...prev,
+        questions: updatedQuestions,
+      };
+    });
   };
 
   const updateChoiceText = (qIndex, cIndex, value) => {
-    const updated = [...quizData.questions];
-    updated[qIndex].choices[cIndex].text = value;
-    setQuizData({ ...quizData, questions: updated });
+    setQuizData((prev) => {
+      const updatedQuestions = [...prev.questions];
+      const question = updatedQuestions[qIndex];
+
+      updatedQuestions[qIndex] = {
+        ...question,
+        choices: question.choices.map((choice, i) =>
+          i === cIndex ? { ...choice, text: value } : choice
+        ),
+      };
+
+      return {
+        ...prev,
+        questions: updatedQuestions,
+      };
+    });
   };
 
   const setCorrectChoice = (qIndex, cIndex) => {
-    const updated = [...quizData.questions];
-    updated[qIndex].choices.forEach((c, i) => (c.isCorrect = i === cIndex));
-    setQuizData({ ...quizData, questions: updated });
+    setQuizData((prev) => {
+      const updatedQuestions = [...prev.questions];
+      const question = updatedQuestions[qIndex];
+
+      updatedQuestions[qIndex] = {
+        ...question,
+        choices: question.choices.map((choice, i) => ({
+          ...choice,
+          isCorrect: i === cIndex,
+        })),
+      };
+
+      return {
+        ...prev,
+        questions: updatedQuestions,
+      };
+    });
   };
 
-  const removeQuestion = (index) => {
-    const updated = [...quizData.questions];
-    updated.splice(index, 1);
-    setQuizData({ ...quizData, questions: updated });
+  // DDQ helpers
+  const addDragItem = (qIndex) => {
+    setQuizData((prev) => {
+      const updatedQuestions = [...prev.questions];
+      const question = updatedQuestions[qIndex];
+      const defaultBoxId = question.dropboxes[0]?.id || "";
+
+      updatedQuestions[qIndex] = {
+        ...question,
+        dragItems: [
+          ...question.dragItems,
+          {
+            id: makeId("item"),
+            text: "",
+            dropboxId: defaultBoxId,
+          },
+        ],
+      };
+
+      return {
+        ...prev,
+        questions: updatedQuestions,
+      };
+    });
   };
+
+  const removeDragItem = (qIndex, itemIndex) => {
+    setQuizData((prev) => {
+      const updatedQuestions = [...prev.questions];
+      const question = updatedQuestions[qIndex];
+
+      updatedQuestions[qIndex] = {
+        ...question,
+        dragItems: question.dragItems.filter((_, i) => i !== itemIndex),
+      };
+
+      return {
+        ...prev,
+        questions: updatedQuestions,
+      };
+    });
+  };
+
+  const updateDragItemText = (qIndex, itemIndex, value) => {
+    setQuizData((prev) => {
+      const updatedQuestions = [...prev.questions];
+      const question = updatedQuestions[qIndex];
+
+      updatedQuestions[qIndex] = {
+        ...question,
+        dragItems: question.dragItems.map((item, i) =>
+          i === itemIndex ? { ...item, text: value } : item
+        ),
+      };
+
+      return {
+        ...prev,
+        questions: updatedQuestions,
+      };
+    });
+  };
+
+  const updateDragItemDropbox = (qIndex, itemIndex, dropboxId) => {
+    setQuizData((prev) => {
+      const updatedQuestions = [...prev.questions];
+      const question = updatedQuestions[qIndex];
+
+      updatedQuestions[qIndex] = {
+        ...question,
+        dragItems: question.dragItems.map((item, i) =>
+          i === itemIndex ? { ...item, dropboxId } : item
+        ),
+      };
+
+      return {
+        ...prev,
+        questions: updatedQuestions,
+      };
+    });
+  };
+
+  const addDropBox = (qIndex) => {
+    setQuizData((prev) => {
+      const updatedQuestions = [...prev.questions];
+      const question = updatedQuestions[qIndex];
+
+      updatedQuestions[qIndex] = {
+        ...question,
+        dropboxes: [
+          ...question.dropboxes,
+          {
+            id: makeId("box"),
+            title: "",
+          },
+        ],
+      };
+
+      return {
+        ...prev,
+        questions: updatedQuestions,
+      };
+    });
+  };
+
+  const removeDropBox = (qIndex, boxIndex) => {
+    setQuizData((prev) => {
+      const updatedQuestions = [...prev.questions];
+      const question = updatedQuestions[qIndex];
+
+      if (question.dropboxes.length <= 1) {
+        return prev;
+      }
+
+      const removedBoxId = question.dropboxes[boxIndex].id;
+      const newDropboxes = question.dropboxes.filter((_, i) => i !== boxIndex);
+      const fallbackId = newDropboxes[0]?.id || "";
+
+      updatedQuestions[qIndex] = {
+        ...question,
+        dropboxes: newDropboxes,
+        dragItems: question.dragItems.map((item) => ({
+          ...item,
+          dropboxId: item.dropboxId === removedBoxId ? fallbackId : item.dropboxId,
+        })),
+      };
+
+      return {
+        ...prev,
+        questions: updatedQuestions,
+      };
+    });
+  };
+
+  const updateDropBoxTitle = (qIndex, boxIndex, value) => {
+    setQuizData((prev) => {
+      const updatedQuestions = [...prev.questions];
+      const question = updatedQuestions[qIndex];
+
+      updatedQuestions[qIndex] = {
+        ...question,
+        dropboxes: question.dropboxes.map((box, i) =>
+          i === boxIndex ? { ...box, title: value } : box
+        ),
+      };
+
+      return {
+        ...prev,
+        questions: updatedQuestions,
+      };
+    });
+  };
+
+  // Pool helpers
+  const addQuestionFromPool = (question) => {
+    if (selectedPoolIds.has(question._id)) return;
+
+    setQuizData((prev) => {
+      const nextQuestions = [...prev.questions, question];
+      return {
+        ...prev,
+        rotation:
+          !rotationClicked && Number(prev.rotation) === 0
+            ? nextQuestions.length
+            : prev.rotation,
+        questions: nextQuestions,
+      };
+    });
+  };
+
+  const removePoolQuestionFromQuiz = (questionId) => {
+    setQuizData((prev) => ({
+      ...prev,
+      questions: prev.questions.filter((q) => q._id !== questionId),
+    }));
+  };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateQuiz(quizData)) return;
 
+    setSubmitting(true);
+    setSubmitError("");
 
     try {
-      const created = await Promise.all(
-        quizData.questions.map((q) => createQuestion(q))
+      console.log("quizData before submit:", quizData);
+
+      const createdQuestionIds = await Promise.all(
+        quizData.questions.map(async (q, index) => {
+          if (q._id) return q._id;
+
+          console.log("creating question:", index, q);
+          const created = await createQuestion(q);
+          console.log("created question response:", index, created);
+
+          return created?._id;
+        })
       );
 
-      const payload = {
-        title: quizData.title,
-        description: quizData.description,
-        author: authorId,
-        visibility: quizData.visibility, 
-        questions: created.map((q) => q._id)
-      };
-      
+      console.log("createdQuestionIds:", createdQuestionIds);
 
-      const result = await newQuiz(payload);
+      const validQuestionIds = createdQuestionIds.filter(
+        (id) => typeof id === "string" && id.trim() !== ""
+      );
 
-      if (result?.hasError) {
-        alert("Failed to create quiz.");
+      if (validQuestionIds.length !== quizData.questions.length) {
+        setSubmitError(
+          "Some questions failed to create. Check your backend question route for DDQ support."
+        );
+        setSubmitting(false);
         return;
       }
 
-      alert("Quiz created successfully!");
+      const payload = {
+        title: quizData.title.trim(),
+        description: quizData.description.trim(),
+        visibility: quizData.visibility,
+        rotation: Number(quizData.rotation) || 0,
+        questions: validQuestionIds,
+      };
 
+      console.log("quiz payload:", payload);
+
+      const createdQuiz = await newQuiz(payload);
+      console.log("created quiz response:", createdQuiz);
+
+      if (createdQuiz?.hasError || !createdQuiz?._id) {
+        setSubmitError(createdQuiz?.message || "Quiz creation failed.");
+        setSubmitting(false);
+        return;
+      }
+
+      setCreatedQuizId(createdQuiz._id);
+      setStep(4);
     } catch (err) {
-      alert("Server error.");
+      console.error("Failed to create quiz:", err);
+      setSubmitError(err?.message || "Failed to create quiz.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
+  const questionHandlers = {
+  addMcqQuestion,
+  addDdqQuestion,
+  updateQuestionField,
+  updateChoiceText,
+  setCorrectChoice,
+  updateDragItemText,
+  updateDragItemDropbox,
+  updateDropBoxTitle,
+  removeQuestion,
+  addChoice,
+  removeChoice,
+  addDragItem,
+  removeDragItem,
+  addDropBox,
+  removeDropBox,
+  
+  };
+
+
+
   return (
-    <section className="cq-container">
-      <h2 className="cq-title">Create Quiz</h2>
+    <div className="create-quiz-page">
+      <div className="cq-container">
+        <h1 className="cq-title">Create Quiz</h1>
 
-      {step === 1 && (
-        <div className="cq-step">
-          <h3>Do you want to create quiz using bulk question entry?</h3>
-          <button onClick={() => navigate('/bulk-import')} className="cq-btn submit-btn">
-            Yes
+        <div className="cq-steps">
+          <button
+            type="button"
+            className={`cq-step ${step === 1 ? "active" : ""}`}
+            onClick={() => setStep(1)}
+          >
+            1. Quiz Info
           </button>
-          <button onClick={() => setStep(2)} className="cq-btn submit-btn">
-            No
+
+          <button
+            type="button"
+            className={`cq-step ${step === 2 ? "active" : ""}`}
+            onClick={() => setStep(2)}
+          >
+            2. Build Questions
           </button>
 
-          
-        </div>
-      )
-      }
+          <button
+            type="button"
+            className={`cq-step ${step === 3 ? "active" : ""}`}
+            onClick={() => setStep(3)}
+          >
+            3. Question Pool
+          </button>
 
-      {step === 2 && (
-
-
-      <form onSubmit={handleSubmit} className="cq-form">
-
-        {/* TITLE */}
-        <label>Quiz Title</label>
-        <input
-          type="text"
-          name="title"
-          value={quizData.title}
-          onChange={handleChange}
-          className="cq-input"
-          required
-        />
-
-        {/* VISIBILITY */}
-        <label>Visibility</label>
-        <select
-          name="visibility"
-          value={quizData.visibility}
-          onChange={handleVisibility}
-          className="cq-select"
-        >
-          <option value="public">Public</option>
-          <option value="unlisted">Unlisted</option>
-          <option value="private">Private</option>
-        </select>
-
-
-
-        {/* DESCRIPTION */}
-        <label>Description</label>
-        <textarea
-          name="description"
-          value={quizData.description}
-          onChange={handleChange}
-          className="cq-textarea"
-        />
-
-        {/* ADD QUESTION BUTTON */}
-        <button type="button" onClick={addQuestion} className="cq-btn add-btn">
-          + Add Question
-        </button>
-        <button type="button" onClick={() => navigate('/bulk-import')} className="cq-btn add-btn">
-          + Add Questions Using Bulk Entry
-        </button>
-        {/* QUESTIONS LIST */}
-        {quizData.questions.map((q, qIndex) => (
-          <div className="cq-question-card" key={qIndex}>
-            <div className="cq-q-header">
-              <h4>Question {qIndex + 1}</h4>
-              <button
-                type="button"
-                onClick={() => removeQuestion(qIndex)}
-                className="cq-btn danger-btn"
-              >
-                Remove
-              </button>
-            </div>
-
-            <label>Question Text</label>
-            <input
-              type="text"
-              name="text"
-              value={q.text}
-              onChange={(e) => updateQuestion(qIndex, e)}
-              className="cq-input"
-              required
-            />
-
-            <label>Points</label>
+          <button
+            type="button"
+            className={`cq-step ${step === 4 ? "active" : ""}`}
+            disabled={!createdQuizId}
+          >
+            4. Complete
+          </button>
+          <div className="cq-rotation-row">
+            <label className="cq-label">Rotation</label>
             <input
               type="number"
-              name="points"
-              min="1"
-              value={q.points}
-              onChange={(e) => updateQuestion(qIndex, e)}
+              min="0"
               className="cq-input small"
+              value={quizData.rotation}
+              onChange={(e) => {
+                setRotationClicked(true);
+                updateQuizField("rotation", Number(e.target.value));
+              }}
+              placeholder="0 = all questions"
             />
 
-            {/* CHOICES */}
-            <h5>Choices</h5>
-
-            {q.choices.map((choice, cIndex) => (
-              <div className="cq-choice" key={cIndex}>
-                <input
-                  type="text"
-                  value={choice.text}
-                  onChange={(e) => updateChoiceText(qIndex, cIndex, e.target.value)}
-                  className="cq-input choice-input"
-                  required
-                />
-
-                <label className="cq-radio">
-                  <input
-                    type="radio"
-                    name={`correct-${qIndex}`}
-                    checked={choice.isCorrect}
-                    onChange={() => setCorrectChoice(qIndex, cIndex)}
-                  />
-                  Correct
-                </label>
-              </div>
-            ))}
-
-            <button
-              type="button"
-              onClick={() => addChoice(qIndex)}
-              className="cq-btn add-choice-btn"
-            >
-              + Add Choice
-            </button>
           </div>
-        ))}
+        </div>
+        <div className="cq-questions-row">
+          <label className="cq-label">Total Questions</label>
+          <input
+            type="number"
+            min="0"
+            className="cq-input small"
+            value={quizData.questions.length}
+            readOnly
+            placeholder="0 = all questions"
+          />
+        </div>
+        <form onSubmit={handleSubmit} className="cq-form">
+          <div className="step1-container">
+            {step === 1 && (
+              <section className="cq-section">
+                <Step1QuizInfo quizData={quizData} updateQuizField={updateQuizField} />
 
-        {/* SUBMIT */}
-        <button type="submit" className="cq-btn submit-btn">
-          Create Quiz
-        </button>
-      </form>
-      )}
-    </section>
+
+
+                <div className="cq-nav">
+                  <button type="button" className="cq-btn" onClick={() => setStep(2)}>
+                    Next
+                  </button>
+                </div>
+              </section>
+            )}
+          </div>
+
+          {step === 2 && (
+            <Step2BuildQuestions 
+              quizData={quizData}
+              handlers={questionHandlers}
+              removePoolQuestionFromQuiz={removePoolQuestionFromQuiz}
+              setStep={setStep}
+              showBulkImport={showBulkImport}
+              setShowBulkImport={setShowBulkImport}
+              handleBulkImport={handleBulkImport}
+            />
+
+          )}
+
+          {step === 3 && (
+            <Step3QuestionPool
+                quizData={quizData}
+                removePoolQuestionFromQuiz={removePoolQuestionFromQuiz}
+                setStep={setStep}
+                questionPool={questionPool}
+                poolLoading={poolLoading}
+                poolError={poolError}
+                selectedPoolIds={selectedPoolIds}
+                addQuestionFromPool={addQuestionFromPool}
+                submitError={submitError}
+                submitting={submitting}
+                removeQuestion={removeQuestion}
+             />
+          )}
+
+          {step === 4 && (
+            <section className="cq-section">
+              <h2>Quiz Created</h2>
+              <p>Your quiz was created successfully.</p>
+
+              <div className="cq-nav">
+                <button
+                  type="button"
+                  className="cq-btn primary-btn"
+                  onClick={() => navigate(`/play/${createdQuizId}`)}
+                >
+                  Play Quiz
+                </button>
+
+                <button
+                  type="button"
+                  className="cq-btn"
+                  onClick={() => navigate("/quizlist")}
+                >
+                  Back to Quizzes
+                </button>
+              </div>
+            </section>
+          )}
+        </form>
+      </div>
+    </div>
   );
 }

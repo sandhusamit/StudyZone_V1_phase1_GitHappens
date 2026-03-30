@@ -13,7 +13,9 @@ import Leaderboard from '../pages/Leaderboard';
 import ErrorPage from '../pages/ErrorPage';
 import Success from '../pages/Success';
 import EditQuiz from '../pages/EditQuiz';
-import BulkQuizImportPage from '../pages/BulkQuizImportPage';
+import DiagramQuestion from '../pages/DiagramQuestion';
+import CreateDiagramQuestion from '../pages/CreateDiagramQuestion';
+
 
 
 const MainRouter = () => {
@@ -22,6 +24,8 @@ const MainRouter = () => {
       <NavBar />
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/diagram" element={<DiagramQuestion />} />
+        <Route path="/create-diagram" element={<CreateDiagramQuestion />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
@@ -65,14 +69,7 @@ const MainRouter = () => {
             </ProtectRoute>
           }
         />
-        <Route
-          path="/bulk-import"
-          element={
-            <ProtectRoute>
-              <BulkQuizImportPage />
-            </ProtectRoute>
-          }
-        />
+
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/success" element={<Success />} />
         <Route path="/error" element={<ErrorPage />} />

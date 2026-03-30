@@ -24,7 +24,10 @@ const QuizSchema = new mongoose.Schema({
     enum: ["public", "unlisted", "private"],
     default: "private",
     index: true
-  }
+  },
+  rotation: { 
+    type: Number,
+  }, 
   
 
 });

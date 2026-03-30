@@ -51,6 +51,7 @@ export const getPublicQuizzes = async () => {
 
 
 export const createQuiz = async (quiz) => {
+  console.log("Creating quiz with quiz: ", quiz);
   const res = await fetch('/api/quizzes', {
     method: 'POST',
     headers: {
@@ -82,7 +83,8 @@ export const createBulkQuiz = async (quizData) => {
     return { error: true, message: 'A problem occured while adding quiz.' };
   }
   const data = await res.json();
-  return data;
+  return { error: false, message: 'Bulk quizzes created successfully.', data };
+
   };
 
 export const removeQuiz = async (quizId) => {
@@ -142,3 +144,19 @@ export const shareQuiz = async (quizId, email) => {
   const data = await res.json();
   return data;
 };  
+
+//get quiz by id
+export const fetchQuizById = async (quizId) => {
+  const res = await fetch(`${END_POINT}/${quizId}`, {
+    method: 'GET',
+    credentials: 'include',
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    return { hasError: true, message: data.message };
+  }
+
+  return data;
+};

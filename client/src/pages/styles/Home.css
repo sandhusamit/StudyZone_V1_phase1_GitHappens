@@ -142,3 +142,29 @@
     }
   }
   
+
+/* ===== DESCRIPTION ===== */
+
+.home-description {
+  margin-top: 28px;
+  padding: 22px;
+  border-radius: 16px;
+  background: linear-gradient(
+    180deg,
+    rgba(12, 20, 38, 0.7),
+    rgba(8, 14, 28, 0.9)
+  );
+  border: 1px solid rgba(120, 150, 255, 0.16);
+}
+
+.home-description p {
+  max-width: 780px;
+  margin: 0 auto;
+
+  font-size: 1.55rem;
+  line-height: 1.95;
+  color: #c9d8ff;
+
+
+}
+

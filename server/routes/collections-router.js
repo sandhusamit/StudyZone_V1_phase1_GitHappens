@@ -92,6 +92,7 @@ router.post("/api/quizzes/bulk-create", createQuizWithQuestions);
 
 
 
+
 router.get('/api/quizzes', authMiddleware, getAllQuizzes);
 router.post('/api/quizzes', createQuiz); 
 router.put('/api/quizzes/:id', authMiddleware,updateQuiz);
@@ -106,6 +107,7 @@ router.post('/api/questions', createQuestion);
 router.put('/api/questions/:id', updateQuestion);
 router.delete('/api/questions/:id', deleteQuestion);
 // router.delete('/api/questions', deleteAllQuestions);
+// router.put('/api/questions/', updateAllQuestions);
 
 // -------------------- Answer Routes --------------------
 router.get('/api/answers/:id', getAnswerById);

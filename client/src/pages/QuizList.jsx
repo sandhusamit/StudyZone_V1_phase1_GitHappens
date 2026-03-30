@@ -85,10 +85,15 @@ export default function QuizListPublic() {
     <section>
 
 
-      <h2 className="heading"><button onClick={handleVisibility}>{viewTitle}</button></h2>
-      <button className="play-btn" onClick={() => navigate('/create')}>
-        Create New Quiz
-      </button>
+      <h2 style={{textAlign: 'center'}} className="heading">
+        <button style={{ fontSize: '26px' }} onClick={handleVisibility}>
+          {viewTitle}
+        </button>
+        <button title="Create a new quiz" style={{ marginLeft: '800px' }} className="play-btn" onClick={() => navigate('/create')}>
+          +
+        </button>
+      </h2>
+
       {quizzes.length === 0 ? (
         <p className="empty">No quizzes available.</p>
       ) : (

@@ -22,6 +22,7 @@ import {
   getQuizzesByAuthorID as fetchUserQuizzesService,
   getPublicQuizzes as fetchPublicQuizzesService,
   createBulkQuiz as createBulkQuizService,
+  fetchQuizById as fetchQuizByIdService,
 } from '../services/quiz';
 
 import { loginUser as loginUserService,
@@ -32,6 +33,7 @@ import {
   getAllQuestions as fetchQuestionsService,
   createQuestion as createQuestionService,
   updateQuestion as updateQuestionService,
+  getQuestionById as fetchQuestionByIdService,
 } from '../services/question';
 
 export const AuthContext = createContext();
@@ -210,15 +212,32 @@ export function AuthProvider({ children }) {
     return Array.isArray(data) ? data : data.quizzes || [];
   }
 
-  const newQuiz = async (quiz) => {
-    console.log("Creating quiz for user:", authUserId);
-    console.log("Quiz visibility:", quiz.visibility);
-    const data = await createQuizService(quiz);
+
+  const fetchQuiz = async (quizId) => {
+    const data = await fetchQuizByIdService(quizId);
     if (data?.hasError) {
       navigate('/error', { state: data });
-      return;
+      return null;
     }
-    navigate('/quizlist');
+    return data.quiz || null;
+  };
+
+  const newQuiz = async (quiz) => {
+    console.log("Author ID in context:", authUserId);
+    const payload = {
+      ...quiz,
+      author: authUserId,
+    };
+
+    console.log("Creating quiz with data:", payload);
+    console.log("Quiz rotation:", payload.rotation);
+
+    const data = await createQuizService(payload);
+
+    if (data?.hasError) {
+      return data;
+    }
+
     return data;
   };
 
@@ -241,15 +260,14 @@ export function AuthProvider({ children }) {
   };
 
   const createBulkQuiz = async (quizData) => {
+    quizData.author = authUserId; // Ensure the quiz is associated with the logged-in user
+    console.log("Creating bulk quiz with data:", quizData);
     const res = await createBulkQuizService(quizData);
 
-    if (res.status !== 201) {
-      return { error: true, message: 'A problem occured while adding quiz.' };
-    }
-    if (res.status === 201) {
+    if (res?.hasError) {
       return { error: false, message: 'Quiz created successfully.', data: await res.json() };
     }
-    return { error: true, message: 'Unexpected response from server.' };
+    return { error: true, message: res.message || 'A problem occurred while adding quiz.' };
   };
 
 
@@ -284,6 +302,16 @@ export function AuthProvider({ children }) {
     return data;
   };
 
+  const fetchQuestionById = async (questionId) => {
+    const data = await fetchQuestionByIdService(questionId);
+    if (data?.hasError) {
+      navigate('/error', { state: data });
+      return null;
+    }
+    return data;
+  };
+
+
   return (
     <AuthContext.Provider
       value={{
@@ -297,15 +325,18 @@ export function AuthProvider({ children }) {
         getCurrentUserData,
         fetchQuizzes,
         newQuiz,
+        fetchQuiz,
         createBulkQuiz,
         removeQuiz,
         updateQuiz,
         fetchQuestions,
         createQuestion,
         updateQuestion,
+        fetchQuestionById,
         verifyOTP,
         fetchQuizzesByUser,
         fetchPublicQuizzes,
+
       }}
     >
       {children}

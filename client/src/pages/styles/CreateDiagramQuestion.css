@@ -1,0 +1,178 @@
+.diagram-creator-page {
+  padding: 20px;
+  color: #222;
+  font-family: Arial, sans-serif;
+}
+
+.creator-grid {
+  display: grid;
+  grid-template-columns: 480px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.creator-panel,
+.preview-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.panel-section {
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.panel-section h3,
+.panel-section h4 {
+  margin-top: 0;
+}
+
+.panel-section label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.panel-section input,
+.panel-section textarea,
+.panel-section select {
+  padding: 10px;
+  border: 1px solid #bbb;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.row-2,
+.row-4 {
+  display: grid;
+  gap: 10px;
+}
+
+.row-2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.row-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.section-header,
+.btn-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+button {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  background: #1677ff;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.secondary-btn {
+  background: #666;
+}
+
+.danger-btn {
+  background: #d64545;
+}
+
+.editor-card {
+  border: 1px solid #e3e3e3;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 12px;
+  background: #fafafa;
+}
+
+.label-bank {
+  border: 1px dashed #bbb;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 16px;
+  background: #fafafa;
+}
+
+.label-bank-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.diagram-node {
+  background: white;
+  border: 2px solid #4da3ff;
+  border-radius: 8px;
+  padding: 10px 12px;
+  min-width: 100px;
+  text-align: center;
+  cursor: grab;
+  white-space: pre-line;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+.diagram-node.placed {
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.diagram-preview-canvas {
+  position: relative;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  background-color: #f2f2f2;
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+}
+
+.diagram-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.diagram-line {
+  stroke: #666;
+  stroke-width: 2;
+}
+
+.drop-zone {
+  position: absolute;
+  border: 2px dashed #999;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.82);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 12px;
+  color: #666;
+  box-sizing: border-box;
+}
+
+.payload-preview {
+  background: #111;
+  color: #e9e9e9;
+  padding: 12px;
+  border-radius: 10px;
+  overflow: auto;
+  font-size: 12px;
+  max-height: 500px;
+}

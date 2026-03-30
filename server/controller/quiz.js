@@ -8,7 +8,16 @@ import express from 'express';
 
 export const createQuiz = async (req, res) => {
   try {
-    const quiz = new QuizSchema(req.body);
+
+    const quiz = new QuizSchema({
+      title: req.body.title,
+      description: req.body.description,
+      visibility: req.body.visibility,
+      author: req.body.author,
+      questions: req.body.questions,
+      rotation: req.body.rotation,
+    });
+
     await quiz.save();
     res.status(201).json(quiz);
   } catch (err) {
@@ -19,30 +28,44 @@ export const createQuiz = async (req, res) => {
 // create quiz with bulk questions
 export const createQuizWithQuestions = async (req, res) => {
   try {
+    const { title, description, author, visibility, questions, rotation } = req.body;
     
+    console.log("Quiz Author:", author);
 
-    for (const question of req.body.questions) {
-      console.log('Received question:', question);
-
+    if (!title || !author || !questions || !Array.isArray(questions) || questions.length === 0) {
+      return res.status(400).json({
+        error: "Title, author, and a valid questions array are required."
+      });
     }
 
+    for (const question of questions) {
+      console.log("Received question:", question);
 
-    
-    const createdQuestions = await QuestionSchema.insertMany(req.body.questions);
+      if (!question.text || !Array.isArray(question.choices) || question.points === undefined) {
+        return res.status(400).json({
+          error: "Each question must have text, choices, and points."
+        });
+      }
+    }
+
+    const createdQuestions = await QuestionSchema.insertMany(questions);
+
     const quiz = await QuizSchema.create({
-      title: req.body.title,
-      description: req.body.description,
-      visibility: req.body.visibility,
-      author: "69ab1b05df466e0ce3ac4f0b",
-      questions: createdQuestions.map(q => q._id)
+      title,
+      description,
+      author,
+      visibility,
+      questions: createdQuestions.map((q) => q._id),
+      rotation,
     });
-
+    
     await quiz.save();
     res.status(201).json(quiz);
-  }
-  catch (err) {
+
+  } catch (err) {
+    console.log("createQuizWithQuestions error:", err.message);
     res.status(400).json({ error: err.message });
-  }
+  };
 };
 
 // READ all quizzes
@@ -85,11 +108,11 @@ export const updateQuiz = async (req, res) => {
   try {
     console.log("FULL req.body:", req.body);
 
-    const { title, description, visibility, questions } = req.body;
+    const { title, description, visibility, questions, rotation } = req.body;
 
     const updatedQuiz = await QuizSchema.findByIdAndUpdate(
       req.params.id,
-      { title, description, visibility, questions },
+      { title, description, visibility, questions, rotation },
       { new: true, runValidators: true }
     );
 
