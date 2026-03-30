@@ -160,3 +160,34 @@ export const fetchQuizById = async (quizId) => {
 
   return data;
 };
+
+export const fetchQuizByIdGuest = async (quizId, guestToken) => {
+  const res = await fetch(`/api/quizzes/${quizId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${guestToken}`,
+    },
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    return { hasError: true, message: data.message };
+  }
+
+  return data;
+};
+
+export const generateGuestToken = async (quizId) => {
+  const res = await fetch('/api/quizzes/guesttoken', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      
+    },
+    credentials: 'include',
+
+    body: JSON.stringify({ quizId }),
+  });
+};

@@ -33,6 +33,8 @@ import {
   deleteAllQuizzes,
 } from '../controller/quiz.js';
 
+import { generateGuestToken } from '../utils/guestJwt.js';
+
 // Question controller
 import {
   createQuestion,
@@ -86,8 +88,15 @@ router.post('/api/verify-otp-email', verifyEmailOTP);
 
 // -------------------- Quiz Routes --------------------
 router.get('/api/quizzes/:id', authMiddleware, getQuizById);
+
 router.get("/api/public/quizzes", getAllPublicQuizzes);
 router.post("/api/quizzes/bulk-create", createQuizWithQuestions);
+router.post("/api/quizzes/guesttoken", authMiddleware, (req, res) => {
+  const { quizId } = req.body;
+  const token = generateGuestToken(quizId);
+  res.json({ token });
+});
+
 // router.delete("/api/quizzes/bulk-delete", deleteAllQuizzes);
 
 

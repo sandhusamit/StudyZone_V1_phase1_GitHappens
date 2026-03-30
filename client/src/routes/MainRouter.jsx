@@ -15,6 +15,7 @@ import Success from '../pages/Success';
 import EditQuiz from '../pages/EditQuiz';
 import DiagramQuestion from '../pages/DiagramQuestion';
 import CreateDiagramQuestion from '../pages/CreateDiagramQuestion';
+import GuestRoute from './GuestRoute';
 
 
 
@@ -46,11 +47,19 @@ const MainRouter = () => {
           }
         />
         <Route
-          path="/play"
+          path="/play/:quizId"
           element={
-            <ProtectRoute>
+            <GuestRoute>
               <QuizPlay />
-            </ProtectRoute>
+            </GuestRoute>
+          }
+        />
+        <Route
+          path="/play/:quizId?guestToken=:guestToken"
+          element={
+            <GuestRoute>
+              <QuizPlay />
+            </GuestRoute>
           }
         />
         <Route

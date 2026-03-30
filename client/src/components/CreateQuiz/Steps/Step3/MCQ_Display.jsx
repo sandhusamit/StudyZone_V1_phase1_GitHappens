@@ -1,4 +1,4 @@
-export default function DisplayQuestion({ q }) {
+export default function DisplayQuestion({ q, qIndex }) {
     return (
         <>
         <h5>Choices</h5>

@@ -7,7 +7,7 @@ import { set } from 'mongoose';
 export default function QuizListPublic() {
   // Constants for auth context and navigation methods
 
-  const { fetchQuizzes, removeQuiz, jwtToken, isLoading, fetchQuizzesByUser, fetchPublicQuizzes } = useAuth();
+  const { fetchQuizzes, removeQuiz, jwtToken, isLoading, fetchQuizzesByUser, fetchPublicQuizzes, generateGuestToken } = useAuth();
   const navigate = useNavigate();
   const [isPublic, setVisibility] = useState(true);
   const [quizzes, setQuizzes] = useState([]);
@@ -45,7 +45,7 @@ export default function QuizListPublic() {
 
   //Open specific quiz to play
   const handleOpenQuiz = (quiz) => {
-    navigate(`/play`, {
+    navigate(`/play/${quiz._id}`, {
       state: { quiz },
     });
   };
@@ -57,15 +57,26 @@ export default function QuizListPublic() {
     });
   };
 
-  const handleShareQuiz = async (quiz) => {
-
+  const handleShareQuizEmail = async (quiz) => {
     //alert message with input for email
-
     setShareToEmail(prompt('Enter the email address to share the quiz with:'));
     console.log(shareToEmail);
     const result = await shareQuiz(quiz._id, shareToEmail);
 
   }
+
+  const handleShareQuiz = async (quiz) => {
+    const guestToken = await generateGuestToken(quiz._id);
+    const guestLink = `${window.location.origin}/play/${quiz._id}?guestToken=${guestToken}`;    
+    navigator.clipboard.writeText(guestLink)
+      .then(() => {
+        alert('Guest link copied to clipboard!');
+      })
+      .catch((err) => {
+        console.error('Failed to copy guest link:', err);
+        alert('Failed to copy guest link. Please try again.');
+      });
+  };
 
   const handleVisibility = () => {
     if (isPublic) {
@@ -85,14 +96,15 @@ export default function QuizListPublic() {
     <section>
 
 
-      <h2 style={{textAlign: 'center'}} className="heading">
-        <button style={{ fontSize: '26px' }} onClick={handleVisibility}>
-          {viewTitle}
-        </button>
-        <button title="Create a new quiz" style={{ marginLeft: '800px' }} className="play-btn" onClick={() => navigate('/create')}>
-          +
-        </button>
-      </h2>
+  <div className="header-bar">
+    <button className="heading-btn" onClick={handleVisibility}>
+      {viewTitle}
+    </button>
+
+    <button className="create-btn" onClick={() => navigate('/create')}>
+      +
+    </button>
+  </div>
 
       {quizzes.length === 0 ? (
         <p className="empty">No quizzes available.</p>
@@ -122,6 +134,11 @@ export default function QuizListPublic() {
                         onClick={() => handleDelete(quiz._id)}
                       >
                         Delete
+                      </button>
+                      <button className="share-btn"
+                        onClick={() => handleShareQuiz(quiz)}
+                      >
+                        Share
                       </button>
 
                     </>

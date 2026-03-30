@@ -1,4 +1,5 @@
 import DDQ_Display from "./DDQ_Display";
+import MCQ_Display from "./MCQ_Display";
 
 export default function SelectedQuestions({ quizData, submitError, submitting, setStep, removePoolQuestionFromQuiz, removeQuestion }) {
     return (
