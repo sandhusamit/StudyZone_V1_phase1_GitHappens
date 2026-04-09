@@ -77,7 +77,7 @@ export default function Step2BuildQuestions({
             Back
         </button>
 
-        <button type="button" className="cq-btn" onClick={() => setStep(3)}>
+        <button title="Next Step" type="button" className="cq-btn" onClick={() => setStep(3)}>
             Next
         </button>
         </div>

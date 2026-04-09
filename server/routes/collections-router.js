@@ -56,6 +56,7 @@ import {
 
 // Middleware
 import authMiddleware from '../middleware/auth.js';
+import guestMiddleware from '../middleware/authGuest.js';
 import authSelf from '../middleware/authSelf.js';
 
 const router = express.Router();
@@ -88,6 +89,8 @@ router.post('/api/verify-otp-email', verifyEmailOTP);
 
 // -------------------- Quiz Routes --------------------
 router.get('/api/quizzes/:id', authMiddleware, getQuizById);
+router.get('/api/quizzes/guest/:id', guestMiddleware, getQuizById);
+
 
 router.get("/api/public/quizzes", getAllPublicQuizzes);
 router.post("/api/quizzes/bulk-create", createQuizWithQuestions);

@@ -77,6 +77,7 @@ export default function NewQuestionCard({ quizData, updateQuestionField, updateC
 
                 <label className="cq-label">Explanation</label>
                 <textarea
+                title="Explain why its correct."
                 className="cq-input cq-textarea"
                 value={q.explanation}
                 onChange={(e) =>

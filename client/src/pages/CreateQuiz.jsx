@@ -62,6 +62,7 @@ export default function CreateQuiz() {
   const [submitError, setSubmitError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [createdQuizId, setCreatedQuizId] = useState(null);
+  const [stepValid, setStepValid] = useState(false);
 
 
   useEffect(() => {
@@ -90,6 +91,8 @@ export default function CreateQuiz() {
       updateQuizField("rotation", quizData.questions.length);
     }
   }, [quizData.questions.length]);
+
+
 
 
   const selectedPoolIds = useMemo(
@@ -520,8 +523,11 @@ export default function CreateQuiz() {
             1. Quiz Info
           </button>
 
+
+
           <button
             type="button"
+            disabled={stepValid === false}
             className={`cq-step ${step === 2 ? "active" : ""}`}
             onClick={() => setStep(2)}
           >
@@ -530,6 +536,7 @@ export default function CreateQuiz() {
 
           <button
             type="button"
+            disabled={stepValid === false}
             className={`cq-step ${step === 3 ? "active" : ""}`}
             onClick={() => setStep(3)}
           >
@@ -562,6 +569,7 @@ export default function CreateQuiz() {
         <div className="cq-questions-row">
           <label className="cq-label">Total Questions</label>
           <input
+            title="Total number of questions in quiz"
             type="number"
             min="0"
             className="cq-input small"
@@ -574,12 +582,12 @@ export default function CreateQuiz() {
           <div className="step1-container">
             {step === 1 && (
               <section className="cq-section">
-                <Step1QuizInfo quizData={quizData} updateQuizField={updateQuizField} />
+                <Step1QuizInfo quizData={quizData} updateQuizField={updateQuizField} stepValid={stepValid} setStepValid={setStepValid} />
 
 
 
                 <div className="cq-nav">
-                  <button type="button" className="cq-btn" onClick={() => setStep(2)}>
+                  <button title="Next Step" type="button" disabled={!stepValid} className="cq-btn" onClick={() => setStep(2)}>
                     Next
                   </button>
                 </div>
@@ -631,6 +639,7 @@ export default function CreateQuiz() {
                 </button>
 
                 <button
+                  title="Back to Quizzes"
                   type="button"
                   className="cq-btn"
                   onClick={() => navigate("/quizlist")}

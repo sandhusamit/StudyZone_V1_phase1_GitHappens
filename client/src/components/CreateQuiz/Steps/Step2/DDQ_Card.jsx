@@ -9,6 +9,7 @@ export default function DDQ_Card({ q, qIndex, updateDragItemText, updateDragItem
             {q.dragItems.map((item, i) => (
             <div key={item.id} className="cq-choice">
                 <input
+                title="Drag item text"
                 type="text"
                 value={item.text}
                 onChange={(e) =>
@@ -20,6 +21,7 @@ export default function DDQ_Card({ q, qIndex, updateDragItemText, updateDragItem
                 />
 
                 <select
+                title="Dropbox it belongs to."
                 value={item.dropboxId}
                 onChange={(e) =>
                     updateDragItemDropbox(qIndex, i, e.target.value)
@@ -45,6 +47,7 @@ export default function DDQ_Card({ q, qIndex, updateDragItemText, updateDragItem
             ))}
 
             <button
+            title="Add Item"
             type="button"
             onClick={() => addDragItem(qIndex)}
             className="cq-btn add-choice-btn"
@@ -57,6 +60,7 @@ export default function DDQ_Card({ q, qIndex, updateDragItemText, updateDragItem
             {q.dropboxes.map((box, i) => (
             <div key={box.id} className="cq-choice">
                 <input
+                title="Dropbox title"
                 type="text"
                 value={box.title}
                 onChange={(e) =>

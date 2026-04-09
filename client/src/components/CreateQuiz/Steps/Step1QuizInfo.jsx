@@ -1,11 +1,28 @@
-export default function Step1QuizInfo({quizData, updateQuizField}) {
-  return (
+import { useEffect } from "react";
+
+
+export default function Step1QuizInfo({quizData, updateQuizField, stepValid, setStepValid}) {
+
+    const validateStep = () => {
+        if (quizData.title.trim() === "") {
+            setStepValid(false);
+        } else {
+            setStepValid(true);
+        }
+    };
+
+    useEffect(() => {
+        validateStep();
+    }, [quizData.title]);
+
+    return (
     <div className="step1-container">
         <section className="cq-section">
         <h2>Quiz Details</h2>
 
         <label className="cq-label">Title</label>
         <input
+            title="Title of quiz"
             type="text"
             className="cq-input"
             value={quizData.title}

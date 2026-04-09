@@ -86,6 +86,7 @@ Subject: SWE`;
 
       <label className="cq-label">Paste Questions</label>
       <textarea
+        title="Paste formatted questions here..."
         value={rawText}
         onChange={(e) => setRawText(e.target.value)}
         className="cq-input cq-textarea"
@@ -94,11 +95,12 @@ Subject: SWE`;
       />
 
       <div className="bulk-import-actions">
-        <button type="button" className="cq-btn" onClick={handleParse}>
+        <button title="Parse Questions" type="button" className="cq-btn" onClick={handleParse}>
           Parse Questions
         </button>
 
         <button
+          title="Import Into Quiz"
           type="button"
           className="cq-btn primary-btn"
           disabled={!canImport}

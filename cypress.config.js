@@ -20,6 +20,10 @@ connection.on('error', (err) => {
 
 export default defineConfig({
   e2e: {
+      env: {
+      email: process.env.CYPRESS_EMAIL,
+      password: process.env.CYPRESS_PASSWORD,
+    },
 
     setupNodeEvents(on, config) {
 

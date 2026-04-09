@@ -26,6 +26,7 @@ export default function Step3QuestionPool({
         <h2>Question Pool</h2>
 
         <button
+          title="Show Question Pool"
           type="button"
           className="cq-btn"
           onClick={togglePool}

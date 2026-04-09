@@ -6,6 +6,7 @@ export default function MCQ_Card({ q, qIndex, updateChoiceText, setCorrectChoice
             {q.choices.map((choice, cIndex) => (
             <div className="cq-choice" key={cIndex}>
                 <input
+                title="Option"
                 type="text"
                 className="cq-input choice-input"
                 value={choice.text}
@@ -18,6 +19,7 @@ export default function MCQ_Card({ q, qIndex, updateChoiceText, setCorrectChoice
 
                 <label className="cq-radio">
                 <input
+                    title="IsCorrect"
                     type="radio"
                     name={`correct-${qIndex}`}
                     checked={choice.isCorrect}
@@ -38,6 +40,7 @@ export default function MCQ_Card({ q, qIndex, updateChoiceText, setCorrectChoice
             ))}
 
         <button
+        title="Add Choice"
         type="button"
         className="cq-btn add-choice-btn"
         onClick={() => addChoice(qIndex)}

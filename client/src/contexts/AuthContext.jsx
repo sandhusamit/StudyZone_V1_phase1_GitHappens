@@ -237,8 +237,10 @@ export function AuthProvider({ children }) {
   };
 
   const fetchGuestQuiz = async (quizId, guestToken) => {
+    
     const res = await fetchGuestQuizByIdService(quizId, guestToken);
 
+  
     console.log("fetchGuestQuiz response:", res);
     if (res?.hasError) {
       console.log("Error fetching guest quiz:", res.message);
@@ -246,6 +248,8 @@ export function AuthProvider({ children }) {
       return null;
     }
 
+
+  
     setIsGuest(true);
     return res
   };

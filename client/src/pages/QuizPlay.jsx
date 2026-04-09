@@ -3,14 +3,17 @@ import { useEffect, useState, useMemo } from "react";
 import "./styles/QuizPlay.css";
 import { useAuth } from "../contexts/AuthContext";
 import DragDropQuestionCard from "../components/PlayQuiz/DDQ/DragDropQuestion.jsx";
+import QuestionPlaycard from "../components/PlayQuiz/QuestionPlaycard";
 
-export default function PlayQuiz() {
+export default function QuizPlay() {
   const { quizId } = useParams();
   const location = useLocation();
   const guestToken = useMemo(
     () => new URLSearchParams(location.search).get("guestToken"),
     [location.search]
   );
+
+  
 
   const { fetchQuiz, fetchGuestQuiz, authLoading } = useAuth();
 
@@ -21,7 +24,7 @@ export default function PlayQuiz() {
   const [roster, setRoster] = useState([]);
 
   /* ========================================================
-     SAFE QUIZ LOADER (NO RACE CONDITIONS)
+     LOAD QUIZ
   ======================================================== */
   useEffect(() => {
     if (authLoading || !quizId || quiz) return;
@@ -52,7 +55,7 @@ export default function PlayQuiz() {
   }, [quizId, guestToken, authLoading, fetchQuiz, fetchGuestQuiz, quiz]);
 
   /* ========================================================
-     SAFE ROSTER GENERATION (NO CRASH ON BAD DATA)
+     ROSTER
   ======================================================== */
   useEffect(() => {
     if (!quiz?.questions?.length) return;
@@ -72,13 +75,10 @@ export default function PlayQuiz() {
     setRoster(shuffled.slice(0, count));
   }, [quiz]);
 
-  /* ========================================================
-     GUARDS
-  ======================================================== */
   if (authLoading || !quiz) return <p>Loading quiz...</p>;
 
   /* ========================================================
-     ANSWER HANDLER
+     ANSWERS
   ======================================================== */
   const handleSelect = (qIndex, choiceIndex) => {
     if (score) return;
@@ -90,7 +90,7 @@ export default function PlayQuiz() {
   };
 
   /* ========================================================
-     SAFE GRADING ENGINE
+     GRADING ENGINE (FIXED)
   ======================================================== */
   const handleSubmit = () => {
     let earned = 0;
@@ -105,25 +105,31 @@ export default function PlayQuiz() {
         questionType: q.questionType,
       };
 
+      let isCorrect = false;
+
       /* ================= MCQ ================= */
-      const selectedIndex = answers[index];
+      if (q.questionType === "mcq") {
+        const selectedIndex = answers[index];
 
-      const correctIndex = q.choices?.findIndex((c) => c?.isCorrect);
-      const selectedChoice = q.choices?.[selectedIndex];
-      const correctChoice = q.choices?.[correctIndex];
+        const correctIndex = q.choices?.findIndex((c) => c?.isCorrect);
+        const selectedChoice = q.choices?.[selectedIndex];
+        const correctChoice = q.choices?.[correctIndex];
 
-      const isCorrect =
-        selectedIndex !== undefined &&
-        correctIndex !== -1 &&
-        selectedIndex === correctIndex;
+        isCorrect =
+          selectedIndex !== undefined &&
+          correctIndex !== -1 &&
+          selectedIndex === correctIndex;
 
-      result.selectedIndex = selectedIndex;
-      result.correctIndex = correctIndex;
+        result.selectedIndex = selectedIndex;
+        result.correctIndex = correctIndex;
 
-      result.selectedText = selectedChoice?.text || "No answer selected";
-      result.correctText = correctChoice?.text || "Missing correct answer";
+        result.selectedText =
+          selectedChoice?.text || "No answer selected";
+        result.correctText =
+          correctChoice?.text || "Missing correct answer";
 
-      result.isCorrect = isCorrect;
+        if (isCorrect) earned += result.points;
+      }
 
       /* ================= DDQ ================= */
       if (q.questionType === "ddq") {
@@ -140,15 +146,15 @@ export default function PlayQuiz() {
           });
         });
 
-        const isCorrect =
+        isCorrect =
           dragItems.length > 0 &&
           correct === dragItems.length &&
           wrong === 0;
 
-        result.isCorrect = isCorrect;
-
         if (isCorrect) earned += result.points;
       }
+
+      result.isCorrect = isCorrect;
 
       return result;
     });
@@ -162,7 +168,7 @@ export default function PlayQuiz() {
   };
 
   /* ========================================================
-     MCQ CLASS HELPER (SAFE)
+     UI HELPERS
   ======================================================== */
   const getChoiceClass = (qIndex, cIndex) => {
     if (!score) return "";
@@ -174,7 +180,6 @@ export default function PlayQuiz() {
     const selected = result.selectedIndex;
 
     if (cIndex === correct) return "correct";
-
     if (cIndex === selected && selected !== correct) return "wrong";
 
     return "";
@@ -196,104 +201,21 @@ export default function PlayQuiz() {
         const result = results[qIndex];
 
         return (
-          <div key={q._id || qIndex} className="play-question-card">
-            <h3>
-              {qIndex + 1}. {q.text}
-            </h3>
-
-            <h4>Points: {q.points || 0}</h4>
-
-            {/* ================= MCQ ================= */}
-            {q.questionType === "mcq" && (
-              <ul>
-                {(q.choices || []).map((choice, cIndex) => {
-                  const selected = answers[qIndex] === cIndex;
-
-                  return (
-                    <li
-                      key={cIndex}
-                      className={[
-                        selected ? "selected" : "",
-                        getChoiceClass(qIndex, cIndex),
-                      ].join(" ")}
-                    >
-                      <label>
-                        <input
-                          type="radio"
-                          name={`q-${qIndex}`}
-                          checked={selected}
-                          onChange={() => handleSelect(qIndex, cIndex)}
-                          disabled={!!score}
-                        />
-                        {choice?.text}
-                      </label>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-
-            {/* ================= DDQ ================= */}
-            {q.questionType === "ddq" && (
-              <DragDropQuestionCard
-                question={q}
-                value={answers[qIndex] || {}}
-                onChange={(val) =>
-                  setAnswers((prev) => ({
-                    ...prev,
-                    [qIndex]: val,
-                  }))
-                }
-                disabled={!!score}
-                result={result}
-                showResults={!!score}
-
-              />
-            )}
-
-            {/* ================= FEEDBACK ================= */}
-            {result && (
-              <div className={`feedback-card ${result.isCorrect ? "correct" : "wrong"}`}>
-
-                <div className="feedback-header">
-                  <span className="status">
-                    {result.isCorrect ? "✅ Correct" : "❌ Incorrect"}
-                  </span>
-                  <span className="points">
-                    +{result.isCorrect ? result.points : 0} pts
-                  </span>
-                </div>
-
-                {/* YOU */}
-                <div className="feedback-row">
-                  <span className="label">Your Answer</span>
-                  <span className={result.isCorrect ? "good" : "bad"}>
-                    {result.selectedText}
-                  </span>
-                </div>
-
-                {/* CORRECT */}
-                {!result.isCorrect && (
-                  <div className="feedback-row">
-                    <span className="label">Correct Answer</span>
-                    <span className="good">{result.correctText}</span>
-                  </div>
-                )}
-
-                {/* EXPLANATION */}
-                {result.explanation && (
-                  <div className="feedback-explanation">
-                    🧠 {result.explanation}
-                  </div>
-                )}
-
-              </div>
-            )}
-          </div>
+          <QuestionPlaycard
+            key={q._id || qIndex}
+            q={q}
+            qIndex={qIndex}
+            answers={answers}
+            setAnswers={setAnswers}
+            result={result}
+            getChoiceClass={getChoiceClass}
+            handleSelect={handleSelect}
+            disabled={!!score}
+          />
         );
       })}
 
-      {/* ================= SCORE / SUBMIT ================= */}
+      {/* ✅ ONLY SUBMIT HERE */}
       {score ? (
         <div className="quiz-score">
           <h2>

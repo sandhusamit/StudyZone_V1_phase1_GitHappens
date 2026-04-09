@@ -101,7 +101,7 @@ export default function QuizListPublic() {
       {viewTitle}
     </button>
 
-    <button className="create-btn" onClick={() => navigate('/create')}>
+    <button title="Create a new quiz" className="create-btn" onClick={() => navigate('/create')}>
       +
     </button>
   </div>
@@ -125,6 +125,7 @@ export default function QuizListPublic() {
                       <button
                         className="edit-btn"
                         onClick={() => navigate('/edit', { state: { quiz } })}
+                        title="Edit Quiz"
                       >
                         Edit
                       </button>
@@ -135,7 +136,11 @@ export default function QuizListPublic() {
                       >
                         Delete
                       </button>
+
+      
                       <button className="share-btn"
+                        disabled={quiz.visibility === 'private'}
+                        title={quiz.visibility === 'private' ? 'Cannot Share Private Quiz' : 'Get Link to Share'}
                         onClick={() => handleShareQuiz(quiz)}
                       >
                         Share

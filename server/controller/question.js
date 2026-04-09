@@ -38,10 +38,10 @@ export const getQuestionById = async (req, res) => {
 // UPDATE a question by ID
 export const updateQuestion = async (req, res) => {
   try {
-    const { text, choices, points, explanation, subject } = req.body;
+    const { text, choices, points, explanation, subject, dragItems, dropboxes } = req.body;
     const updatedQuestion = await QuestionSchema.findByIdAndUpdate(
       req.params.id,
-      { text, choices, points, explanation, subject },
+      { text, choices, points, explanation, subject, dragItems, dropboxes },
       { new: true, runValidators: true }
     );
     if (!updatedQuestion) return res.status(404).json({ message: 'Question not found' });

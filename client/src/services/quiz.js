@@ -162,7 +162,7 @@ export const fetchQuizById = async (quizId) => {
 };
 
 export const fetchQuizByIdGuest = async (quizId, guestToken) => {
-  const res = await fetch(`/api/quizzes/${quizId}`, {
+  const res = await fetch(`/api/quizzes/guest/${quizId}`, {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',
