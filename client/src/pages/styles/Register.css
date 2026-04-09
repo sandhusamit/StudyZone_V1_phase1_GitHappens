@@ -1,0 +1,168 @@
+/* --------------------------------------------------------
+   REGISTER PAGE WRAPPER
+-------------------------------------------------------- */
+
+.register-page {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.register-container {
+  width: 100%;
+  max-width: 500px;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 2.2rem;
+  backdrop-filter: blur(14px);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* --------------------------------------------------------
+   HEADERS
+-------------------------------------------------------- */
+
+.register-title {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.register-subtitle {
+  text-align: center;
+  color: var(--text-light);
+  font-size: 0.95rem;
+}
+
+/* --------------------------------------------------------
+   FORM
+-------------------------------------------------------- */
+
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.register-input {
+  width: 100%;
+}
+
+/* --------------------------------------------------------
+   BUTTONS
+-------------------------------------------------------- */
+
+.register-button-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.register-button {
+  flex: 1;
+}
+
+.register-button-secondary {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: none;
+}
+
+.register-button-secondary:hover {
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: var(--shadow);
+}
+
+/* --------------------------------------------------------
+   EMAIL VERIFY STEP
+-------------------------------------------------------- */
+
+.verify-email-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-align: center;
+}
+
+.verify-email-text {
+  color: var(--text-light);
+}
+
+.verify-email-input {
+  text-align: center;
+  font-size: 1.15rem;
+  letter-spacing: 4px;
+}
+
+.verify-email-timer {
+  text-align: center;
+  color: var(--accent-bright);
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+/* --------------------------------------------------------
+   TWO-FA STEP
+-------------------------------------------------------- */
+
+.twofa-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-align: center;
+  align-items: center;
+}
+
+.twofa-text {
+  color: var(--text-light);
+}
+
+.twofa-qr {
+  width: 250px;
+  max-width: 100%;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: white;
+  padding: 10px;
+  box-shadow: var(--shadow);
+}
+
+.twofa-input {
+  width: 100%;
+  text-align: center;
+  font-size: 1.15rem;
+  letter-spacing: 4px;
+}
+
+/* --------------------------------------------------------
+   STATUS
+-------------------------------------------------------- */
+
+.register-status {
+  text-align: center;
+  color: var(--accent-bright);
+  font-weight: 500;
+}
+
+/* --------------------------------------------------------
+   RESPONSIVE
+-------------------------------------------------------- */
+
+@media (max-width: 600px) {
+  .register-container {
+    padding: 1.5rem;
+  }
+
+  .register-button-row {
+    flex-direction: column;
+  }
+
+  .register-button {
+    width: 100%;
+  }
+}

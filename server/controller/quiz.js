@@ -8,7 +8,16 @@ import express from 'express';
 
 export const createQuiz = async (req, res) => {
   try {
-    const quiz = new QuizSchema(req.body);
+
+    const quiz = new QuizSchema({
+      title: req.body.title,
+      description: req.body.description,
+      visibility: req.body.visibility,
+      author: req.body.author,
+      questions: req.body.questions,
+      rotation: req.body.rotation,
+    });
+
     await quiz.save();
     res.status(201).json(quiz);
   } catch (err) {
@@ -16,6 +25,48 @@ export const createQuiz = async (req, res) => {
   }
 };
 
+// create quiz with bulk questions
+export const createQuizWithQuestions = async (req, res) => {
+  try {
+    const { title, description, author, visibility, questions, rotation } = req.body;
+    
+    console.log("Quiz Author:", author);
+
+    if (!title || !author || !questions || !Array.isArray(questions) || questions.length === 0) {
+      return res.status(400).json({
+        error: "Title, author, and a valid questions array are required."
+      });
+    }
+
+    for (const question of questions) {
+      console.log("Received question:", question);
+
+      if (!question.text || !Array.isArray(question.choices) || question.points === undefined) {
+        return res.status(400).json({
+          error: "Each question must have text, choices, and points."
+        });
+      }
+    }
+
+    const createdQuestions = await QuestionSchema.insertMany(questions);
+
+    const quiz = await QuizSchema.create({
+      title,
+      description,
+      author,
+      visibility,
+      questions: createdQuestions.map((q) => q._id),
+      rotation,
+    });
+    
+    await quiz.save();
+    res.status(201).json(quiz);
+
+  } catch (err) {
+    console.log("createQuizWithQuestions error:", err.message);
+    res.status(400).json({ error: err.message });
+  };
+};
 
 // READ all quizzes
 export const getAllQuizzes = async (req, res) => {
@@ -26,6 +77,18 @@ export const getAllQuizzes = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const getAllPublicQuizzes = async (req, res) => {
+  try {
+    const quizzes = await QuizSchema.find({ visibility: { $in: ['public'] }
+    })
+      .populate('author', 'name')
+      .populate('questions');
+    res.status(200).json(quizzes);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
 
 // READ a single quiz by ID
 export const getQuizById = async (req, res) => {
@@ -43,26 +106,120 @@ export const getQuizById = async (req, res) => {
 // UPDATE a quiz by ID
 export const updateQuiz = async (req, res) => {
   try {
-    const { title, description, questions } = req.body;
+    console.log("FULL req.body:", req.body);
+
+    const { title, description, visibility, questions, rotation } = req.body;
+
     const updatedQuiz = await QuizSchema.findByIdAndUpdate(
       req.params.id,
-      { title, description, questions },
-      { new: true, runValidators: true },
+      { title, description, visibility, questions, rotation },
+      { new: true, runValidators: true }
     );
-    if (!updatedQuiz) return res.status(404).json({ message: 'Quiz not found' });
+
+    if (!updatedQuiz) {
+      return res.status(404).json({ message: "Quiz not found" });
+    }
+
     res.status(200).json(updatedQuiz);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
-
 // DELETE a quiz by ID
 export const deleteQuiz = async (req, res) => {
   try {
-    const deletedQuiz = await QuizSchema.findByIdAndDelete(req.params.id);
-    if (!deletedQuiz) return res.status(404).json({ message: 'Quiz not found' });
-    res.status(200).json({ message: 'Quiz deleted successfully' });
+    const userId = req.user.id; // from JWT
+    const quizId = req.params.id;
+
+    console.log(`User ${userId} is attempting to delete quiz ${quizId}`);
+
+    const quiz = await QuizSchema.findById(quizId);
+
+    if (!quiz) {
+      return res.status(404).json({ message: "Quiz not found" });
+    }
+
+    console.log("Quiz ownership:", quiz.author.toString());
+    // 🔐 Ownership check
+    if (quiz.author.toString() !== userId) {
+      return res.status(403).json({ message: "Not authorized to delete this quiz" });
+    }
+
+    // delete questions first
+    await QuestionSchema.deleteMany({ _id: { $in: quiz.questions } });
+
+    await quiz.deleteOne();
+
+    res.status(200).json({ message: "Quiz deleted successfully" });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// nuke quizzes
+export const deleteAllQuizzes = async (req, res) => {
+  try {
+    await QuizSchema.deleteMany({});
+    res.status(200).json({ message: "All quizzes deleted successfully" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+
+//share quiz by id
+export const shareQuizById = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    //Generate URL 
+    const { id: quizId } = req.params;
+  
+    // optional: ensure user owns quiz
+    // if (quiz.owner.toString() !== req.user.id) return 403
+  
+    const payload = {
+      quizId,
+      scope: 'guest_play'
+    };
+  
+    const token = jwt.sign(payload, process.env.QUIZ_SHARE_SECRET, {
+      expiresIn: '1h' // industry standard
+    });
+  
+    const shareUrl = `${process.env.CLIENT_URL}/play/quiz/${quizId}?access=${token}`;
+
+    //Send URL to email
+    
+
+
+    // This is a placeholder response for demonstration purposes.
+    res.status(200).json({ message: `Quiz ${quizId} shared with ${email}` });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
+}
+
+export const getAllQuizzesByAuthorId = async (req, res) => {
+  try {
+    const { authorId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(authorId)) {
+      return res.status(400).json({ message: 'Invalid author ID' });
+    }
+
+    const quizzes = await QuizSchema.find({ author: authorId })
+      .populate('author', 'name')
+      .populate('questions');
+
+    res.status(200).json(quizzes);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Failed to fetch quizzes' });
+  }
 };
+
+

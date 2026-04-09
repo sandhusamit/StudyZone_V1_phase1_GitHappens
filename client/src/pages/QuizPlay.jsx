@@ -1,91 +1,221 @@
-import { useLocation, useParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
-import './styles/QuizPlay.css';
-import { useAuth } from '../contexts/AuthContext';
+import { useLocation, useParams } from "react-router-dom";
+import { useEffect, useState, useMemo } from "react";
+import "./styles/QuizPlay.css";
+import { useAuth } from "../contexts/AuthContext";
+import DragDropQuestionCard from "../components/PlayQuiz/DDQ/DragDropQuestion.jsx";
+import QuestionPlaycard from "../components/PlayQuiz/QuestionPlaycard";
 
-export default function PlayQuiz() {
+export default function QuizPlay() {
   const { quizId } = useParams();
-  const { state } = useLocation();
-  const [quiz, setQuiz] = useState(state?.quiz || null);
-  const [answers, setAnswers] = useState({}); // track selected choice per question
+  const location = useLocation();
+  const guestToken = useMemo(
+    () => new URLSearchParams(location.search).get("guestToken"),
+    [location.search]
+  );
+
+  
+
+  const { fetchQuiz, fetchGuestQuiz, authLoading } = useAuth();
+
+  const [quiz, setQuiz] = useState(location.state?.quiz ?? null);
+  const [answers, setAnswers] = useState({});
   const [score, setScore] = useState(null);
-  const { isLoading } = useAuth();
+  const [results, setResults] = useState([]);
+  const [roster, setRoster] = useState([]);
 
+  /* ========================================================
+     LOAD QUIZ
+  ======================================================== */
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
+    if (authLoading || !quizId || quiz) return;
 
-    if (!quiz) {
-      const fetchQuiz = async () => {
-        try {
-          const res = await fetch(`http://localhost:3000/api/quizzes/${quizId}`, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`,
-            },
-          });
+    let alive = true;
 
-          if (!res.ok) throw new Error('Failed to fetch quiz');
+    const load = async () => {
+      try {
+        const data = guestToken
+          ? await fetchGuestQuiz(quizId, guestToken)
+          : await fetchQuiz(quizId);
 
-          const data = await res.json();
-          setQuiz(data);
-        } catch (err) {
-          console.error('Error fetching quiz:', err);
-        }
+        const quizData = data?.quiz ?? data;
+
+        if (!alive || !quizData) return;
+
+        setQuiz(quizData);
+      } catch (err) {
+        console.error("Quiz load failed:", err);
+      }
+    };
+
+    load();
+
+    return () => {
+      alive = false;
+    };
+  }, [quizId, guestToken, authLoading, fetchQuiz, fetchGuestQuiz, quiz]);
+
+  /* ========================================================
+     ROSTER
+  ======================================================== */
+  useEffect(() => {
+    if (!quiz?.questions?.length) return;
+
+    const questions = quiz.questions;
+
+    const count =
+      typeof quiz.rotation === "number" && quiz.rotation > 0
+        ? Math.min(quiz.rotation, questions.length)
+        : questions.length;
+
+    const shuffled = [...questions]
+      .map((q) => ({ ...q, _r: Math.random() }))
+      .sort((a, b) => a._r - b._r)
+      .map(({ _r, ...q }) => q);
+
+    setRoster(shuffled.slice(0, count));
+  }, [quiz]);
+
+  if (authLoading || !quiz) return <p>Loading quiz...</p>;
+
+  /* ========================================================
+     ANSWERS
+  ======================================================== */
+  const handleSelect = (qIndex, choiceIndex) => {
+    if (score) return;
+
+    setAnswers((prev) => ({
+      ...prev,
+      [qIndex]: choiceIndex,
+    }));
+  };
+
+  /* ========================================================
+     GRADING ENGINE (FIXED)
+  ======================================================== */
+  const handleSubmit = () => {
+    let earned = 0;
+
+    const review = roster.map((q, index) => {
+      const result = {
+        isCorrect: false,
+        selectedIndex: undefined,
+        correctIndex: undefined,
+        explanation: q.explanation || "",
+        points: q.points || 0,
+        questionType: q.questionType,
       };
 
-      if (!isLoading) fetchQuiz();
-    }
-  }, [quiz, quizId, isLoading]);
+      let isCorrect = false;
 
-  if (!quiz) return <p>Loading...</p>;
+      /* ================= MCQ ================= */
+      if (q.questionType === "mcq") {
+        const selectedIndex = answers[index];
 
-  const handleSelect = (qIndex, choiceIndex) => {
-    setAnswers((prev) => ({ ...prev, [qIndex]: choiceIndex }));
-  };
+        const correctIndex = q.choices?.findIndex((c) => c?.isCorrect);
+        const selectedChoice = q.choices?.[selectedIndex];
+        const correctChoice = q.choices?.[correctIndex];
 
-  const handleSubmit = () => {
-    let totalPoints = 0;
-    let earnedPoints = 0;
+        isCorrect =
+          selectedIndex !== undefined &&
+          correctIndex !== -1 &&
+          selectedIndex === correctIndex;
 
-    quiz.questions.forEach((q, index) => {
-      totalPoints += q.points;
-      const selected = answers[index];
-      if (selected !== undefined && q.choices[selected]?.isCorrect) {
-        earnedPoints += q.points;
+        result.selectedIndex = selectedIndex;
+        result.correctIndex = correctIndex;
+
+        result.selectedText =
+          selectedChoice?.text || "No answer selected";
+        result.correctText =
+          correctChoice?.text || "Missing correct answer";
+
+        if (isCorrect) earned += result.points;
       }
+
+      /* ================= DDQ ================= */
+      if (q.questionType === "ddq") {
+        const placed = answers[index] || {};
+        const dragItems = q.dragItems || [];
+
+        let correct = 0;
+        let wrong = 0;
+
+        (q.dropboxes || []).forEach((box) => {
+          (placed[box.id] || []).forEach((item) => {
+            if (item?.dropboxId === box.id) correct++;
+            else wrong++;
+          });
+        });
+
+        isCorrect =
+          dragItems.length > 0 &&
+          correct === dragItems.length &&
+          wrong === 0;
+
+        if (isCorrect) earned += result.points;
+      }
+
+      result.isCorrect = isCorrect;
+
+      return result;
     });
 
-    setScore({ earned: earnedPoints, total: totalPoints });
+    setResults(review);
+
+    setScore({
+      earned,
+      total: roster.reduce((sum, q) => sum + (q.points || 0), 0),
+    });
   };
 
+  /* ========================================================
+     UI HELPERS
+  ======================================================== */
+  const getChoiceClass = (qIndex, cIndex) => {
+    if (!score) return "";
+
+    const result = results[qIndex];
+    if (!result) return "";
+
+    const correct = result.correctIndex;
+    const selected = result.selectedIndex;
+
+    if (cIndex === correct) return "correct";
+    if (cIndex === selected && selected !== correct) return "wrong";
+
+    return "";
+  };
+
+  /* ========================================================
+     UI
+  ======================================================== */
   return (
     <div className="play-quiz-container">
-      <h1>{quiz.title}</h1>
-      <p>{quiz.description}</p>
+      <h1>{quiz?.title}</h1>
+      <p>{quiz?.description}</p>
 
-      {quiz.questions.map((q, qIndex) => (
-        <div key={q._id || qIndex} className="play-question-card">
-          <h3>{q.text}</h3>
-          <ul>
-            {q.choices.map((choice, cIndex) => (
-              <li key={cIndex}>
-                <label>
-                  <input
-                    type="radio"
-                    name={`question-${qIndex}`}
-                    checked={answers[qIndex] === cIndex}
-                    onChange={() => handleSelect(qIndex, cIndex)}
-                  />
-                  {choice.text}
-                </label>
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
+      <div className="play-quiz-meta">
+        <span>Questions: {roster.length}</span>
+      </div>
 
+      {roster.map((q, qIndex) => {
+        const result = results[qIndex];
+
+        return (
+          <QuestionPlaycard
+            key={q._id || qIndex}
+            q={q}
+            qIndex={qIndex}
+            answers={answers}
+            setAnswers={setAnswers}
+            result={result}
+            getChoiceClass={getChoiceClass}
+            handleSelect={handleSelect}
+            disabled={!!score}
+          />
+        );
+      })}
+
+      {/* ✅ ONLY SUBMIT HERE */}
       {score ? (
         <div className="quiz-score">
           <h2>

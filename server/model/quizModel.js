@@ -18,7 +18,18 @@ const QuizSchema = new mongoose.Schema({
       type: mongoose.Schema.Types.ObjectId,
       ref: "Question"
     }
-  ]
+  ],
+  visibility: {
+    type: String,
+    enum: ["public", "unlisted", "private"],
+    default: "private",
+    index: true
+  },
+  rotation: { 
+    type: Number,
+  }, 
+  
+
 });
 
 export default mongoose.model("Quiz", QuizSchema, "quizzes");

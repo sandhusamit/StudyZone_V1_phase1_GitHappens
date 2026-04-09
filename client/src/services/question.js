@@ -3,9 +3,9 @@ const END_POINT = '/api/questions';
 export const getAllQuestions = async (jwtToken) => {
     const res = await fetch(END_POINT, {
       method: 'GET',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${jwtToken}`,
       },
     });
   
@@ -18,12 +18,13 @@ export const getAllQuestions = async (jwtToken) => {
   }
 
 
-export const createQuestion = async (question, token) => {
+export const createQuestion = async (question) => {
+    console.log("Creating question type: ", question.questionType);
     const res = await fetch(END_POINT, {
       method: 'POST',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(question),
     });
@@ -40,9 +41,9 @@ export const createQuestion = async (question, token) => {
 export const updateQuestion = async (questionId, updatedQuestion, token) => {
     const res = await fetch(`${END_POINT}/${questionId}`, {
       method: 'PUT',
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(updatedQuestion),
     });
@@ -54,3 +55,19 @@ export const updateQuestion = async (questionId, updatedQuestion, token) => {
     const data = await res.json();
     return data;
   };
+
+export const getQuestionById = async (questionId) => {
+  const res = await fetch(`${END_POINT}/${questionId}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (res.status !== 200) {
+    return { error: true, message: 'A problem occured while fetching question.' };
+  }
+
+  const data = await res.json();
+  return data;
+};

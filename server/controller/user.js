@@ -4,6 +4,7 @@ import qrcode from 'qrcode';
 import generateToken from '../utils/jwt.js';
 import userModel from '../model/userModel.js';
 
+
 //  READ all users
 export const getAllUsers = async (req, res) => {
   try {
@@ -45,12 +46,61 @@ export const createUser = async (req, res) => {
 
     const token = generateToken(savedUser);
 
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60 * 1000 // 1 day
+    }
+    )
+
     return res.status(200).json({
       hasError: false,
       message: 'User registered successfully',
       user: savedUser,
       token
     });
+
+  } catch (error) {
+    console.log('Error in createUser:', error);
+    return res.status(500).json({
+      hasError: true,
+      status: 500,
+      message: error.message
+    });
+  }
+};
+
+export const checkEmailExists = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    const exists = await userModel.exists({ email });
+
+    return res.json({ exists: !!exists });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+export const getUserByUsername = async (req, res) => {
+  const { username } = req.body;
+  try {
+    const existingUser = await userModel.findOne({ username: req.body.username });
+
+
+    if (!existingUser) {
+      return res.status(200).json({
+        hasError: false,
+        user: null
+      });
+    }
+    
+    return res.status(200).json({
+      hasError: false,
+      user: existingUser
+    });
+    
 
   } catch (error) {
     return res.status(500).json({
@@ -60,6 +110,119 @@ export const createUser = async (req, res) => {
     });
   }
 };
+
+import { Resend } from 'resend';
+import { generateOTP } from '../utils/otp.js';
+import SuspendedEmailSchema from '../model/suspendedEmailModel.js';
+import otpSchema from '../model/otpModel.js';
+const resendKey = process.env.RESEND_API_KEY;
+
+if (!resendKey) {
+  console.error('🚨 Resend API key missing! Set RESEND_API_KEY in .env');
+}
+
+const resend = resendKey ? new Resend(resendKey) : null;
+
+export const sendEmailOTP = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+
+    if (!resend) {
+      return res.status(500).json({ message: 'Email service not configured' });
+    }
+
+    const now = new Date();
+
+    let record = await SuspendedEmailSchema.findOne({ email });
+
+    //If record doesnt exist, create new
+    if (!record) {
+      // First attempt
+      await SuspendedEmailSchema.create({
+        email,
+        lastAttempt: now,
+      });    
+
+
+    } else {
+
+      if (record.attempts >= 3) {
+        return res.status(403).json({
+          message: 'Too many attempts. Try again in 1 hour.',
+        });
+      }
+
+      //exists but under limit - increment
+      record.attempts += 1;
+      record.lastAttempt = now;
+      await record.save();
+    };
+
+        //check to see if email has otp already - if so then delete
+    try {    
+      const exists = await otpSchema.findOneAndDelete({ email });
+      console.log('Deleted existing OTP record:', exists);
+    } catch (err) {
+      if (err.status === 404) {
+      console.error('Error deleting existing OTP:', err);
+    }};
+
+    
+
+    const otp = await generateOTP(email);
+    // Set expiry: 2 minutes from now
+    const expiresAt = new Date(Date.now() + 2 * 60 * 1000); //2 minutes
+
+
+
+    // Save to DB
+    console.log('Saving OTP to DB:', { email, otp, expiresAt });
+    const otpEntry = new otpSchema({ email, otp, expiresAt });
+    const otpRecord = await otpEntry.save();
+
+    console.log('OTP saved:', otpRecord);
+    await resend.emails.send({
+      from: 'StudyZone <onboarding@resend.dev>',
+      to: email,
+      subject: 'StudyZone - Email Verification',
+      html: `<h1>Your OTP is ${otp}</h1>`
+    });
+
+
+    
+    res.status(200).json({ message: 'OTP sent successfully' });
+
+  } catch (err) {
+    console.error('OTP error:', err);
+    res.status(500).json({ message: 'Failed to send OTP' });
+  }
+};
+
+import EmailOTP from '../model/otpModel.js';
+import otpModel from '../model/otpModel.js';
+
+export const verifyEmailOTP = async (req, res) => {
+  const { email, otp } = req.body;
+  try {
+    const otpEntry = await EmailOTP.findOne({ email }).sort({ expiresAt: -1 }); // get latest
+
+    if (!otpEntry) return res.status(404).json({ message: 'OTP not found. Request a new one.' });
+    if (otpEntry.expiresAt < new Date()) return res.status(401).json({ message: 'OTP expired' });
+    if (otpEntry.otp !== otp) return res.status(401).json({ message: 'Invalid OTP' });
+
+    // Optional: delete used OTP
+    await EmailOTP.deleteMany({ email });
+
+    res.status(200).json({ message: 'Email verified successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: error.message });
+  }
+};
+
 
 
 // UPDATE an existing user by ID
@@ -119,11 +282,54 @@ export const loginUser = async (req, res) => {
 
     const token = generateToken(user); // your JWT function
     console.log("User's ID during login:", user._id);
+
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+      sameSite: 'Strict',
+      maxAge: 24 * 60 * 60 * 1000 // 1 day
+  });
+
+
     return res.status(200).json({ message: 'User logged in successfully', user, token});
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
+
+//logout user
+export const logoutUser = async (req, res) => {
+  try {
+    try{
+        res.clearCookie('token', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'Strict',
+        });
+        return res.status(200).json({ message: "Logged out successfully" });
+    } catch (error) {
+        console.error("Error clearing cookie:", error);
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Cookie helper
+
+export const getCurrentUser = async (req, res) => {
+  try {
+    const user = await userModel.findById(req.user.id); // Exclude sensitive fields
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    return res.status(200).json({ username: user.username, email: user.email, firstName: user.firstName, lastName: user.lastName, role: user.role });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
 
 
 //Generate and return a QR code for 2fa setup
@@ -140,8 +346,15 @@ export const setup2FA = async (req, res) => {
     try {
       const qrCodeImageUrl = await qrcode.toDataURL(otpauth);
       // Save the secret to the user's record
-      const user = await userModel.findOneAndUpdate({email}, { otpSecret: secret });
-
+      const user = await userModel.findOneAndUpdate(
+        { email },
+        {
+          otpSecret: secret,
+          is2FAEnabled: true
+        },
+        { new: true }
+      );      
+      
 
       if (!user) {
         return res.status(404).json({ message: 'User not found' });

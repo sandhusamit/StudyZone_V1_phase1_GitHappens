@@ -4,8 +4,9 @@ import express from "express";
 // CREATE a new question
 export const createQuestion = async (req, res) => {
   try {
-    const { text, choices, points } = req.body;
-    const newQuestion = new QuestionSchema({ text, choices, points });
+    const { text, choices, points, explanation, subject, questionType, dragItems, dropboxes } = req.body;
+
+    const newQuestion = new QuestionSchema({ text, choices, points, explanation, subject, questionType, dragItems, dropboxes });
     const savedQuestion = await newQuestion.save();
     res.status(201).json(savedQuestion);
   } catch (error) {
@@ -37,10 +38,10 @@ export const getQuestionById = async (req, res) => {
 // UPDATE a question by ID
 export const updateQuestion = async (req, res) => {
   try {
-    const { text, choices, points } = req.body;
+    const { text, choices, points, explanation, subject, dragItems, dropboxes } = req.body;
     const updatedQuestion = await QuestionSchema.findByIdAndUpdate(
       req.params.id,
-      { text, choices, points },
+      { text, choices, points, explanation, subject, dragItems, dropboxes },
       { new: true, runValidators: true }
     );
     if (!updatedQuestion) return res.status(404).json({ message: 'Question not found' });
@@ -60,3 +61,14 @@ export const deleteQuestion = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
+export const deleteAllQuestions = async (req, res) => {
+  try {
+    await QuestionSchema.deleteMany({});
+    res.status(200).json({ message: 'All questions deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  } 
+};
+
+

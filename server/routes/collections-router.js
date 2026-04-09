@@ -12,6 +12,12 @@ import {
   setup2FA,
   verify2FA,
   verifyOTP,
+  getCurrentUser,
+  logoutUser,
+  sendEmailOTP,
+  verifyEmailOTP,
+  checkEmailExists,
+  getUserByUsername,
 } from '../controller/user.js';
 
 // Quiz controller
@@ -21,7 +27,13 @@ import {
   getQuizById,
   updateQuiz,
   deleteQuiz,
+  getAllQuizzesByAuthorId,
+  getAllPublicQuizzes,
+  createQuizWithQuestions,
+  deleteAllQuizzes,
 } from '../controller/quiz.js';
+
+import { generateGuestToken } from '../utils/guestJwt.js';
 
 // Question controller
 import {
@@ -30,6 +42,7 @@ import {
   getQuestionById,
   updateQuestion,
   deleteQuestion,
+  deleteAllQuestions,
 } from '../controller/question.js';
 
 // Answer controller
@@ -43,6 +56,7 @@ import {
 
 // Middleware
 import authMiddleware from '../middleware/auth.js';
+import guestMiddleware from '../middleware/authGuest.js';
 import authSelf from '../middleware/authSelf.js';
 
 const router = express.Router();
@@ -51,10 +65,15 @@ const router = express.Router();
 router.get('/api/users/:id', authMiddleware, getUserById);
 router.get('/api/users', getAllUsers);
 router.post('/api/users', createUser);
+router.post('/api/auth/check-email', checkEmailExists);
+router.post('/api/users/username', getUserByUsername);
 router.put('/api/users/:id', authMiddleware, authSelf, updateUserById);
 router.delete('/api/users/:id', authMiddleware, authSelf, deleteUserById);
 router.delete('/api/users', authMiddleware, deleteAllUsers);
 router.post('/api/login', loginUser);
+router.post('/')
+router.post("/api/me", getCurrentUser);
+router.post('/api/logout', logoutUser);
 
 // 2FA routes 
 router.post('/api/setup-2fa', setup2FA);
@@ -62,12 +81,36 @@ router.post('/api/verify-2fa', verify2FA );
 router.post('/api/verify-2fa-login', verifyOTP);
 
 
+// Email verification route
+router.post('/api/otp-email', sendEmailOTP);
+router.post('/api/verify-otp-email', verifyEmailOTP);
+
+
+
 // -------------------- Quiz Routes --------------------
 router.get('/api/quizzes/:id', authMiddleware, getQuizById);
+router.get('/api/quizzes/guest/:id', guestMiddleware, getQuizById);
+
+
+router.get("/api/public/quizzes", getAllPublicQuizzes);
+router.post("/api/quizzes/bulk-create", createQuizWithQuestions);
+router.post("/api/quizzes/guesttoken", authMiddleware, (req, res) => {
+  const { quizId } = req.body;
+  const token = generateGuestToken(quizId);
+  res.json({ token });
+});
+
+// router.delete("/api/quizzes/bulk-delete", deleteAllQuizzes);
+
+
+
+
 router.get('/api/quizzes', authMiddleware, getAllQuizzes);
-router.post('/api/quizzes',createQuiz); // feature for later - add question id's as params to link
+router.post('/api/quizzes', createQuiz); 
 router.put('/api/quizzes/:id', authMiddleware,updateQuiz);
 router.delete('/api/quizzes/:id', authMiddleware, deleteQuiz);
+router.get('/api/quizzes/author/:authorId', getAllQuizzesByAuthorId);
+// router.post('/api/quizzes/:id/share', authMiddleware, shareQuiz);
 
 // -------------------- Question Routes --------------------
 router.get('/api/questions/:id', getQuestionById);
@@ -75,6 +118,8 @@ router.get('/api/questions', getAllQuestions);
 router.post('/api/questions', createQuestion);
 router.put('/api/questions/:id', updateQuestion);
 router.delete('/api/questions/:id', deleteQuestion);
+// router.delete('/api/questions', deleteAllQuestions);
+// router.put('/api/questions/', updateAllQuestions);
 
 // -------------------- Answer Routes --------------------
 router.get('/api/answers/:id', getAnswerById);
