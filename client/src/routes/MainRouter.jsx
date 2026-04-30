@@ -1,43 +1,65 @@
-import { Routes, Route } from 'react-router-dom';
-import ProtectRoute from './ProtectRoute';
-import NavBar from '../components/NavBar';
-import Home from '../pages/Home';
-import Login from '../pages/Login';
-import Register from '../pages/Register';
-import Dashboard from '../pages/Dashboard';
-import QuizList from '../pages/QuizList';
-import QuizPlay from '../pages/QuizPlay';
-import CreateQuiz from '../pages/CreateQuiz';
-import Profile from '../pages/Profile';
-import Leaderboard from '../pages/Leaderboard';
-import ErrorPage from '../pages/ErrorPage';
-import Success from '../pages/Success';
-import EditQuiz from '../pages/EditQuiz';
-import DiagramQuestion from '../pages/DiagramQuestion';
-import CreateDiagramQuestion from '../pages/CreateDiagramQuestion';
-import GuestRoute from './GuestRoute';
+import { Routes, Route } from "react-router-dom";
 
+import ProtectRoute from "./ProtectRoute";
+import GuestRoute from "./GuestRoute";
 
+import NavBar from "../components/NavBar";
+import Home from "../pages/Home";
+import Login from "../pages/Login";
+import Register from "../pages/Register";
+import Dashboard from "../pages/Dashboard";
+import QuizList from "../pages/QuizList";
+import QuizPlay from "../pages/QuizPlay";
+import CreateQuiz from "../pages/CreateQuiz";
+import Profile from "../pages/Profile";
+import Leaderboard from "../pages/Leaderboard";
+import ErrorPage from "../pages/ErrorPage";
+import Success from "../pages/Success";
+import EditQuiz from "../pages/EditQuiz";
+import DiagramQuestion from "../pages/DiagramQuestion";
+import CreateDiagramQuestion from "../pages/CreateDiagramQuestion";
 
 const MainRouter = () => {
   return (
     <>
       <NavBar />
+
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/diagram" element={<DiagramQuestion />} />
-        <Route path="/create-diagram" element={<CreateDiagramQuestion />} />
+
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+
+        <Route path="/diagram" element={<DiagramQuestion />} />
+        <Route path="/create-diagram" element={<CreateDiagramQuestion />} />
+
         <Route
-          path="/quizlist"
+          path="/dashboard"
           element={
             <ProtectRoute>
-              <QuizList />
+              <Dashboard />
             </ProtectRoute>
           }
         />
+
+        <Route
+          path="/quizlist"
+          element={
+            <GuestRoute>
+              <QuizList />
+            </GuestRoute>
+          }
+        />
+
+        <Route
+          path="/play/:quizId"
+          element={
+            <GuestRoute allowGuestToken>
+              <QuizPlay />
+            </GuestRoute>
+          }
+        />
+
         <Route
           path="/edit"
           element={
@@ -46,22 +68,7 @@ const MainRouter = () => {
             </ProtectRoute>
           }
         />
-        <Route
-          path="/play/:quizId"
-          element={
-            <GuestRoute>
-              <QuizPlay />
-            </GuestRoute>
-          }
-        />
-        <Route
-          path="/play/:quizId?guestToken=:guestToken"
-          element={
-            <GuestRoute>
-              <QuizPlay />
-            </GuestRoute>
-          }
-        />
+
         <Route
           path="/create"
           element={
@@ -70,6 +77,7 @@ const MainRouter = () => {
             </ProtectRoute>
           }
         />
+
         <Route
           path="/profile"
           element={
@@ -82,7 +90,6 @@ const MainRouter = () => {
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/success" element={<Success />} />
         <Route path="/error" element={<ErrorPage />} />
-        {/* <Route path="/bulk-import" element={<BulkQuizImportPage />} /> */}
       </Routes>
     </>
   );

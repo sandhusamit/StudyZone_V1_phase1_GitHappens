@@ -1,0 +1,112 @@
+/* ================= MCQ PLAY ================= */
+
+.play-question-card {
+  margin-top: 18px;
+}
+
+/* REMOVE DEFAULT LIST STYLE */
+.play-question-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ================= OPTION CARD ================= */
+
+.play-question-card li {
+  width: 100%;
+  border-radius: 16px;
+
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(120, 150, 255, 0.16);
+
+  transition: 0.22s ease;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+/* ================= LABEL (FULL CLICK AREA) ================= */
+
+.play-question-card li label {
+  display: grid;
+  grid-template-columns: 28px 1fr;
+  gap: 14px;
+
+  padding: 14px 16px;
+  align-items: center;
+
+  width: 100%;
+  cursor: pointer;
+}
+
+/* ================= RADIO ================= */
+
+.play-question-card input[type="radio"] {
+  accent-color: #7dffb5;
+  transform: scale(1.2);
+  cursor: pointer;
+}
+
+/* ================= TEXT ================= */
+
+.play-question-card li label {
+  color: #dce7ff;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* ================= HOVER ================= */
+
+.play-question-card li:hover:not(.disabled) {
+  transform: translateY(-2px);
+  border-color: rgba(106, 180, 255, 0.5);
+  background: rgba(106, 180, 255, 0.08);
+  box-shadow: 0 0 16px rgba(106, 180, 255, 0.2);
+}
+
+/* ================= SELECTED ================= */
+
+.play-question-card li.selected {
+  border-color: rgba(125, 255, 181, 0.6);
+  background: rgba(125, 255, 181, 0.08);
+  box-shadow: 0 0 16px rgba(125, 255, 181, 0.18);
+}
+
+/* ================= CORRECT / WRONG (FROM getChoiceClass) ================= */
+
+.play-question-card li.correct {
+  border-color: rgba(125, 255, 181, 0.9);
+  background: rgba(125, 255, 181, 0.12);
+  box-shadow: 0 0 18px rgba(125, 255, 181, 0.3);
+}
+
+.play-question-card li.incorrect {
+  border-color: rgba(255, 90, 90, 0.6);
+  background: rgba(255, 90, 90, 0.1);
+  box-shadow: 0 0 14px rgba(255, 90, 90, 0.25);
+}
+
+/* ================= DISABLED ================= */
+
+.play-question-card li.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ================= MOBILE ================= */
+
+@media (max-width: 600px) {
+  .play-question-card li label {
+    grid-template-columns: 24px 1fr;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .play-question-card li label {
+    font-size: 0.95rem;
+  }
+}

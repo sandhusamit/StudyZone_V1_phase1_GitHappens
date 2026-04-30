@@ -1,0 +1,428 @@
+/* ================= MATRIX BUILDER ================= */
+
+.matrix-builder {
+  margin-top: 20px;
+  padding: 20px;
+  border-radius: 22px;
+  background: linear-gradient(
+    180deg,
+    rgba(8, 13, 28, 0.72),
+    rgba(10, 16, 32, 0.9)
+  );
+  border: 1px solid rgba(120, 150, 255, 0.16);
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  box-shadow: inset 0 0 24px rgba(120, 150, 255, 0.035);
+}
+
+.matrix-topbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.matrix-operation-group,
+.matrix-answer-mode-select {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.matrix-add-matrix-btn,
+.matrix-action-btn {
+  width: auto;
+  min-width: 120px;
+  margin: 0;
+}
+
+/* ================= MATRIX LIST / BLOCKS ================= */
+
+.matrix-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+}
+
+.matrix-block {
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.032);
+  border: 1px solid rgba(120, 150, 255, 0.14);
+  box-shadow: inset 0 0 18px rgba(120, 150, 255, 0.035);
+}
+
+.matrix-answer-block {
+  background: rgba(77, 255, 154, 0.035);
+  border-color: rgba(77, 255, 154, 0.18);
+}
+
+/* ================= HEADERS ================= */
+
+.matrix-header,
+.matrix-answer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.matrix-section-kicker {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.72rem;
+  letter-spacing: 1.7px;
+  text-transform: uppercase;
+  color: rgba(159, 179, 223, 0.76);
+}
+
+.matrix-answer-builder h4 {
+  margin: 0;
+  color: #7dffb5;
+  font-size: 1rem;
+}
+
+/* ================= LABEL INPUT ================= */
+
+.matrix-label-input {
+  width: 130px;
+  padding: 9px 11px;
+  text-align: center;
+  font-weight: 800;
+  font-size: 1rem;
+  border-radius: 11px;
+  border: 1px solid rgba(120, 150, 255, 0.28);
+  background: rgba(255, 255, 255, 0.055);
+  color: #eef3ff;
+  outline: none;
+  transition: 0.18s ease;
+}
+
+.matrix-label-input:focus {
+  border-color: rgba(0, 255, 255, 0.68);
+  box-shadow: 0 0 0 2px rgba(0, 255, 255, 0.12);
+}
+
+.matrix-label-input.error {
+  border-color: rgba(255, 90, 90, 0.75);
+  background: rgba(255, 90, 90, 0.08);
+  box-shadow: 0 0 0 2px rgba(255, 90, 90, 0.13);
+}
+
+/* ================= BUTTONS ================= */
+
+.matrix-remove-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  border: 1px solid rgba(255, 90, 90, 0.5);
+  background: rgba(255, 90, 90, 0.08);
+  color: #ff8f8f;
+  cursor: pointer;
+  transition: 0.18s ease;
+  font-weight: 900;
+}
+
+.matrix-remove-btn:hover:not(:disabled) {
+  background: rgba(255, 90, 90, 0.18);
+  transform: translateY(-1px);
+}
+
+.matrix-remove-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.matrix-mini-btn {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 90, 90, 0.45);
+  background: rgba(255, 90, 90, 0.08);
+  color: #ff8f8f;
+  font-size: 1.2rem;
+  font-weight: 900;
+  cursor: pointer;
+  transition: 0.18s ease;
+}
+
+.matrix-mini-btn:hover:not(:disabled) {
+  background: rgba(255, 90, 90, 0.18);
+  transform: translateY(-1px);
+}
+
+.matrix-mini-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ================= DIVIDER CONTROLS ================= */
+
+.matrix-divider-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.matrix-divider-controls label {
+  color: #9fb3df;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.matrix-divider-controls select,
+.matrix-answer-mode-select select,
+.matrix-operation-group select {
+  padding: 9px 11px;
+  border-radius: 11px;
+  border: 1px solid rgba(120, 150, 255, 0.24);
+  background: rgba(12, 18, 34, 0.95);
+  color: #eef3ff;
+  outline: none;
+  transition: 0.18s ease;
+}
+
+.matrix-divider-controls select:focus,
+.matrix-answer-mode-select select:focus,
+.matrix-operation-group select:focus {
+  border-color: rgba(0, 255, 255, 0.65);
+  box-shadow: 0 0 0 2px rgba(0, 255, 255, 0.1);
+}
+
+/* ================= MATRIX EDITOR ================= */
+
+.matrix-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+
+.matrix-col-controls {
+  display: grid;
+  gap: 8px;
+  align-items: center;
+  width: max-content;
+}
+
+.matrix-control-spacer {
+  width: 44px;
+}
+
+.matrix-row-shell {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: max-content;
+}
+
+.matrix-row-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 10px;
+}
+
+.matrix-grid {
+  display: grid;
+  gap: 8px;
+}
+
+/* ================= BRACKETS ================= */
+
+.matrix-bracket-wrap {
+  position: relative;
+  display: inline-block;
+  padding: 10px 18px;
+  background: rgba(255, 255, 255, 0.018);
+  border-radius: 14px;
+}
+
+.matrix-bracket-wrap::before,
+.matrix-bracket-wrap::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 12px;
+  height: 100%;
+}
+
+.matrix-bracket-wrap::before {
+  left: 0;
+  border-left: 3px solid rgba(125, 180, 255, 0.75);
+  border-top: 3px solid rgba(125, 180, 255, 0.75);
+  border-bottom: 3px solid rgba(125, 180, 255, 0.75);
+  border-radius: 10px 0 0 10px;
+}
+
+.matrix-bracket-wrap::after {
+  right: 0;
+  border-right: 3px solid rgba(125, 180, 255, 0.75);
+  border-top: 3px solid rgba(125, 180, 255, 0.75);
+  border-bottom: 3px solid rgba(125, 180, 255, 0.75);
+  border-radius: 0 10px 10px 0;
+}
+
+/* ================= INPUTS ================= */
+
+.matrix-input {
+  width: 72px;
+  height: 48px;
+  text-align: center;
+  border-radius: 12px;
+  border: 1px solid rgba(120, 150, 255, 0.3);
+  background: rgba(255, 255, 255, 0.055);
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 750;
+  outline: none;
+  transition: 0.18s ease;
+  box-sizing: border-box;
+}
+
+.matrix-input:hover {
+  border-color: rgba(125, 255, 181, 0.58);
+  background: rgba(125, 255, 181, 0.075);
+}
+
+.matrix-input:focus {
+  border-color: rgba(0, 255, 255, 0.72);
+  background: rgba(0, 255, 255, 0.08);
+  box-shadow:
+    0 0 0 2px rgba(0, 255, 255, 0.13),
+    0 0 18px rgba(0, 255, 255, 0.18);
+}
+
+/* ================= AUGMENTED LINE ================= */
+
+.matrix-augmented-wrap {
+  position: relative;
+}
+
+.matrix-augmented-line {
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  width: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.82);
+  box-shadow: 0 0 10px rgba(125, 180, 255, 0.8);
+  z-index: 5;
+  pointer-events: none;
+}
+
+.matrix-augmented-line.answer {
+  background: rgba(125, 255, 181, 0.95);
+  box-shadow: 0 0 12px rgba(125, 255, 181, 0.9);
+}
+
+/* ================= ADD CONTROLS ================= */
+
+.matrix-add-controls {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+/* ================= EXPECTED ANSWERS ================= */
+
+.matrix-answer-builder {
+  margin-top: 4px;
+  padding: 20px;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
+  background: linear-gradient(
+    135deg,
+    rgba(77, 255, 154, 0.065),
+    rgba(77, 255, 154, 0.025)
+  );
+  border: 1px solid rgba(77, 255, 154, 0.24);
+  box-shadow: 0 0 22px rgba(77, 255, 154, 0.07);
+}
+
+.matrix-answer-builder .matrix-bracket-wrap {
+  background: rgba(77, 255, 154, 0.035);
+  box-shadow: inset 0 0 12px rgba(125, 255, 181, 0.07);
+}
+
+.matrix-answer-builder .matrix-input {
+  border-color: rgba(125, 255, 181, 0.35);
+  background: rgba(125, 255, 181, 0.055);
+  color: #eafff4;
+}
+
+.matrix-answer-builder .matrix-input:focus {
+  border-color: rgba(77, 255, 154, 0.88);
+  background: rgba(77, 255, 154, 0.1);
+  box-shadow:
+    0 0 0 2px rgba(77, 255, 154, 0.2),
+    0 0 18px rgba(77, 255, 154, 0.24);
+}
+
+.scalar-answer-block {
+  border-color: rgba(77, 255, 154, 0.2);
+}
+
+.scalar-answer-block .matrix-input {
+  width: 180px;
+  max-width: 100%;
+}
+
+/* ================= WARNINGS ================= */
+
+.matrix-warning {
+  margin-top: 6px;
+  margin-bottom: 12px;
+  color: rgba(255, 135, 135, 0.9);
+  font-style: italic;
+  font-size: 0.95rem;
+  letter-spacing: 0.3px;
+}
+
+/* ================= MOBILE ================= */
+
+@media (max-width: 768px) {
+  .matrix-builder {
+    padding: 14px;
+  }
+
+  .matrix-topbar,
+  .matrix-header,
+  .matrix-answer-header {
+    align-items: stretch;
+  }
+
+  .matrix-block,
+  .matrix-answer-builder {
+    padding: 14px;
+  }
+
+  .matrix-input {
+    width: 60px;
+    height: 44px;
+  }
+
+  .matrix-add-controls,
+  .matrix-topbar {
+    flex-direction: column;
+  }
+
+  .matrix-add-matrix-btn,
+  .matrix-action-btn {
+    width: 100%;
+  }
+}

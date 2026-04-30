@@ -1,17 +1,29 @@
-import { useLocation } from 'react-router-dom';
-import { Navigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { Navigate, useLocation } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
-export default function GuestRoute({ children }) {
-const { isLoggedIn, isGuest, authLoading } = useAuth();  const location = useLocation();
+export default function GuestRoute({ children, allowGuestToken = false }) {
+  const location = useLocation();
+
+  const {
+    isLoggedIn,
+    isGuestLoggedIn,
+    authLoading,
+  } = useAuth();
 
   const searchParams = new URLSearchParams(location.search);
   const guestToken = searchParams.get("guestToken");
 
-
-  if (isLoggedIn || isGuest || guestToken) {
-    return children;
+  if (authLoading) {
+    return <p>Loading...</p>;
   }
 
-  return <Navigate to="/" />;
+  if (isLoggedIn || isGuestLoggedIn) {
+    return <>{children}</>;
+  }
+
+  if (allowGuestToken && guestToken) {
+    return <>{children}</>;
+  }
+
+  return <Navigate to="/" state={{ from: location }} replace />;
 }

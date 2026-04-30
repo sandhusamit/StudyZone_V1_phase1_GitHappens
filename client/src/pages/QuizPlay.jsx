@@ -52,15 +52,23 @@ export default function QuizPlay() {
     return () => {
       alive = false;
     };
-  }, [quizId, guestToken, authLoading, fetchQuiz, fetchGuestQuiz, quiz]);
-
+  }, [quizId, guestToken, authLoading, fetchQuiz, fetchGuestQuiz]);
   /* ========================================================
      ROSTER
   ======================================================== */
+  const unwrapQuestion = (item) => {
+  const q = item.questionId || item;
+
+  return {
+    ...q,
+    questionModel: item.questionModel || q.questionModel || "Question"
+  };
+  };
+
   useEffect(() => {
     if (!quiz?.questions?.length) return;
 
-    const questions = quiz.questions;
+    const questions = quiz.questions.map(unwrapQuestion);
 
     const count =
       typeof quiz.rotation === "number" && quiz.rotation > 0
@@ -154,10 +162,66 @@ export default function QuizPlay() {
         if (isCorrect) earned += result.points;
       }
 
+      /*================= Matrix Question ================= */
+      if (q.questionModel === "MatrixQuestion") {
+        const expectedAnswers =
+          q.expectedAnswers || (q.expectedAnswer ? [q.expectedAnswer] : []);
+
+        const userAnswers = answers[index] || [];
+
+        const isMatrixAnswer = (answer) =>
+          answer && typeof answer === "object" && Array.isArray(answer.rows);
+
+        const isScalarAnswer = (answer) => typeof answer === "number";
+
+        const compareMatrix = (expectedMatrix, userMatrix) => {
+          if (!expectedMatrix?.rows || !Array.isArray(userMatrix)) return false;
+
+          return expectedMatrix.rows.every((row, r) =>
+            row.every(
+              (val, c) => Number(userMatrix?.[r]?.[c]) === Number(val)
+            )
+          );
+        };
+
+        const compareScalar = (expectedScalar, userScalar) => {
+          return (
+            userScalar !== undefined &&
+            userScalar !== "" &&
+            Number(userScalar) === Number(expectedScalar)
+          );
+        };
+
+        isCorrect =
+          expectedAnswers.length > 0 &&
+          expectedAnswers.every((expected, answerIndex) => {
+            const userAnswer = userAnswers?.[answerIndex];
+
+            if (isScalarAnswer(expected)) {
+              return compareScalar(expected, userAnswer);
+            }
+
+            if (isMatrixAnswer(expected)) {
+              return compareMatrix(expected, userAnswer);
+            }
+
+            return false;
+          });
+
+        result.expectedAnswers = expectedAnswers;
+        result.userAnswers = userAnswers;
+
+        if (isCorrect) earned += result.points;
+      }
+
+
       result.isCorrect = isCorrect;
 
       return result;
     });
+
+
+
 
     setResults(review);
 

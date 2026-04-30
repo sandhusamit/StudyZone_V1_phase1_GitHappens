@@ -1,3 +1,4 @@
+import './QuestionCard.css';
 export default function MCQ_Card({ q, qIndex, updateChoiceText, setCorrectChoice, addChoice, removeChoice }) {
     return (
         <div className="mcq-question">

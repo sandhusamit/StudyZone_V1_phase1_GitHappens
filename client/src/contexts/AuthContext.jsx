@@ -1,18 +1,18 @@
 /*
   AuthContext
-  - Cookie-based JWT auth (httpOnly)
+  - Cookie-based JWT auth
   - No localStorage
   - No token state
   - Auth state resolved via /api/me
 */
 
-import { createContext, useState, useEffect, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { createContext, useState, useEffect, useContext, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 
 import {
   registerUser as registerUserService,
   getUserDataById as getUserDataByIdService,
-} from '../services/user';
+} from "../services/user";
 
 import {
   getAllQuizzes as fetchQuizzesService,
@@ -24,20 +24,21 @@ import {
   createBulkQuiz as createBulkQuizService,
   fetchQuizById as fetchQuizByIdService,
   fetchQuizByIdGuest as fetchGuestQuizByIdService,
-} from '../services/quiz';
+} from "../services/quiz";
 
 import {
   loginUser as loginUserService,
   logoutUser as logoutService,
-} from '../services/auth';
+  loginGuest as loginGuestService,
+} from "../services/auth";
 
 import {
   getAllQuestions as fetchQuestionsService,
   createQuestion as createQuestionService,
   updateQuestion as updateQuestionService,
   getQuestionById as fetchQuestionByIdService,
-} from '../services/question';
-import { set } from 'mongoose';
+  createMatrixQuestion as createMatrixQuestionService,
+} from "../services/question";
 
 export const AuthContext = createContext();
 
@@ -46,363 +47,473 @@ export function AuthProvider({ children }) {
 
   const [authUserId, setAuthUserId] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isGuestLoggedIn, setIsGuestLoggedIn] = useState(false);
   const [isGuest, setIsGuest] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
 
-  // 🔥 FIX: split loading states
   const [authLoading, setAuthLoading] = useState(true);
   const [quizLoading, setQuizLoading] = useState(false);
 
-  /* =========================
-     AUTH CHECK ON APP LOAD
-     ========================= */
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await fetch('/api/me', {
-          credentials: 'include',
+        const res = await fetch("/api/me", {
+          credentials: "include",
         });
 
         if (!res.ok) {
+          setAuthUserId(null);
           setIsLoggedIn(false);
+          setIsGuest(false);
+          setIsGuestLoggedIn(false);
           return;
         }
 
         const data = await res.json();
-        setAuthUserId(data.user._id);
-        setIsLoggedIn(true);
+        const user = data.user;
+
+        setAuthUserId(user?._id || user?.guestId || null);
+
+        if (user?.role === "guest") {
+          setIsGuest(true);
+          setIsGuestLoggedIn(true);
+          setIsLoggedIn(false);
+        } else {
+          setIsGuest(false);
+          setIsGuestLoggedIn(false);
+          setIsLoggedIn(true);
+        }
       } catch (err) {
-        console.error('AuthContext: auth check failed', err);
+        console.error("AuthContext: auth check failed", err);
+        setAuthUserId(null);
         setIsLoggedIn(false);
+        setIsGuest(false);
+        setIsGuestLoggedIn(false);
       } finally {
         setIsAuthorized(true);
-        setAuthLoading(false); // ✅ FIXED
+        setAuthLoading(false);
       }
     };
 
     checkAuth();
   }, []);
 
-  /* =========================
-     USER AUTH ACTIONS
-     ========================= */
+  const registerUser = useCallback(
+    async (userData) => {
+      try {
+        const data = await registerUserService(userData);
 
-  const registerUser = async (userData) => {
-    try {
-      const data = await registerUserService(userData);
+        if (data?.status === 409) {
+          alert("Email already in use.");
+          navigate("/login");
+          return data;
+        }
 
-      if (data?.status === 409) {
-        alert('Email already in use.');
-        navigate('/login');
+        if (data?.hasError) {
+          navigate("/error", { state: data });
+          return data;
+        }
+
+        alert("Registration successful!");
         return data;
+      } catch (err) {
+        navigate("/error", { state: "Registration failed." });
+        return { hasError: true, message: "Registration failed." };
       }
+    },
+    [navigate]
+  );
+
+  const loginUser = useCallback(
+    async (userData) => {
+      try {
+        const data = await loginUserService(userData);
+
+        if (data?.hasError) {
+          return data;
+        }
+
+        const user = data.user;
+
+        setAuthUserId(user?._id || null);
+        setIsGuest(false);
+        setIsGuestLoggedIn(false);
+
+        if (!user?.is2FAEnabled) {
+          setIsLoggedIn(true);
+        }
+
+        return user;
+      } catch (err) {
+        console.error("AuthContext: login failed", err);
+        return { hasError: true, message: "Login failed." };
+      }
+    },
+    []
+  );
+
+  const loginGuest = useCallback(async ({ name }) => {
+    try {
+      const data = await loginGuestService({ name });
 
       if (data?.hasError) {
-        navigate('/error', { state: data });
-        return;
-      }
-
-      alert('Registration successful!');
-      return data;
-    } catch (err) {
-      navigate('/error', {
-        state: 'Registration failed.',
-      });
-    }
-  };
-
-  const loginUser = async (userData) => {
-    try {
-      const data = await loginUserService(userData);
-
-      if (data.hasError) {
-        console.log(data.message || 'Login failed.');
         return data;
       }
 
-      setAuthUserId(data.user._id);
+      const guest = data.user;
 
-      if (!data.user.is2FAEnabled) {
-        setIsLoggedIn(true);
-        navigate('/');
-      }
+      setAuthUserId(guest?._id || guest?.guestId || null);
+      setIsLoggedIn(false);
+      setIsGuestLoggedIn(true);
+      setIsGuest(true);
 
-      return data.user;
+      return guest;
     } catch (err) {
-      console.error('AuthContext: login failed', err);
+      console.error("AuthContext: guest login failed", err);
+      return { hasError: true, message: "Guest login failed." };
     }
-  };
+  }, []);
 
-  const verifyOTP = async (email, otpCode) => {
+  const verifyOTP = useCallback(async (email, otpCode) => {
     try {
       const res = await fetch("/api/verify-2fa-login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ email, token: otpCode }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        alert(data.message || "Invalid OTP");
-        return;
+        return {
+          hasError: true,
+          message: data.message || "Invalid OTP",
+        };
       }
 
-      alert("Login successful.");
+      setAuthUserId(data.user?._id || null);
       setIsLoggedIn(true);
+      setIsGuest(false);
+      setIsGuestLoggedIn(false);
+
+      return data.user;
+    } catch (err) {
+      console.error("AuthContext: OTP failed", err);
+      return { hasError: true, message: "Failed to verify OTP." };
+    }
+  }, []);
+
+  const logoutUser = useCallback(
+    async () => {
+      try {
+        await logoutService();
+      } catch (err) {
+        console.error("Logout failed", err);
+      }
+
+      setAuthUserId(null);
+      setIsGuest(false);
+      setIsGuestLoggedIn(false);
+      setIsLoggedIn(false);
       navigate("/");
+    },
+    [navigate]
+  );
 
-    } catch (err) {
-      alert("Failed to verify OTP");
-    }
-  };
-
-  const logoutUser = async () => {
+  const getCurrentUserData = useCallback(async () => {
     try {
-      logoutService();
-    } catch (err) {
-      console.error('Logout failed', err);
-    }
+      if (!authUserId || isGuest) return null;
 
-    setAuthUserId(null);
-    setIsLoggedIn(false);
-    navigate('/');
-  };
-
-  const getCurrentUserData = async () => {
-    try {
       const data = await getUserDataByIdService(authUserId);
 
       if (data?.hasError) {
-        navigate('/error', { state: data });
-        return;
+        navigate("/error", { state: data });
+        return null;
       }
 
       return data.user;
     } catch {
-      navigate('/error', { state: 'Failed to load user.' });
-    }
-  };
-
-  /* =========================
-     QUIZ ACTIONS
-     ========================= */
-
-  const fetchQuizzes = async () => {
-    if (!isLoggedIn) return [];
-
-    const data = await fetchQuizzesService();
-
-    if (data?.hasError) {
-      navigate('/error', { state: data });
-      return [];
-    }
-
-    return Array.isArray(data) ? data : data.quizzes || [];
-  };
-
-  const fetchQuizzesByUser = async () => {
-    if (!isLoggedIn) return [];
-
-    const data = await fetchUserQuizzesService(authUserId);
-
-    if (data?.hasError) {
-      navigate('/error', { state: data });
-      return [];
-    }
-
-    return Array.isArray(data) ? data : data.quizzes || [];
-  };
-
-  const fetchPublicQuizzes = async () => {
-    const data = await fetchPublicQuizzesService();
-
-    if (data?.hasError) {
-      navigate('/error', { state: data });
-      return [];
-    }
-
-    return Array.isArray(data) ? data : data.quizzes || [];
-  };
-
-  const fetchQuiz = async (quizId) => {
-    const data = await fetchQuizByIdService(quizId);
-
-    if (data?.hasError) {
-      navigate('/error', { state: data });
+      navigate("/error", { state: "Failed to load user." });
       return null;
     }
+  }, [authUserId, isGuest, navigate]);
 
-    return data.quiz || null;
-  };
+  const fetchQuizzes = useCallback(
+    async () => {
+      if (!isLoggedIn) return [];
 
-  const fetchGuestQuiz = async (quizId, guestToken) => {
-    
-    const res = await fetchGuestQuizByIdService(quizId, guestToken);
+      const data = await fetchQuizzesService();
 
-  
-    console.log("fetchGuestQuiz response:", res);
-    if (res?.hasError) {
-      console.log("Error fetching guest quiz:", res.message);
-      navigate('/error', { state: res });
-      return null;
-    }
+      if (data?.hasError) {
+        navigate("/error", { state: data });
+        return [];
+      }
 
+      return Array.isArray(data) ? data : data.quizzes || [];
+    },
+    [isLoggedIn, navigate]
+  );
 
-  
-    setIsGuest(true);
-    return res
-  };
+  const fetchQuizzesByUser = useCallback(
+    async () => {
+      if (!isLoggedIn || !authUserId) return [];
 
-  const newQuiz = async (quiz) => {
-    const payload = {
-      ...quiz,
-      author: authUserId,
-    };
+      const data = await fetchUserQuizzesService(authUserId);
 
-    return await createQuizService(payload);
-  };
+      if (data?.hasError) {
+        navigate("/error", { state: data });
+        return [];
+      }
 
-  const removeQuiz = async (quizId) => {
-    const data = await deleteQuizService(quizId);
+      return Array.isArray(data) ? data : data.quizzes || [];
+    },
+    [isLoggedIn, authUserId, navigate]
+  );
 
-    if (data?.hasError) {
-      navigate('/error', { state: data });
-      return;
-    }
+  const fetchPublicQuizzes = useCallback(
+    async () => {
+      const data = await fetchPublicQuizzesService();
 
-    return data;
-  };
+      if (data?.hasError) {
+        navigate("/error", { state: data });
+        return [];
+      }
 
-  const updateQuiz = async (quizId, updatedQuiz) => {
-    const data = await updateQuizService(quizId, updatedQuiz);
+      return Array.isArray(data) ? data : data.quizzes || [];
+    },
+    [navigate]
+  );
 
-    if (data?.hasError) {
-      navigate('/error', { state: data });
-      return;
-    }
+  const fetchQuiz = useCallback(
+    async (quizId) => {
+      const data = await fetchQuizByIdService(quizId);
 
-    return data;
-  };
+      if (data?.hasError) {
+        navigate("/error", { state: data });
+        return null;
+      }
 
-  const createBulkQuiz = async (quizData) => {
-    quizData.author = authUserId;
+      return data?.quiz ?? data ?? null;
+    },
+    [navigate]
+  );
 
-    const res = await createBulkQuizService(quizData);
+  const fetchGuestQuiz = useCallback(
+    async (quizId, guestToken) => {
+      const data = await fetchGuestQuizByIdService(quizId, guestToken);
 
-    if (res?.hasError) {
-      return { error: false, message: 'Quiz created successfully.', data: await res.json() };
-    }
+      if (data?.hasError) {
+        console.log("Error fetching guest quiz:", data.message);
+        navigate("/error", { state: data });
+        return null;
+      }
 
-    return { error: true, message: res.message || 'A problem occurred while adding quiz.' };
-  };
+      setIsGuest(true);
+      setIsGuestLoggedIn(true);
 
-  const shareQuiz = async (quizId, email) => {
+      return data?.quiz ?? data ?? null;
+    },
+    [navigate]
+  );
+
+  const newQuiz = useCallback(
+    async (quiz) => {
+      const payload = {
+        ...quiz,
+        author: authUserId,
+      };
+
+      return await createQuizService(payload);
+    },
+    [authUserId]
+  );
+
+  const removeQuiz = useCallback(
+    async (quizId) => {
+      const data = await deleteQuizService(quizId);
+
+      if (data?.hasError) {
+        navigate("/error", { state: data });
+        return null;
+      }
+
+      return data;
+    },
+    [navigate]
+  );
+
+  const updateQuiz = useCallback(
+    async (quizId, updatedQuiz) => {
+      const data = await updateQuizService(quizId, updatedQuiz);
+
+      if (data?.hasError) {
+        navigate("/error", { state: data });
+        return null;
+      }
+
+      return data;
+    },
+    [navigate]
+  );
+
+  const createBulkQuiz = useCallback(
+    async (quizData) => {
+      const payload = {
+        ...quizData,
+        author: authUserId,
+      };
+
+      const data = await createBulkQuizService(payload);
+
+      if (data?.hasError) {
+        return {
+          error: true,
+          message: data.message || "A problem occurred while adding quiz.",
+        };
+      }
+
+      return {
+        error: false,
+        message: "Quiz created successfully.",
+        data,
+      };
+    },
+    [authUserId]
+  );
+
+  const shareQuiz = useCallback(async (quizId, email) => {
     try {
       const res = await fetch(`/api/quizzes/${quizId}/share`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ email }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.message || 'Failed to share quiz');
+        throw new Error(data.message || "Failed to share quiz");
       }
 
       return data;
     } catch (error) {
-      console.error('Error sharing quiz:', error);
+      console.error("Error sharing quiz:", error);
       throw error;
     }
-  };
+  }, []);
 
-  const generateGuestToken = async (quizId) => {
+  const generateGuestToken = useCallback(async (quizId) => {
     try {
-      const res = await fetch('/api/quizzes/guesttoken', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+      const res = await fetch("/api/quizzes/guesttoken", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ quizId }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.message || 'Failed to generate guest token');
+        throw new Error(data.message || "Failed to generate guest token");
       }
 
       return data.token;
     } catch (error) {
-      console.error('Error generating guest token:', error);
+      console.error("Error generating guest token:", error);
       throw error;
     }
-  };
+  }, []);
 
-  /* =========================
-     QUESTION ACTIONS
-     ========================= */
+  const fetchQuestions = useCallback(
+    async () => {
+      const data = await fetchQuestionsService();
 
-  const fetchQuestions = async () => {
-    const data = await fetchQuestionsService();
+      if (data?.hasError) {
+        navigate("/error", { state: data });
+        return [];
+      }
 
-    if (data?.hasError) {
-      navigate('/error', { state: data });
-      return [];
-    }
+      return Array.isArray(data) ? data : data.questions || [];
+    },
+    [navigate]
+  );
 
-    return Array.isArray(data) ? data : data.questions || [];
-  };
+  const createQuestion = useCallback(
+    async (question) => {
+      const data = await createQuestionService(question);
 
-  const createQuestion = async (question) => {
-    const data = await createQuestionService(question);
+      if (data?.hasError) {
+        navigate("/error", { state: data });
+        return null;
+      }
 
-    if (data?.hasError) {
-      navigate('/error', { state: data });
-      return;
-    }
+      return data;
+    },
+    [navigate]
+  );
 
-    return data;
-  };
+  const createMatrixQuestion = useCallback(
+    async (question) => {
+      const data = await createMatrixQuestionService(question);
 
-  const updateQuestion = async (questionId, updatedQuestion) => {
-    const data = await updateQuestionService(questionId, updatedQuestion);
+      if (data?.hasError) {
+        navigate("/error", { state: data });
+        return null;
+      }
 
-    if (data?.hasError) {
-      navigate('/error', { state: data });
-      return;
-    }
+      return data;
+    },
+    [navigate]
+  );
 
-    return data;
-  };
+  const updateQuestion = useCallback(
+    async (questionId, updatedQuestion) => {
+      const data = await updateQuestionService(questionId, updatedQuestion);
 
-  const fetchQuestionById = async (questionId) => {
-    const data = await fetchQuestionByIdService(questionId);
+      if (data?.hasError) {
+        navigate("/error", { state: data });
+        return null;
+      }
 
-    if (data?.hasError) {
-      navigate('/error', { state: data });
-      return null;
-    }
+      return data;
+    },
+    [navigate]
+  );
 
-    return data;
-  };
+  const fetchQuestionById = useCallback(
+    async (questionId) => {
+      const data = await fetchQuestionByIdService(questionId);
+
+      if (data?.hasError) {
+        navigate("/error", { state: data });
+        return null;
+      }
+
+      return data;
+    },
+    [navigate]
+  );
 
   return (
     <AuthContext.Provider
       value={{
         authUserId,
         isLoggedIn,
+        isGuestLoggedIn,
+        isGuest,
         isAuthorized,
 
-        // 🔥 split loading states
         authLoading,
         quizLoading,
+        setQuizLoading,
 
         registerUser,
         loginUser,
         logoutUser,
         getCurrentUserData,
+        loginGuest,
 
         fetchQuizzes,
         newQuiz,
@@ -416,6 +527,7 @@ export function AuthProvider({ children }) {
         createQuestion,
         updateQuestion,
         fetchQuestionById,
+        createMatrixQuestion,
 
         verifyOTP,
         fetchQuizzesByUser,

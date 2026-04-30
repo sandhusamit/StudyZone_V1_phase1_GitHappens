@@ -28,6 +28,21 @@ export const loginUser = async (userData) => {
   return { hasError: false, user, token };
 };
 
+export const loginGuest = async (guestCreds) => {
+  const res = await fetch('/api/login-guest', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(guestCreds),
+  });
+
+  if (!res.ok) {
+    return { hasError: true, message: 'A problem occurred logging in as a guest.' };
+  }
+
+  const { user, token } = await res.json();
+
+  return { hasError: false, user, token };
+};
 
 export const logoutUser = async () => {
   await fetch('/api/logout', {

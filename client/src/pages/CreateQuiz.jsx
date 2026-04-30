@@ -1,16 +1,36 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./styles/CreateQuiz.css";
+
 import { useAuth } from "../contexts/AuthContext.jsx";
 import { validateQuiz } from "../utils/QuizValidation.js";
-import Step1QuizInfo from "../components/CreateQuiz/Steps/Step1QuizInfo.jsx";
+
+import Step1QuizInfo from "../components/CreateQuiz/Steps/Step1/Step1QuizInfo.jsx";
 import Step2BuildQuestions from "../components/CreateQuiz/Steps/Step2/Step2BuildQuestions.jsx";
 import Step3QuestionPool from "../components/CreateQuiz/Steps/Step3/Step3QuestionPool.jsx";
+
+/* ========================================================
+   FACTORIES
+======================================================== */
 
 const makeId = (prefix) =>
   `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
+const makeMatrix = (label = "A", rowCount = 2, columnCount = 2) => ({
+  label,
+  matrixType: rowCount === columnCount ? "square" : "rectangular",
+  rows: Array.from({ length: rowCount }, () => Array(columnCount).fill(0)),
+  rowCount,
+  columnCount,
+  dividerIndex: null,
+});
+
+const isMatrixAnswer = (answer) =>
+  answer && typeof answer === "object" && Array.isArray(answer.rows);
+
 const makeMcqQuestion = () => ({
+  questionModel: "Question",
+  questionType: "mcq",
   text: "",
   choices: [
     { text: "", isCorrect: false },
@@ -19,7 +39,6 @@ const makeMcqQuestion = () => ({
   points: 1,
   explanation: "",
   subject: "General",
-  questionType: "mcq",
 });
 
 const makeDdqQuestion = () => {
@@ -27,11 +46,12 @@ const makeDdqQuestion = () => {
   const box2 = makeId("box");
 
   return {
+    questionModel: "Question",
+    questionType: "ddq",
     text: "",
     points: 1,
     explanation: "",
     subject: "General",
-    questionType: "ddq",
     dragItems: [{ id: makeId("item"), text: "", dropboxId: box1 }],
     dropboxes: [
       { id: box1, title: "" },
@@ -40,9 +60,33 @@ const makeDdqQuestion = () => {
   };
 };
 
+const makeMatrixQuestion = () => ({
+  questionModel: "MatrixQuestion",
+  questionType: "addition",
+  title: "Matrix Addition",
+  prompt: "",
+  points: 1,
+  explanation: "",
+  subject: "Math",
+  difficulty: "easy",
+  answerMode: "single",
+  matrices: [makeMatrix("A"), makeMatrix("B")],
+  expectedAnswers: [makeMatrix("Answer")],
+});
+
+/* ========================================================
+   COMPONENT
+======================================================== */
+
 export default function CreateQuiz() {
   const navigate = useNavigate();
-  const { newQuiz, createQuestion, fetchQuestions } = useAuth();
+
+  const { newQuiz, createQuestion, createMatrixQuestion, fetchQuestions } =
+    useAuth();
+
+  /* ========================================================
+     STATE
+  ======================================================== */
 
   const [step, setStep] = useState(1);
   const [rotationClicked, setRotationClicked] = useState(false);
@@ -59,17 +103,23 @@ export default function CreateQuiz() {
   const [questionPool, setQuestionPool] = useState([]);
   const [poolLoading, setPoolLoading] = useState(false);
   const [poolError, setPoolError] = useState("");
+
   const [submitError, setSubmitError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [createdQuizId, setCreatedQuizId] = useState(null);
+
   const [stepValid, setStepValid] = useState(false);
 
+  /* ========================================================
+     LOAD QUESTION POOL
+  ======================================================== */
 
   useEffect(() => {
     const loadQuestions = async () => {
       try {
         setPoolLoading(true);
         setPoolError("");
+
         const data = await fetchQuestions?.();
         setQuestionPool(Array.isArray(data) ? data : []);
       } catch (err) {
@@ -81,24 +131,21 @@ export default function CreateQuiz() {
     };
 
     loadQuestions();
-
-
   }, [fetchQuestions]);
 
+  /* ========================================================
+     AUTO ROTATION
+  ======================================================== */
+
   useEffect(() => {
-    
     if (!rotationClicked) {
       updateQuizField("rotation", quizData.questions.length);
     }
-  }, [quizData.questions.length]);
+  }, [quizData.questions.length, rotationClicked]);
 
-
-
-
-  const selectedPoolIds = useMemo(
-    () => new Set(quizData.questions.filter((q) => q._id).map((q) => q._id)),
-    [quizData.questions]
-  );
+  /* ========================================================
+     GENERAL QUIZ HELPERS
+  ======================================================== */
 
   const updateQuizField = (field, value) => {
     setQuizData((prev) => ({
@@ -107,48 +154,20 @@ export default function CreateQuiz() {
     }));
   };
 
-  const addMcqQuestion = () => {
+  const updateQuestionField = (qIndex, field, value) => {
     setQuizData((prev) => {
-      const nextQuestions = [...prev.questions, makeMcqQuestion()];
+      const questions = [...prev.questions];
+
+      questions[qIndex] = {
+        ...questions[qIndex],
+        [field]: value,
+      };
+
       return {
         ...prev,
-        rotation:
-          !rotationClicked && Number(prev.rotation) === 0
-            ? nextQuestions.length
-            : prev.rotation,
-        questions: nextQuestions,
+        questions,
       };
     });
-  };
-
-  const addDdqQuestion = () => {
-    setQuizData((prev) => {
-      const nextQuestions = [...prev.questions, makeDdqQuestion()];
-      return {
-        ...prev,
-        rotation:
-          !rotationClicked && Number(prev.rotation) === 0
-            ? nextQuestions.length
-            : prev.rotation,
-        questions: nextQuestions,
-      };
-    });
-  };
-
-  const handleBulkImport = (importedQuestions) => {
-    setQuizData((prev) => {
-      const nextQuestions = [...prev.questions, ...importedQuestions];
-      return {
-        ...prev,
-        rotation:
-          !rotationClicked && Number(prev.rotation) === 0
-            ? nextQuestions.length
-            : prev.rotation,
-        questions: nextQuestions,
-      };
-    });
-
-    setShowBulkImport(false);
   };
 
   const removeQuestion = (qIndex) => {
@@ -158,261 +177,574 @@ export default function CreateQuiz() {
     }));
   };
 
-  const updateQuestionField = (qIndex, field, value) => {
+  const appendQuestion = (newQuestion) => {
     setQuizData((prev) => {
-      const updatedQuestions = [...prev.questions];
-      updatedQuestions[qIndex] = {
-        ...updatedQuestions[qIndex],
-        [field]: value,
-      };
+      const questions = [...prev.questions, newQuestion];
+
       return {
         ...prev,
-        questions: updatedQuestions,
+        rotation:
+          !rotationClicked && Number(prev.rotation) === 0
+            ? questions.length
+            : prev.rotation,
+        questions,
       };
     });
   };
 
-  // MCQ helpers
-  const addChoice = (qIndex) => {
-    setQuizData((prev) => {
-      const updatedQuestions = [...prev.questions];
-      const question = updatedQuestions[qIndex];
+  /* ========================================================
+     ADD QUESTION HELPERS
+  ======================================================== */
 
-      updatedQuestions[qIndex] = {
-        ...question,
-        choices: [...question.choices, { text: "", isCorrect: false }],
-      };
+  const addMcqQuestion = () => appendQuestion(makeMcqQuestion());
+
+  const addDdqQuestion = () => appendQuestion(makeDdqQuestion());
+
+  const addMatrixQuestion = () => appendQuestion(makeMatrixQuestion());
+
+  const handleBulkImport = (importedQuestions) => {
+    setQuizData((prev) => {
+      const questions = [...prev.questions, ...importedQuestions];
 
       return {
         ...prev,
-        questions: updatedQuestions,
+        rotation:
+          !rotationClicked && Number(prev.rotation) === 0
+            ? questions.length
+            : prev.rotation,
+        questions,
       };
+    });
+
+    setShowBulkImport(false);
+  };
+
+  /* ========================================================
+     MCQ HELPERS
+  ======================================================== */
+
+  const addChoice = (qIndex) => {
+    setQuizData((prev) => {
+      const questions = [...prev.questions];
+      const question = { ...questions[qIndex] };
+
+      question.choices = [
+        ...(question.choices || []),
+        { text: "", isCorrect: false },
+      ];
+
+      questions[qIndex] = question;
+      return { ...prev, questions };
     });
   };
 
   const removeChoice = (qIndex, cIndex) => {
     setQuizData((prev) => {
-      const updatedQuestions = [...prev.questions];
-      const question = updatedQuestions[qIndex];
+      const questions = [...prev.questions];
+      const question = { ...questions[qIndex] };
 
-      updatedQuestions[qIndex] = {
-        ...question,
-        choices: question.choices.filter((_, i) => i !== cIndex),
-      };
+      question.choices = question.choices.filter((_, i) => i !== cIndex);
 
-      return {
-        ...prev,
-        questions: updatedQuestions,
-      };
+      questions[qIndex] = question;
+      return { ...prev, questions };
     });
   };
 
   const updateChoiceText = (qIndex, cIndex, value) => {
     setQuizData((prev) => {
-      const updatedQuestions = [...prev.questions];
-      const question = updatedQuestions[qIndex];
+      const questions = [...prev.questions];
+      const question = { ...questions[qIndex] };
 
-      updatedQuestions[qIndex] = {
-        ...question,
-        choices: question.choices.map((choice, i) =>
-          i === cIndex ? { ...choice, text: value } : choice
-        ),
-      };
+      question.choices = question.choices.map((choice, i) =>
+        i === cIndex ? { ...choice, text: value } : choice
+      );
 
-      return {
-        ...prev,
-        questions: updatedQuestions,
-      };
+      questions[qIndex] = question;
+      return { ...prev, questions };
     });
   };
 
   const setCorrectChoice = (qIndex, cIndex) => {
     setQuizData((prev) => {
-      const updatedQuestions = [...prev.questions];
-      const question = updatedQuestions[qIndex];
+      const questions = [...prev.questions];
+      const question = { ...questions[qIndex] };
 
-      updatedQuestions[qIndex] = {
-        ...question,
-        choices: question.choices.map((choice, i) => ({
-          ...choice,
-          isCorrect: i === cIndex,
-        })),
-      };
+      question.choices = question.choices.map((choice, i) => ({
+        ...choice,
+        isCorrect: i === cIndex,
+      }));
 
-      return {
-        ...prev,
-        questions: updatedQuestions,
-      };
+      questions[qIndex] = question;
+      return { ...prev, questions };
     });
   };
 
-  // DDQ helpers
+  /* ========================================================
+     DDQ HELPERS
+  ======================================================== */
+
   const addDragItem = (qIndex) => {
     setQuizData((prev) => {
-      const updatedQuestions = [...prev.questions];
-      const question = updatedQuestions[qIndex];
-      const defaultBoxId = question.dropboxes[0]?.id || "";
+      const questions = [...prev.questions];
+      const question = { ...questions[qIndex] };
 
-      updatedQuestions[qIndex] = {
-        ...question,
-        dragItems: [
-          ...question.dragItems,
-          {
-            id: makeId("item"),
-            text: "",
-            dropboxId: defaultBoxId,
-          },
-        ],
-      };
+      const defaultBoxId = question.dropboxes?.[0]?.id || "";
 
-      return {
-        ...prev,
-        questions: updatedQuestions,
-      };
+      question.dragItems = [
+        ...(question.dragItems || []),
+        {
+          id: makeId("item"),
+          text: "",
+          dropboxId: defaultBoxId,
+        },
+      ];
+
+      questions[qIndex] = question;
+      return { ...prev, questions };
     });
   };
 
   const removeDragItem = (qIndex, itemIndex) => {
     setQuizData((prev) => {
-      const updatedQuestions = [...prev.questions];
-      const question = updatedQuestions[qIndex];
+      const questions = [...prev.questions];
+      const question = { ...questions[qIndex] };
 
-      updatedQuestions[qIndex] = {
-        ...question,
-        dragItems: question.dragItems.filter((_, i) => i !== itemIndex),
-      };
+      question.dragItems = question.dragItems.filter((_, i) => i !== itemIndex);
 
-      return {
-        ...prev,
-        questions: updatedQuestions,
-      };
+      questions[qIndex] = question;
+      return { ...prev, questions };
     });
   };
 
   const updateDragItemText = (qIndex, itemIndex, value) => {
     setQuizData((prev) => {
-      const updatedQuestions = [...prev.questions];
-      const question = updatedQuestions[qIndex];
+      const questions = [...prev.questions];
+      const question = { ...questions[qIndex] };
 
-      updatedQuestions[qIndex] = {
-        ...question,
-        dragItems: question.dragItems.map((item, i) =>
-          i === itemIndex ? { ...item, text: value } : item
-        ),
-      };
+      question.dragItems = question.dragItems.map((item, i) =>
+        i === itemIndex ? { ...item, text: value } : item
+      );
 
-      return {
-        ...prev,
-        questions: updatedQuestions,
-      };
+      questions[qIndex] = question;
+      return { ...prev, questions };
     });
   };
 
   const updateDragItemDropbox = (qIndex, itemIndex, dropboxId) => {
     setQuizData((prev) => {
-      const updatedQuestions = [...prev.questions];
-      const question = updatedQuestions[qIndex];
+      const questions = [...prev.questions];
+      const question = { ...questions[qIndex] };
 
-      updatedQuestions[qIndex] = {
-        ...question,
-        dragItems: question.dragItems.map((item, i) =>
-          i === itemIndex ? { ...item, dropboxId } : item
-        ),
-      };
+      question.dragItems = question.dragItems.map((item, i) =>
+        i === itemIndex ? { ...item, dropboxId } : item
+      );
 
-      return {
-        ...prev,
-        questions: updatedQuestions,
-      };
+      questions[qIndex] = question;
+      return { ...prev, questions };
     });
   };
 
   const addDropBox = (qIndex) => {
     setQuizData((prev) => {
-      const updatedQuestions = [...prev.questions];
-      const question = updatedQuestions[qIndex];
+      const questions = [...prev.questions];
+      const question = { ...questions[qIndex] };
 
-      updatedQuestions[qIndex] = {
-        ...question,
-        dropboxes: [
-          ...question.dropboxes,
-          {
-            id: makeId("box"),
-            title: "",
-          },
-        ],
-      };
+      question.dropboxes = [
+        ...(question.dropboxes || []),
+        { id: makeId("box"), title: "" },
+      ];
 
-      return {
-        ...prev,
-        questions: updatedQuestions,
-      };
+      questions[qIndex] = question;
+      return { ...prev, questions };
     });
   };
 
   const removeDropBox = (qIndex, boxIndex) => {
     setQuizData((prev) => {
-      const updatedQuestions = [...prev.questions];
-      const question = updatedQuestions[qIndex];
+      const questions = [...prev.questions];
+      const question = { ...questions[qIndex] };
 
-      if (question.dropboxes.length <= 1) {
-        return prev;
-      }
+      if (question.dropboxes.length <= 1) return prev;
 
       const removedBoxId = question.dropboxes[boxIndex].id;
-      const newDropboxes = question.dropboxes.filter((_, i) => i !== boxIndex);
-      const fallbackId = newDropboxes[0]?.id || "";
+      const dropboxes = question.dropboxes.filter((_, i) => i !== boxIndex);
+      const fallbackId = dropboxes[0]?.id || "";
 
-      updatedQuestions[qIndex] = {
-        ...question,
-        dropboxes: newDropboxes,
-        dragItems: question.dragItems.map((item) => ({
-          ...item,
-          dropboxId: item.dropboxId === removedBoxId ? fallbackId : item.dropboxId,
-        })),
-      };
+      question.dropboxes = dropboxes;
+      question.dragItems = question.dragItems.map((item) => ({
+        ...item,
+        dropboxId:
+          item.dropboxId === removedBoxId ? fallbackId : item.dropboxId,
+      }));
 
-      return {
-        ...prev,
-        questions: updatedQuestions,
-      };
+      questions[qIndex] = question;
+      return { ...prev, questions };
     });
   };
 
   const updateDropBoxTitle = (qIndex, boxIndex, value) => {
     setQuizData((prev) => {
-      const updatedQuestions = [...prev.questions];
-      const question = updatedQuestions[qIndex];
+      const questions = [...prev.questions];
+      const question = { ...questions[qIndex] };
 
-      updatedQuestions[qIndex] = {
-        ...question,
-        dropboxes: question.dropboxes.map((box, i) =>
-          i === boxIndex ? { ...box, title: value } : box
-        ),
-      };
+      question.dropboxes = question.dropboxes.map((box, i) =>
+        i === boxIndex ? { ...box, title: value } : box
+      );
+
+      questions[qIndex] = question;
+      return { ...prev, questions };
+    });
+  };
+
+  /* ========================================================
+     MATRIX QUESTION HELPERS
+     These edit q.matrices[]
+  ======================================================== */
+
+  const updateMatrixAt = (qIndex, matrixIndex, updater) => {
+    setQuizData((prev) => {
+      const questions = [...prev.questions];
+      const question = { ...questions[qIndex] };
+
+      const matrices = [...(question.matrices || [])];
+      const matrix = { ...matrices[matrixIndex] };
+
+      matrices[matrixIndex] = updater(matrix);
+
+      question.matrices = matrices;
+      questions[qIndex] = question;
+
+      return { ...prev, questions };
+    });
+  };
+
+  const addRow = (qIndex, matrixIndex, value = 1) => {
+    updateMatrixAt(qIndex, matrixIndex, (matrix) => {
+      const rows = matrix.rows.map((row) => [...row]);
+
+      for (let i = 0; i < value; i++) {
+        rows.push(Array(matrix.columnCount).fill(0));
+      }
 
       return {
-        ...prev,
-        questions: updatedQuestions,
+        ...matrix,
+        rows,
+        rowCount: rows.length,
       };
     });
   };
 
-  // Pool helpers
-  const addQuestionFromPool = (question) => {
-    if (selectedPoolIds.has(question._id)) return;
+  const removeRow = (qIndex, matrixIndex, rowIndex) => {
+    updateMatrixAt(qIndex, matrixIndex, (matrix) => {
+      if (matrix.rowCount <= 1) return matrix;
 
-    setQuizData((prev) => {
-      const nextQuestions = [...prev.questions, question];
+      const rows = matrix.rows
+        .filter((_, i) => i !== rowIndex)
+        .map((row) => [...row]);
+
       return {
-        ...prev,
-        rotation:
-          !rotationClicked && Number(prev.rotation) === 0
-            ? nextQuestions.length
-            : prev.rotation,
-        questions: nextQuestions,
+        ...matrix,
+        rows,
+        rowCount: rows.length,
       };
     });
+  };
+
+  const addColumn = (qIndex, matrixIndex, value = 1) => {
+    updateMatrixAt(qIndex, matrixIndex, (matrix) => {
+      const rows = matrix.rows.map((row) => [
+        ...row,
+        ...Array(value).fill(0),
+      ]);
+
+      return {
+        ...matrix,
+        rows,
+        columnCount: rows[0]?.length || 0,
+      };
+    });
+  };
+
+  const removeColumn = (qIndex, matrixIndex, colIndex) => {
+    updateMatrixAt(qIndex, matrixIndex, (matrix) => {
+      if (matrix.columnCount <= 1) return matrix;
+
+      const rows = matrix.rows.map((row) =>
+        row.filter((_, i) => i !== colIndex)
+      );
+
+      const columnCount = rows[0]?.length || 0;
+
+      return {
+        ...matrix,
+        rows,
+        columnCount,
+        dividerIndex:
+          matrix.dividerIndex && matrix.dividerIndex >= columnCount
+            ? null
+            : matrix.dividerIndex,
+      };
+    });
+  };
+
+  const addMatrix = (qIndex) => {
+    setQuizData((prev) => {
+      const questions = [...prev.questions];
+      const question = { ...questions[qIndex] };
+
+      const matrices = [...(question.matrices || [])];
+
+      const base = matrices[0] || { rowCount: 2, columnCount: 2 };
+
+      matrices.push(
+        makeMatrix(
+          String.fromCharCode(65 + matrices.length),
+          base.rowCount,
+          base.columnCount
+        )
+      );
+
+      question.matrices = matrices;
+      questions[qIndex] = question;
+
+      return { ...prev, questions };
+    });
+  };
+
+  const removeMatrix = (qIndex, matrixIndex) => {
+    setQuizData((prev) => {
+      const questions = [...prev.questions];
+      const question = { ...questions[qIndex] };
+
+      const matrices = [...(question.matrices || [])];
+
+      if (matrices.length <= 1) return prev;
+
+      question.matrices = matrices.filter((_, i) => i !== matrixIndex);
+      questions[qIndex] = question;
+
+      return { ...prev, questions };
+    });
+  };
+
+  const updateMatrixLabel = (qIndex, mIndex, value) => {
+    setQuizData((prev) => {
+      const questions = [...prev.questions];
+      const question = { ...questions[qIndex] };
+
+      const matrices = [...(question.matrices || [])];
+
+      matrices[mIndex] = {
+        ...matrices[mIndex],
+        label: value,
+      };
+
+      question.matrices = matrices;
+      questions[qIndex] = question;
+
+      return { ...prev, questions };
+    });
+  };
+
+  const getDuplicateMatrixLabels = (answerMatrices = [], matrices = []) => {
+    const counts = {};
+
+    matrices.forEach((m) => {
+      const key = m.label?.trim().toUpperCase();
+      if (!key) return;
+      counts[key] = (counts[key] || 0) + 1;
+    });
+
+    answerMatrices.filter(isMatrixAnswer).forEach((a) => {
+      const key = a.label?.trim().toUpperCase();
+      if (!key) return;
+      counts[key] = (counts[key] || 0) + 1;
+    });
+
+    return Object.keys(counts).filter((key) => counts[key] > 1);
+  };
+
+  /* ========================================================
+     MATRIX ANSWER HELPERS
+     These edit q.expectedAnswers[]
+  ======================================================== */
+
+  const updateExpectedAnswerAt = (qIndex, answerIndex, updater) => {
+    setQuizData((prev) => {
+      const questions = [...prev.questions];
+      const question = { ...questions[qIndex] };
+
+      const expectedAnswers = [...(question.expectedAnswers || [])];
+      const currentAnswer = expectedAnswers[answerIndex];
+
+      expectedAnswers[answerIndex] = updater(currentAnswer);
+
+      question.expectedAnswers = expectedAnswers;
+      questions[qIndex] = question;
+
+      return { ...prev, questions };
+    });
+  };
+
+  const addExpectedAnswerMatrix = (qIndex) => {
+    setQuizData((prev) => {
+      const questions = [...prev.questions];
+      const question = { ...questions[qIndex] };
+
+      const expectedAnswers = [...(question.expectedAnswers || [])];
+
+      const matrixAnswers = expectedAnswers.filter(isMatrixAnswer);
+
+      const base =
+        matrixAnswers[0] ||
+        question.matrices?.[0] ||
+        { rowCount: 2, columnCount: 2 };
+
+      expectedAnswers.push(
+        makeMatrix(
+          `Answer ${matrixAnswers.length + 1}`,
+          base.rowCount,
+          base.columnCount
+        )
+      );
+
+      question.expectedAnswers = expectedAnswers;
+      questions[qIndex] = question;
+
+      return { ...prev, questions };
+    });
+  };
+
+  const removeExpectedAnswerMatrix = (qIndex, answerIndex) => {
+    setQuizData((prev) => {
+      const questions = [...prev.questions];
+      const question = { ...questions[qIndex] };
+
+      const expectedAnswers = [...(question.expectedAnswers || [])];
+
+      if (expectedAnswers.length <= 1) return prev;
+
+      question.expectedAnswers = expectedAnswers.filter(
+        (_, i) => i !== answerIndex
+      );
+
+      questions[qIndex] = question;
+
+      return { ...prev, questions };
+    });
+  };
+
+  const updateExpectedAnswerLabel = (qIndex, answerIndex, value) => {
+    updateExpectedAnswerAt(qIndex, answerIndex, (answer) => {
+      if (!isMatrixAnswer(answer)) return answer;
+
+      return {
+        ...answer,
+        label: value,
+      };
+    });
+  };
+
+  const addAnswerRow = (qIndex, answerIndex, value = 1) => {
+    updateExpectedAnswerAt(qIndex, answerIndex, (answer) => {
+      if (!isMatrixAnswer(answer)) return answer;
+
+      const rows = answer.rows.map((row) => [...row]);
+
+      for (let i = 0; i < value; i++) {
+        rows.push(Array(answer.columnCount).fill(0));
+      }
+
+      return {
+        ...answer,
+        rows,
+        rowCount: rows.length,
+      };
+    });
+  };
+
+  const removeAnswerRow = (qIndex, answerIndex, rowIndex) => {
+    updateExpectedAnswerAt(qIndex, answerIndex, (answer) => {
+      if (!isMatrixAnswer(answer)) return answer;
+      if (answer.rowCount <= 1) return answer;
+
+      const rows = answer.rows
+        .filter((_, i) => i !== rowIndex)
+        .map((row) => [...row]);
+
+      return {
+        ...answer,
+        rows,
+        rowCount: rows.length,
+      };
+    });
+  };
+
+  const addAnswerColumn = (qIndex, answerIndex, value = 1) => {
+    updateExpectedAnswerAt(qIndex, answerIndex, (answer) => {
+      if (!isMatrixAnswer(answer)) return answer;
+
+      const rows = answer.rows.map((row) => [
+        ...row,
+        ...Array(value).fill(0),
+      ]);
+
+      return {
+        ...answer,
+        rows,
+        columnCount: rows[0]?.length || 0,
+      };
+    });
+  };
+
+  const removeAnswerColumn = (qIndex, answerIndex, colIndex) => {
+    updateExpectedAnswerAt(qIndex, answerIndex, (answer) => {
+      if (!isMatrixAnswer(answer)) return answer;
+      if (answer.columnCount <= 1) return answer;
+
+      const rows = answer.rows.map((row) =>
+        row.filter((_, i) => i !== colIndex)
+      );
+
+      const columnCount = rows[0]?.length || 0;
+
+      return {
+        ...answer,
+        rows,
+        columnCount,
+        dividerIndex:
+          answer.dividerIndex && answer.dividerIndex >= columnCount
+            ? null
+            : answer.dividerIndex,
+      };
+    });
+  };
+
+  /* ========================================================
+     QUESTION POOL HELPERS
+  ======================================================== */
+
+  const getQuestionKey = (q) => `${q.questionModel || "Question"}:${q._id}`;
+
+  const selectedPoolIds = useMemo(
+    () =>
+      new Set(
+        quizData.questions
+          .filter((q) => q._id)
+          .map((q) => getQuestionKey(q))
+      ),
+    [quizData.questions]
+  );
+
+  const addQuestionFromPool = (question) => {
+    const normalizedQuestion = {
+      ...question,
+      questionModel: question.questionModel || "Question",
+    };
+
+    if (selectedPoolIds.has(getQuestionKey(normalizedQuestion))) return;
+
+    appendQuestion(normalizedQuestion);
   };
 
   const removePoolQuestionFromQuiz = (questionId) => {
@@ -422,39 +754,55 @@ export default function CreateQuiz() {
     }));
   };
 
+  /* ========================================================
+     SUBMIT HELPERS
+  ======================================================== */
+
+  const createQuestionByModel = async (q) => {
+    if (q._id) {
+      return {
+        questionId: q._id,
+        questionModel: q.questionModel || "Question",
+      };
+    }
+
+    const { questionModel = "Question", ...questionPayload } = q;
+
+    let created;
+
+    if (questionModel === "Question") {
+      created = await createQuestion(questionPayload);
+    }
+
+    if (questionModel === "MatrixQuestion") {
+      created = await createMatrixQuestion(questionPayload);
+    }
+
+    if (!created?._id) {
+      throw new Error(`Failed to create ${questionModel}`);
+    }
+
+    return {
+      questionId: created._id,
+      questionModel,
+    };
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     if (!validateQuiz(quizData)) return;
 
     setSubmitting(true);
     setSubmitError("");
 
     try {
-      console.log("quizData before submit:", quizData);
-
-      const createdQuestionIds = await Promise.all(
-        quizData.questions.map(async (q, index) => {
-          if (q._id) return q._id;
-
-          console.log("creating question:", index, q);
-          const created = await createQuestion(q);
-          console.log("created question response:", index, created);
-
-          return created?._id;
-        })
+      const quizQuestionRefs = await Promise.all(
+        quizData.questions.map((q) => createQuestionByModel(q))
       );
 
-      console.log("createdQuestionIds:", createdQuestionIds);
-
-      const validQuestionIds = createdQuestionIds.filter(
-        (id) => typeof id === "string" && id.trim() !== ""
-      );
-
-      if (validQuestionIds.length !== quizData.questions.length) {
-        setSubmitError(
-          "Some questions failed to create. Check your backend question route for DDQ support."
-        );
+      if (quizQuestionRefs.length !== quizData.questions.length) {
+        setSubmitError("Some questions failed to create.");
         setSubmitting(false);
         return;
       }
@@ -464,13 +812,10 @@ export default function CreateQuiz() {
         description: quizData.description.trim(),
         visibility: quizData.visibility,
         rotation: Number(quizData.rotation) || 0,
-        questions: validQuestionIds,
+        questions: quizQuestionRefs,
       };
 
-      console.log("quiz payload:", payload);
-
       const createdQuiz = await newQuiz(payload);
-      console.log("created quiz response:", createdQuiz);
 
       if (createdQuiz?.hasError || !createdQuiz?._id) {
         setSubmitError(createdQuiz?.message || "Quiz creation failed.");
@@ -488,26 +833,52 @@ export default function CreateQuiz() {
     }
   };
 
+  /* ========================================================
+     HANDLER BUNDLE FOR CHILD CARDS
+  ======================================================== */
+
   const questionHandlers = {
-  addMcqQuestion,
-  addDdqQuestion,
-  updateQuestionField,
-  updateChoiceText,
-  setCorrectChoice,
-  updateDragItemText,
-  updateDragItemDropbox,
-  updateDropBoxTitle,
-  removeQuestion,
-  addChoice,
-  removeChoice,
-  addDragItem,
-  removeDragItem,
-  addDropBox,
-  removeDropBox,
-  
+    addMcqQuestion,
+    addDdqQuestion,
+    addMatrixQuestion,
+
+    updateQuestionField,
+    removeQuestion,
+
+    addChoice,
+    removeChoice,
+    updateChoiceText,
+    setCorrectChoice,
+
+    addDragItem,
+    removeDragItem,
+    updateDragItemText,
+    updateDragItemDropbox,
+    addDropBox,
+    removeDropBox,
+    updateDropBoxTitle,
+
+    addRow,
+    removeRow,
+    addColumn,
+    removeColumn,
+    addMatrix,
+    removeMatrix,
+    updateMatrixLabel,
+    getDuplicateMatrixLabels,
+
+    addExpectedAnswerMatrix,
+    removeExpectedAnswerMatrix,
+    updateExpectedAnswerLabel,
+    addAnswerRow,
+    removeAnswerRow,
+    addAnswerColumn,
+    removeAnswerColumn,
   };
 
-
+  /* ========================================================
+     UI
+  ======================================================== */
 
   return (
     <div className="create-quiz-page">
@@ -523,11 +894,9 @@ export default function CreateQuiz() {
             1. Quiz Info
           </button>
 
-
-
           <button
             type="button"
-            disabled={stepValid === false}
+            disabled={!stepValid}
             className={`cq-step ${step === 2 ? "active" : ""}`}
             onClick={() => setStep(2)}
           >
@@ -536,7 +905,7 @@ export default function CreateQuiz() {
 
           <button
             type="button"
-            disabled={stepValid === false}
+            disabled={!stepValid}
             className={`cq-step ${step === 3 ? "active" : ""}`}
             onClick={() => setStep(3)}
           >
@@ -550,6 +919,7 @@ export default function CreateQuiz() {
           >
             4. Complete
           </button>
+
           <div className="cq-rotation-row">
             <label className="cq-label">Rotation</label>
             <input
@@ -563,9 +933,9 @@ export default function CreateQuiz() {
               }}
               placeholder="0 = all questions"
             />
-
           </div>
         </div>
+
         <div className="cq-questions-row">
           <label className="cq-label">Total Questions</label>
           <input
@@ -578,25 +948,33 @@ export default function CreateQuiz() {
             placeholder="0 = all questions"
           />
         </div>
+
         <form onSubmit={handleSubmit} className="cq-form">
-          <div className="step1-container">
-            {step === 1 && (
-              <section className="cq-section">
-                <Step1QuizInfo quizData={quizData} updateQuizField={updateQuizField} stepValid={stepValid} setStepValid={setStepValid} />
+          {step === 1 && (
+            <section className="cq-section">
+              <Step1QuizInfo
+                quizData={quizData}
+                updateQuizField={updateQuizField}
+                stepValid={stepValid}
+                setStepValid={setStepValid}
+              />
 
-
-
-                <div className="cq-nav">
-                  <button title="Next Step" type="button" disabled={!stepValid} className="cq-btn" onClick={() => setStep(2)}>
-                    Next
-                  </button>
-                </div>
-              </section>
-            )}
-          </div>
+              <div className="cq-nav">
+                <button
+                  title="Next Step"
+                  type="button"
+                  disabled={!stepValid}
+                  className="cq-btn"
+                  onClick={() => setStep(2)}
+                >
+                  Next
+                </button>
+              </div>
+            </section>
+          )}
 
           {step === 2 && (
-            <Step2BuildQuestions 
+            <Step2BuildQuestions
               quizData={quizData}
               handlers={questionHandlers}
               removePoolQuestionFromQuiz={removePoolQuestionFromQuiz}
@@ -605,23 +983,22 @@ export default function CreateQuiz() {
               setShowBulkImport={setShowBulkImport}
               handleBulkImport={handleBulkImport}
             />
-
           )}
 
           {step === 3 && (
             <Step3QuestionPool
-                quizData={quizData}
-                removePoolQuestionFromQuiz={removePoolQuestionFromQuiz}
-                setStep={setStep}
-                questionPool={questionPool}
-                poolLoading={poolLoading}
-                poolError={poolError}
-                selectedPoolIds={selectedPoolIds}
-                addQuestionFromPool={addQuestionFromPool}
-                submitError={submitError}
-                submitting={submitting}
-                removeQuestion={removeQuestion}
-             />
+              quizData={quizData}
+              removePoolQuestionFromQuiz={removePoolQuestionFromQuiz}
+              setStep={setStep}
+              questionPool={questionPool}
+              poolLoading={poolLoading}
+              poolError={poolError}
+              selectedPoolIds={selectedPoolIds}
+              addQuestionFromPool={addQuestionFromPool}
+              submitError={submitError}
+              submitting={submitting}
+              removeQuestion={removeQuestion}
+            />
           )}
 
           {step === 4 && (

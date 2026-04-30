@@ -11,54 +11,56 @@
   --bg: #0c0f19;
   --bg-secondary: #151a2d;
   --card-bg: rgba(255, 255, 255, 0.06);
-  --glass: rgba(255, 255, 255, 0.12);
+  --glass: rgba(255, 255, 255, 0.1);
 
   --text: #e4e8ff;
   --text-light: #9aa3c2;
 
   --accent: #6ab4ff;
   --accent-bright: #9bd0ff;
+  --success: #7dffb5;
+  --danger: #ff7b7b;
 
   --border: rgba(255, 255, 255, 0.12);
-
   --radius: 14px;
 
-  --shadow: 0 8px 20px rgba(0, 0, 0, 0.55);
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --transition: 0.22s ease;
+  --glow: 0 0 12px rgba(106, 180, 255, 0.35);
+  --glow-hover: 0 0 22px rgba(106, 180, 255, 0.65);
 
-  --transition: 0.25s ease;
-  --glow: 0 0 12px rgba(106, 180, 255, 0.6);
-  --glow-hover: 0 0 20px rgba(106, 180, 255, 0.9);
-
-  font-family: "Inter", system-ui, sans-serif;
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 /* --------------------------------------------------------
    BODY + ROOT WRAPPER
 -------------------------------------------------------- */
+html {
+  min-height: 100%;
+  scroll-behavior: smooth;
+}
 
 body {
-  background: var(--bg);
-  color: var(--text);
   min-height: 100vh;
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  padding-top: 20px;
+  background:
+    radial-gradient(circle at top, rgba(106, 180, 255, 0.08), transparent 35%),
+    var(--bg);
+  color: var(--text);
 }
 
 #root {
   width: 100%;
   max-width: 1250px;
-  padding: 2rem;
-  padding-top: 120px; /* space for navbar */
+  margin: 0 auto;
+  padding: 125px 2rem 2rem;
   min-height: 100vh;
-  animation: fadeIn 1.2s ease forwards;
+  animation: fadeIn 0.8s ease forwards;
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(15px);
+    transform: translateY(14px);
   }
   to {
     opacity: 1;
@@ -67,73 +69,75 @@ body {
 }
 
 /* --------------------------------------------------------
-   NAVBAR (CORTANA GLASS)
+   NAVBAR
 -------------------------------------------------------- */
-
 nav {
-  width: calc(100% - 40px);
+  width: min(1220px, calc(100% - 32px));
   position: fixed;
-  top: 0;
+  top: 12px;
   left: 50%;
   transform: translateX(-50%);
 
-  height: 95px;
+  min-height: 86px;
+  padding: 0 28px;
 
-  background: rgba(20, 26, 41, 0.55);
+  background: rgba(20, 26, 41, 0.72);
   backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--border);
+  border: 1px solid var(--border);
+  border-radius: 0 0 var(--radius) var(--radius);
   box-shadow: var(--shadow);
 
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 35px;
+  gap: 24px;
 
-  border-radius: 0 0 var(--radius) var(--radius);
   z-index: 999;
 }
 
 .logo {
-  height: 100px;
-  width: 100px;
+  height: 128px;
+  width: 128px;
   border-radius: 50%;
   object-fit: cover;
   box-shadow: var(--glow);
   transition: var(--transition);
+  flex-shrink: 0;
 }
 
 .logo:hover {
-  transform: scale(1.07);
+  transform: scale(1.05);
   box-shadow: var(--glow-hover);
 }
 
 .navbar {
   display: flex;
-  gap: 32px;
-  width: auto;
-  padding-left: 220px;
-  padding-right: 220px;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(14px, 2vw, 32px);
+  flex-wrap: wrap;
 }
 
 .navbar a {
   color: var(--text-light);
-  font-weight: 500;
-  font-size: 1.7rem;
+  font-weight: 600;
+  font-size: clamp(1.95rem, 1.4vw, 1.45rem);
   text-decoration: none;
   transition: var(--transition);
   position: relative;
+  white-space: nowrap;
 }
 
 .navbar a::after {
   content: "";
   position: absolute;
-  bottom: -4px;
+  bottom: -5px;
   left: 0;
-  width: 10%;
-  height: 3px;
+  width: 0;
+  height: 4px;
   background: var(--accent);
   box-shadow: var(--glow);
-  transition: width 0.3s ease;
+  transition: width 0.25s ease;
 }
 
 .navbar a:hover {
@@ -145,30 +149,33 @@ nav {
 }
 
 /* --------------------------------------------------------
-   HEADERS
+   TYPOGRAPHY
 -------------------------------------------------------- */
-
 h1,
 h2,
 h3 {
   color: var(--text);
   font-weight: 700;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.4px;
   margin-bottom: 10px;
 }
 
 h1 {
-  font-size: 2.75rem;
+  font-size: clamp(2rem, 4vw, 2.9rem);
+}
+
+p {
+  color: var(--text-light);
 }
 
 /* --------------------------------------------------------
-   BUTTONS (NEON)
+   BUTTONS
 -------------------------------------------------------- */
-
-button {
-  padding: 0.75em 1.6em;
+button,
+.btn {
+  padding: 0.75em 1.5em;
   border-radius: var(--radius);
-  border: 1px solid var(--accent);
+  border: 1px solid rgba(106, 180, 255, 0.45);
 
   background: linear-gradient(
     135deg,
@@ -177,31 +184,33 @@ button {
   );
 
   color: var(--accent-bright);
-  font-weight: 600;
+  font-weight: 700;
   font-size: 1rem;
   cursor: pointer;
 
   transition: var(--transition);
-  box-shadow: var(--glow);
+  box-shadow: 0 0 12px rgba(106, 180, 255, 0.18);
+  font-family: inherit;
 }
 
-button:hover {
-  transform: translateY(-3px);
+button:hover,
+.btn:hover {
+  transform: translateY(-2px);
   box-shadow: var(--glow-hover);
-  background: rgba(106, 180, 255, 0.25);
+  background: rgba(106, 180, 255, 0.22);
 }
 
-button:disabled {
-  opacity: 0.6;
+button:disabled,
+.btn:disabled {
+  opacity: 0.5;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
 }
 
 /* --------------------------------------------------------
-   CARDS (GLASS PANELS)
+   CARDS / PANELS
 -------------------------------------------------------- */
-
 .card {
   background: var(--card-bg);
   border: 1px solid var(--border);
@@ -215,15 +224,14 @@ button:disabled {
 }
 
 .card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 0 24px rgba(106, 180, 255, 0.35);
-  border-color: var(--accent);
+  transform: translateY(-3px);
+  box-shadow: 0 0 24px rgba(106, 180, 255, 0.25);
+  border-color: rgba(106, 180, 255, 0.45);
 }
 
 /* --------------------------------------------------------
    FORMS
 -------------------------------------------------------- */
-
 .form {
   display: flex;
   flex-direction: column;
@@ -237,14 +245,20 @@ button:disabled {
 input,
 textarea,
 select {
+  width: 100%;
   padding: 14px;
   font-size: 1rem;
   border-radius: var(--radius);
   border: 1px solid var(--border);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.055);
   color: var(--text);
   transition: var(--transition);
   font-family: inherit;
+}
+
+select option {
+  background: #151a2d;
+  color: var(--text);
 }
 
 .form-inputs:focus,
@@ -258,12 +272,12 @@ select:focus {
 
 textarea {
   resize: vertical;
+  min-height: 110px;
 }
 
 /* --------------------------------------------------------
    LINKS
 -------------------------------------------------------- */
-
 a {
   color: var(--accent);
   text-decoration: none;
@@ -276,9 +290,8 @@ a:hover {
 }
 
 /* --------------------------------------------------------
-   LAYOUT HELPERS
+   HELPERS
 -------------------------------------------------------- */
-
 .page {
   padding: 20px 0;
 }
@@ -303,13 +316,12 @@ a:hover {
 .otp-timer {
   margin-top: 10px;
   font-weight: bold;
-  color: #ff4d4f;
+  color: var(--danger);
 }
 
 /* --------------------------------------------------------
    BULK QUIZ IMPORT
 -------------------------------------------------------- */
-
 .bulk-quiz-page {
   width: 100%;
 }
@@ -372,11 +384,6 @@ a:hover {
   color: var(--text);
 }
 
-.bulk-quiz-input,
-.bulk-quiz-textarea {
-  width: 100%;
-}
-
 .bulk-quiz-textarea-small {
   min-height: 90px;
 }
@@ -404,15 +411,6 @@ a:hover {
   margin-top: 8px;
 }
 
-.bulk-quiz-button-primary {
-  border-color: var(--accent-bright);
-}
-
-.bulk-quiz-button-disabled {
-  opacity: 0.5;
-  pointer-events: none;
-}
-
 .bulk-quiz-status {
   margin-top: 22px;
   padding: 14px 16px;
@@ -431,7 +429,7 @@ a:hover {
 }
 
 .bulk-quiz-error-heading {
-  color: #ff7b7b;
+  color: var(--danger);
   margin-bottom: 10px;
 }
 
@@ -457,22 +455,13 @@ a:hover {
   box-shadow: 0 0 18px rgba(106, 180, 255, 0.2);
 }
 
-.bulk-quiz-question-title {
-  margin-bottom: 12px;
-}
-
-.bulk-quiz-list {
-  padding-left: 20px;
-  margin: 0;
-}
-
 .bulk-quiz-choice-item {
   margin-bottom: 8px;
   color: var(--text-light);
 }
 
 .bulk-quiz-correct-badge {
-  color: #72e49a;
+  color: var(--success);
   margin-left: 8px;
 }
 
@@ -485,29 +474,34 @@ a:hover {
 /* --------------------------------------------------------
    RESPONSIVE
 -------------------------------------------------------- */
-
 @media (max-width: 768px) {
-  body {
-    padding-top: 180px;
+  #root {
+    padding: 150px 1rem 1rem;
   }
 
-  #root {
-    padding: 1rem;
+  nav {
+    min-height: auto;
+    padding: 14px 18px;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .logo {
+    height: 64px;
+    width: 64px;
   }
 
   .navbar {
-    gap: 18px;
-  }
-
-  .navbar a {
-    font-size: 1.1rem;
+    width: 100%;
+    gap: 14px;
   }
 
   .bulk-quiz-container {
     padding: 1.25rem;
   }
 
-  .bulk-quiz-row {
+  .bulk-quiz-row,
+  .row {
     flex-direction: column;
     align-items: stretch;
   }

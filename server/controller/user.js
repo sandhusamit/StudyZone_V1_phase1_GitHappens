@@ -1,34 +1,50 @@
-//CRUD USERS
-import otplib from 'otplib';
-import qrcode from 'qrcode';
-import generateToken from '../utils/jwt.js';
-import userModel from '../model/userModel.js';
+import otplib from "otplib";
+import qrcode from "qrcode";
+import { Resend } from "resend";
+import { randomUUID } from "crypto";
 
+import generateToken from "../utils/jwt.js";
+import generateGuestToken from "../utils/guestJwt.js";
 
-//  READ all users
+import userModel from "../model/userModel.js";
+import guestModel from "../model/guestModel.js";
+import SuspendedEmailSchema from "../model/suspendedEmailModel.js";
+import otpModel from "../model/otpModel.js";
+
+import { generateOTP } from "../utils/otp.js";
+
+const resendKey = process.env.RESEND_API_KEY;
+const resend = resendKey ? new Resend(resendKey) : null;
+
+if (!resendKey) {
+  console.error("Resend API key missing. Set RESEND_API_KEY in .env");
+}
+
+/* ================= USERS ================= */
+
 export const getAllUsers = async (req, res) => {
   try {
-    const msg = await userModel.find();
-    res.status(200).json(msg);
+    const users = await userModel.find().select("-password -otpSecret");
+    res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// READ a single user by ID
 export const getUserById = async (req, res) => {
   try {
-    const user = await userModel.findById(req.params.id);
+    const user = await userModel.findById(req.params.id).select("-password -otpSecret");
+
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
+
     res.status(200).json(user);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// CREATE a new user
 export const createUser = async (req, res) => {
   try {
     const existingUser = await userModel.findOne({ email: req.body.email });
@@ -37,7 +53,7 @@ export const createUser = async (req, res) => {
       return res.status(409).json({
         hasError: true,
         status: 409,
-        message: "Email already in use"
+        message: "Email already in use",
       });
     }
 
@@ -46,27 +62,23 @@ export const createUser = async (req, res) => {
 
     const token = generateToken(savedUser);
 
-    res.cookie('token', token, {
+    res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-      sameSite: 'strict',
-      maxAge: 24 * 60 * 60 * 1000 // 1 day
-    }
-    )
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Strict",
+      maxAge: 24 * 60 * 60 * 1000,
+    });
 
     return res.status(200).json({
       hasError: false,
-      message: 'User registered successfully',
+      message: "User registered successfully",
       user: savedUser,
-      token
     });
-
   } catch (error) {
-    console.log('Error in createUser:', error);
     return res.status(500).json({
       hasError: true,
       status: 500,
-      message: error.message
+      message: error.message,
     });
   }
 };
@@ -74,356 +86,428 @@ export const createUser = async (req, res) => {
 export const checkEmailExists = async (req, res) => {
   try {
     const { email } = req.body;
-
     const exists = await userModel.exists({ email });
 
-    return res.json({ exists: !!exists });
+    return res.status(200).json({ exists: !!exists });
   } catch (err) {
-    res.status(500).json({ message: "Server error" });
+    return res.status(500).json({ message: "Server error" });
   }
 };
 
 export const getUserByUsername = async (req, res) => {
-  const { username } = req.body;
   try {
-    const existingUser = await userModel.findOne({ username: req.body.username });
+    const { username } = req.body;
 
+    const existingUser = await userModel
+      .findOne({ username })
+      .select("-password -otpSecret");
 
-    if (!existingUser) {
-      return res.status(200).json({
-        hasError: false,
-        user: null
-      });
-    }
-    
     return res.status(200).json({
       hasError: false,
-      user: existingUser
+      user: existingUser || null,
     });
-    
-
   } catch (error) {
     return res.status(500).json({
       hasError: true,
       status: 500,
-      message: error.message
+      message: error.message,
     });
   }
 };
 
-import { Resend } from 'resend';
-import { generateOTP } from '../utils/otp.js';
-import SuspendedEmailSchema from '../model/suspendedEmailModel.js';
-import otpSchema from '../model/otpModel.js';
-const resendKey = process.env.RESEND_API_KEY;
-
-if (!resendKey) {
-  console.error('🚨 Resend API key missing! Set RESEND_API_KEY in .env');
-}
-
-const resend = resendKey ? new Resend(resendKey) : null;
-
-export const sendEmailOTP = async (req, res) => {
-  try {
-    const { email } = req.body;
-    if (!email) {
-      return res.status(400).json({ message: 'Email is required' });
-    }
-
-    if (!resend) {
-      return res.status(500).json({ message: 'Email service not configured' });
-    }
-
-    const now = new Date();
-
-    let record = await SuspendedEmailSchema.findOne({ email });
-
-    //If record doesnt exist, create new
-    if (!record) {
-      // First attempt
-      await SuspendedEmailSchema.create({
-        email,
-        lastAttempt: now,
-      });    
-
-
-    } else {
-
-      if (record.attempts >= 3) {
-        return res.status(403).json({
-          message: 'Too many attempts. Try again in 1 hour.',
-        });
-      }
-
-      //exists but under limit - increment
-      record.attempts += 1;
-      record.lastAttempt = now;
-      await record.save();
-    };
-
-        //check to see if email has otp already - if so then delete
-    try {    
-      const exists = await otpSchema.findOneAndDelete({ email });
-      console.log('Deleted existing OTP record:', exists);
-    } catch (err) {
-      if (err.status === 404) {
-      console.error('Error deleting existing OTP:', err);
-    }};
-
-    
-
-    const otp = await generateOTP(email);
-    // Set expiry: 2 minutes from now
-    const expiresAt = new Date(Date.now() + 2 * 60 * 1000); //2 minutes
-
-
-
-    // Save to DB
-    console.log('Saving OTP to DB:', { email, otp, expiresAt });
-    const otpEntry = new otpSchema({ email, otp, expiresAt });
-    const otpRecord = await otpEntry.save();
-
-    console.log('OTP saved:', otpRecord);
-    await resend.emails.send({
-      from: 'StudyZone <onboarding@resend.dev>',
-      to: email,
-      subject: 'StudyZone - Email Verification',
-      html: `<h1>Your OTP is ${otp}</h1>`
-    });
-
-
-    
-    res.status(200).json({ message: 'OTP sent successfully' });
-
-  } catch (err) {
-    console.error('OTP error:', err);
-    res.status(500).json({ message: 'Failed to send OTP' });
-  }
-};
-
-import EmailOTP from '../model/otpModel.js';
-import otpModel from '../model/otpModel.js';
-
-export const verifyEmailOTP = async (req, res) => {
-  const { email, otp } = req.body;
-  try {
-    const otpEntry = await EmailOTP.findOne({ email }).sort({ expiresAt: -1 }); // get latest
-
-    if (!otpEntry) return res.status(404).json({ message: 'OTP not found. Request a new one.' });
-    if (otpEntry.expiresAt < new Date()) return res.status(401).json({ message: 'OTP expired' });
-    if (otpEntry.otp !== otp) return res.status(401).json({ message: 'Invalid OTP' });
-
-    // Optional: delete used OTP
-    await EmailOTP.deleteMany({ email });
-
-    res.status(200).json({ message: 'Email verified successfully' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: error.message });
-  }
-};
-
-
-
-// UPDATE an existing user by ID
 export const updateUserById = async (req, res) => {
   try {
-    const user = await userModel.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const user = await userModel
+      .findByIdAndUpdate(req.params.id, req.body, { new: true })
+      .select("-password -otpSecret");
+
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
+
     res.status(200).json(user);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-//DELETE a user by ID
 export const deleteUserById = async (req, res) => {
   try {
     const deletedUser = await userModel.findByIdAndDelete(req.params.id);
+
     if (!deletedUser) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
-    res.status(200).json({ message: 'User deleted successfully' });
+
+    res.status(200).json({ message: "User deleted successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-//Delete all users
 export const deleteAllUsers = async (req, res) => {
   try {
     const result = await userModel.deleteMany({});
-    res.status(200).json({ message: `${result.deletedCount} users deleted successfully` });
+    res.status(200).json({
+      message: `${result.deletedCount} users deleted successfully`,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-//Login user
+/* ================= LOGIN ================= */
+
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
+
     const user = await userModel.findOne({ email });
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({
+        hasError: true,
+        message: "User not found",
+      });
     }
 
     const isPasswordValid = await user.comparePassword(password);
+
     if (!isPasswordValid) {
-      return res.status(401).json({ message: 'Invalid password' });
+      return res.status(401).json({
+        hasError: true,
+        message: "Invalid password",
+      });
     }
 
-    // if (user.is2FAEnabled) {
-    //   return res.status(200).json({ message: '2FA required', is2FAEnabled: true, email: user.email    });
-    // }
+    if (user.is2FAEnabled) {
+      return res.status(200).json({
+        hasError: false,
+        message: "2FA required",
+        is2FAEnabled: true,
+        email: user.email,
+        user,
+      });
+    }
 
-    const token = generateToken(user); // your JWT function
-    console.log("User's ID during login:", user._id);
+    const token = generateToken(user);
 
-    res.cookie('token', token, {
+    res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
-      sameSite: 'Strict',
-      maxAge: 24 * 60 * 60 * 1000 // 1 day
-  });
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Strict",
+      maxAge: 24 * 60 * 60 * 1000,
+    });
 
-
-    return res.status(200).json({ message: 'User logged in successfully', user, token});
+    return res.status(200).json({
+      hasError: false,
+      message: "User logged in successfully",
+      user,
+    });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({
+      hasError: true,
+      message: error.message,
+    });
   }
 };
 
-//logout user
+export const loginGuest = async (req, res) => {
+  try {
+    const { name } = req.body;
+
+    if (!name?.trim()) {
+      return res.status(400).json({
+        hasError: true,
+        message: "Name is required for guest login",
+      });
+    }
+
+    const guestId = req.cookies?.guestId || randomUUID();
+
+    let guestUser = await guestModel.findOne({ guestId });
+
+    if (!guestUser) {
+      guestUser = await guestModel.create({
+        guestId,
+        name: name.trim(),
+      });
+    } else {
+      guestUser.name = name.trim();
+      await guestUser.save();
+    }
+
+    const token = generateGuestToken(guestUser);
+
+    res.cookie("guestId", guestId, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Strict",
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Strict",
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
+    return res.status(200).json({
+      hasError: false,
+      message: "Guest logged in successfully",
+      user: guestUser,
+    });
+  } catch (error) {
+    res.status(500).json({
+      hasError: true,
+      message: error.message,
+    });
+  }
+};
+
 export const logoutUser = async (req, res) => {
   try {
-    try{
-        res.clearCookie('token', {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'Strict',
-        });
-        return res.status(200).json({ message: "Logged out successfully" });
-    } catch (error) {
-        console.error("Error clearing cookie:", error);
-    }
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Strict",
+    });
+
+    res.clearCookie("guestId", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Strict",
+    });
+
+    return res.status(200).json({ message: "Logged out successfully" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
-
-// Cookie helper
 
 export const getCurrentUser = async (req, res) => {
   try {
-    const user = await userModel.findById(req.user.id); // Exclude sensitive fields
-
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+    if (!req.user) {
+      return res.status(401).json({ message: "Not authenticated" });
     }
 
-    return res.status(200).json({ username: user.username, email: user.email, firstName: user.firstName, lastName: user.lastName, role: user.role });
+    if (req.user.role === "guest") {
+      return res.status(200).json({
+        user: {
+          _id: req.user.guestId || req.user.id,
+          guestId: req.user.guestId,
+          name: req.user.name,
+          role: "guest",
+        },
+      });
+    }
+
+    const user = await userModel
+      .findById(req.user.id)
+      .select("-password -otpSecret");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.status(200).json({ user });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
-}
+};
 
+/* ================= EMAIL OTP ================= */
 
-//Generate and return a QR code for 2fa setup
+export const sendEmailOTP = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    if (!resend) {
+      return res.status(500).json({ message: "Email service not configured" });
+    }
+
+    const now = new Date();
+
+    let record = await SuspendedEmailSchema.findOne({ email });
+
+    if (!record) {
+      await SuspendedEmailSchema.create({
+        email,
+        lastAttempt: now,
+        attempts: 1,
+      });
+    } else {
+      if (record.attempts >= 3) {
+        return res.status(403).json({
+          message: "Too many attempts. Try again in 1 hour.",
+        });
+      }
+
+      record.attempts += 1;
+      record.lastAttempt = now;
+      await record.save();
+    }
+
+    await otpModel.deleteMany({ email });
+
+    const otp = await generateOTP(email);
+    const expiresAt = new Date(Date.now() + 2 * 60 * 1000);
+
+    await otpModel.create({ email, otp, expiresAt });
+
+    await resend.emails.send({
+      from: "StudyZone <onboarding@resend.dev>",
+      to: email,
+      subject: "StudyZone - Email Verification",
+      html: `<h1>Your OTP is ${otp}</h1>`,
+    });
+
+    res.status(200).json({ message: "OTP sent successfully" });
+  } catch (err) {
+    console.error("OTP error:", err);
+    res.status(500).json({ message: "Failed to send OTP" });
+  }
+};
+
+export const verifyEmailOTP = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    const otpEntry = await otpModel.findOne({ email }).sort({ expiresAt: -1 });
+
+    if (!otpEntry) {
+      return res.status(404).json({ message: "OTP not found. Request a new one." });
+    }
+
+    if (otpEntry.expiresAt < new Date()) {
+      return res.status(401).json({ message: "OTP expired" });
+    }
+
+    if (otpEntry.otp !== otp) {
+      return res.status(401).json({ message: "Invalid OTP" });
+    }
+
+    await otpModel.deleteMany({ email });
+
+    res.status(200).json({ message: "Email verified successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+/* ================= 2FA ================= */
+
 export const setup2FA = async (req, res) => {
   try {
     const { email } = req.body;
-    //Generate unique secret for user
+
     const secret = otplib.authenticator.generateSecret();
+    const otpauth = otplib.authenticator.keyuri(email, "Study-Zone", secret);
+    const qrCodeImageUrl = await qrcode.toDataURL(otpauth);
 
-    // Generate the QR code URL
-    const otpauth = otplib.authenticator.keyuri(email, 'Study-Zone', secret);
+    const user = await userModel.findOneAndUpdate(
+      { email },
+      {
+        otpSecret: secret,
+        is2FAEnabled: true,
+      },
+      { new: true }
+    );
 
-    // Generate the QR Code image
-    try {
-      const qrCodeImageUrl = await qrcode.toDataURL(otpauth);
-      // Save the secret to the user's record
-      const user = await userModel.findOneAndUpdate(
-        { email },
-        {
-          otpSecret: secret,
-          is2FAEnabled: true
-        },
-        { new: true }
-      );      
-      
-
-      if (!user) {
-        return res.status(404).json({ message: 'User not found' });
-      }
-      return res.status(200).json({  message: '2FA setup initiated', qrCodeImageUrl });
-    } catch (err) {
-      return res.status(500).json({ message: 'Error generating QR code', error: err.message });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
     }
+
+    return res.status(200).json({
+      message: "2FA setup initiated",
+      qrCodeImageUrl,
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// Endpoint to Verify 2FA code - upon registeration 
 export const verify2FA = async (req, res) => {
-  const { email, token } = req.body; //different from jwt token - this is 2fa token (user input generated by authenticator app)
+  try {
+    const { email, token } = req.body;
 
-  //Fetch users secret from database
-  const user = await userModel.findOne({ email });
-  if (!user) {
-    return res.status(404).json({ message: 'User not found' });
-  }
+    const user = await userModel.findOne({ email });
 
-  const secret = user.otpSecret;
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
 
-  //Verify the secret
-  if (!secret)
-    return res.status(400).json({ message: '2FA not set up for this user' }); //Bad Request - is2fa being triggers when null secret
-  
-//Verify the token
-  const isValid = otplib.authenticator.check(token, secret); //signed token with secret and compares
+    if (!user.otpSecret) {
+      return res.status(400).json({ message: "2FA not set up for this user" });
+    }
 
-  if (isValid) {
+    const isValid = otplib.authenticator.check(token, user.otpSecret);
+
+    if (!isValid) {
+      return res.status(401).json({ message: "Invalid 2FA token" });
+    }
+
     user.is2FAEnabled = true;
     await user.save();
 
-    return res.status(200).json({ message: '2FA verified successfully' });
-  } else {
-    return res.status(401).json({ message: 'Invalid 2FA token' });
+    return res.status(200).json({ message: "2FA verified successfully" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
-
-}
-
-//Endpoint to verify 2fa during login - same thing but generates token for login 
-export const verifyOTP = async (req, res) => {
-  const { email, token } = req.body;
-
-  const user = await userModel.findOne({ email });
-  if (!user) {
-    return res.status(404).json({ message: "User not found" });
-  }
-
-  if (!user.is2FAEnabled || !user.otpSecret) {
-    return res.status(400).json({ message: "2FA not enabled" });
-  }
-
-  const isValid = otplib.authenticator.check(token, user.otpSecret);
-
-  if (!isValid) {
-    return res.status(401).json({ message: "Invalid 2FA code" });
-  }
-
-  // Success — now finish login
-  const jwt = generateToken(user);
-  return res.status(200).json({
-    message: "2FA login successful",
-    user,
-    token: jwt
-  });
 };
 
+export const verifyOTP = async (req, res) => {
+  try {
+    const { email, token } = req.body;
 
+    const user = await userModel.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        hasError: true,
+        message: "User not found",
+      });
+    }
+
+    if (!user.is2FAEnabled || !user.otpSecret) {
+      return res.status(400).json({
+        hasError: true,
+        message: "2FA not enabled",
+      });
+    }
+
+    const isValid = otplib.authenticator.check(token, user.otpSecret);
+
+    if (!isValid) {
+      return res.status(401).json({
+        hasError: true,
+        message: "Invalid 2FA code",
+      });
+    }
+
+    const jwt = generateToken(user);
+
+    res.cookie("token", jwt, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Strict",
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
+    return res.status(200).json({
+      hasError: false,
+      message: "2FA login successful",
+      user,
+    });
+  } catch (error) {
+    res.status(500).json({
+      hasError: true,
+      message: error.message,
+    });
+  }
+};

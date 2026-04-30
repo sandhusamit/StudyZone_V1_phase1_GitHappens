@@ -2,6 +2,8 @@ import QuizSchema from '../model/quizModel.js';
 import QuestionSchema from '../model/questionModel.js';
 import mongoose from 'mongoose';
 import express from 'express';
+import { Resend } from "resend";
+import generateGuestToken from "../utils/guestJwt.js";
 
 
 // Create Quiz
@@ -71,7 +73,7 @@ export const createQuizWithQuestions = async (req, res) => {
 // READ all quizzes
 export const getAllQuizzes = async (req, res) => {
   try {
-    const quizzes = await QuizSchema.find().populate('author', 'name').populate('questions');
+    const quizzes = await QuizSchema.find().populate('author', 'name').populate('questions.questionId');
     res.status(200).json(quizzes);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -83,7 +85,7 @@ export const getAllPublicQuizzes = async (req, res) => {
     const quizzes = await QuizSchema.find({ visibility: { $in: ['public'] }
     })
       .populate('author', 'name')
-      .populate('questions');
+      .populate('questions.questionId');
     res.status(200).json(quizzes);
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -95,7 +97,7 @@ export const getQuizById = async (req, res) => {
   try {
     const quiz = await QuizSchema.findById(req.params.id)
       .populate('author', 'name')
-      .populate('questions');
+      .populate('questions.questionId');
     if (!quiz) return res.status(404).json({ message: 'Quiz not found' });
     res.status(200).json(quiz);
   } catch (error) {
@@ -146,7 +148,7 @@ export const deleteQuiz = async (req, res) => {
     }
 
     // delete questions first
-    await QuestionSchema.deleteMany({ _id: { $in: quiz.questions } });
+    await QuestionSchema.deleteMany({ _id: { $in: quiz.questions.map((q) => q.questionId) } });
 
     await quiz.deleteOne();
 
@@ -203,6 +205,81 @@ export const shareQuizById = async (req, res) => {
   }
 }
 
+
+
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+export const shareQuiz = async (req, res) => {
+  try {
+    const { quizId } = req.params;
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        hasError: true,
+        message: "Email is required",
+      });
+    }
+
+    // 🔒 Verify quiz exists
+    const quiz = await QuizSchema.findById(quizId);
+
+    if (!quiz) {
+      return res.status(404).json({
+        hasError: true,
+        message: "Quiz not found",
+      });
+    }
+
+    // 🔒 Optional: only allow owner to share
+    if (req.user.role !== "guest" && quiz.author.toString() !== req.user.id) {
+      return res.status(403).json({
+        hasError: true,
+        message: "Not authorized to share this quiz",
+      });
+    }
+
+    // 🔑 Generate guest token
+    const guestToken = generateGuestToken(req.user, quizId);
+
+    const guestLink = `${process.env.CLIENT_URL}/play/${quizId}?guestToken=${guestToken}`;
+
+    // 📧 Send email
+    await resend.emails.send({
+      from: "StudyZone <onboarding@resend.dev>",
+      to: email,
+      subject: `You've been invited to try "${quiz.title}"`,
+      html: `
+        <h2>🎯 You've been invited to a quiz!</h2>
+        <p><strong>${quiz.title}</strong></p>
+        <p>${quiz.description || ""}</p>
+
+        <a href="${guestLink}" 
+           style="display:inline-block;padding:12px 18px;background:#00d9ff;color:#06111f;
+           text-decoration:none;border-radius:8px;font-weight:bold;">
+          Play Quiz
+        </a>
+
+        <p style="margin-top:15px;font-size:12px;color:#888;">
+          This link expires soon and is for guest access only.
+        </p>
+      `,
+    });
+
+    return res.status(200).json({
+      hasError: false,
+      message: "Quiz shared successfully",
+    });
+  } catch (error) {
+    console.error("Share quiz error:", error);
+
+    return res.status(500).json({
+      hasError: true,
+      message: "Failed to share quiz",
+    });
+  }
+};
+
 export const getAllQuizzesByAuthorId = async (req, res) => {
   try {
     const { authorId } = req.params;
@@ -213,7 +290,7 @@ export const getAllQuizzesByAuthorId = async (req, res) => {
 
     const quizzes = await QuizSchema.find({ author: authorId })
       .populate('author', 'name')
-      .populate('questions');
+      .populate('questions.questionId');
 
     res.status(200).json(quizzes);
   } catch (error) {
@@ -223,3 +300,76 @@ export const getAllQuizzesByAuthorId = async (req, res) => {
 };
 
 
+// MIGRATE all old quiz question arrays to new refPath format
+export const migrateQuizQuestionsToRefPath = async (req, res) => {
+  try {
+    const quizzes = await QuizSchema.find();
+
+    let updatedCount = 0;
+    let skippedCount = 0;
+
+    for (const quiz of quizzes) {
+      if (!Array.isArray(quiz.questions)) {
+        skippedCount++;
+        continue;
+      }
+
+      const alreadyMigrated = quiz.questions.every((q) => {
+        return q?.questionId && q?.questionModel;
+      });
+
+      if (alreadyMigrated) {
+        skippedCount++;
+        continue;
+      }
+
+      const migratedQuestions = quiz.questions
+        .filter((q) => q)
+        .map((q) => {
+          // Old format: ObjectId
+          if (q instanceof mongoose.Types.ObjectId) {
+            return {
+              questionId: q,
+              questionModel: "Question",
+            };
+          }
+
+          // Old format after Mongoose casting: {_id: ObjectId} maybe
+          if (q._id && !q.questionId) {
+            return {
+              questionId: q._id,
+              questionModel: "Question",
+            };
+          }
+
+          // Already close to correct
+          if (q.questionId) {
+            return {
+              questionId: q.questionId,
+              questionModel: q.questionModel || "Question",
+            };
+          }
+
+          return null;
+        })
+        .filter(Boolean);
+
+      quiz.questions = migratedQuestions;
+      await quiz.save();
+
+      updatedCount++;
+    }
+
+    res.status(200).json({
+      message: "Quiz question migration completed.",
+      updatedCount,
+      skippedCount,
+      totalQuizzes: quizzes.length,
+    });
+  } catch (error) {
+    console.error("Migration error:", error);
+    res.status(500).json({
+      message: error.message,
+    });
+  }
+};

@@ -1,13 +1,20 @@
-import { Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import { useRef, useState, useEffect } from 'react';
-import logo from '../assets/gitLogo.png';
-import './GlobalStyle.css';
+import { Link } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import { useRef, useState, useEffect } from "react";
+import logo from "../assets/gitLogo.png";
+import "./GlobalStyle.css";
 
 function NavBar() {
   const waterRef = useRef(null);
   const musicRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(false);
+
+  const { isLoggedIn, isGuestLoggedIn, isGuest, authLoading, logoutUser } =
+    useAuth();
+
+  const isAuthenticated = isLoggedIn || isGuestLoggedIn || isGuest;
+  const isFullUser = isLoggedIn && !isGuestLoggedIn && !isGuest;
+  const isGuestUser = isGuestLoggedIn || isGuest;
 
   useEffect(() => {
     waterRef.current = new Audio("/water.mp3");
@@ -17,10 +24,8 @@ function NavBar() {
     musicRef.current.loop = true;
 
     return () => {
-      waterRef.current.pause();
-      waterRef.current.currentTime = 0;
-      musicRef.current.pause();
-      musicRef.current.currentTime = 0;
+      waterRef.current?.pause();
+      musicRef.current?.pause();
     };
   }, []);
 
@@ -31,21 +36,24 @@ function NavBar() {
       waterRef.current.pause();
       musicRef.current.pause();
     } else {
-      waterRef.current.play().catch(err => console.log("Water audio play error:", err));
-      musicRef.current.play().catch(err => console.log("Music audio play error:", err));
+      waterRef.current
+        .play()
+        .catch((err) => console.log("Water audio play error:", err));
+
+      musicRef.current
+        .play()
+        .catch((err) => console.log("Music audio play error:", err));
     }
 
-    setIsPlaying(!isPlaying);
+    setIsPlaying((prev) => !prev);
   };
-
-  const { isLoggedIn, logoutUser } = useAuth();
 
   return (
     <div className="navspace">
       <nav className="navbar">
         <div className="logo-div">
           <Link to="/">
-            <img src={logo} alt="Git Logo" className="logo" />
+            <img src={logo} alt="StudyZone Logo" className="logo" />
           </Link>
         </div>
 
@@ -55,17 +63,30 @@ function NavBar() {
 
         <Link to="/">Home</Link>
 
-        {isLoggedIn && (
+        {!authLoading && isFullUser && (
           <>
             <Link to="/dashboard">Dashboard</Link>
             <Link to="/quizlist">Quizzes</Link>
             <Link to="/leaderboard">Leaderboard</Link>
             <Link to="/profile">Profile</Link>
-            <button onClick={logoutUser}>Logout</button>
+
+            <button type="button" onClick={logoutUser}>
+              Logout
+            </button>
           </>
         )}
 
-        {!isLoggedIn && (
+        {!authLoading && isGuestUser && (
+          <>
+            <Link to="/quizlist">Public Quizzes</Link>
+
+            <button type="button" onClick={logoutUser}>
+              Logout
+            </button>
+          </>
+        )}
+
+        {!authLoading && !isAuthenticated && (
           <>
             <Link to="/login">Login</Link>
             <Link to="/register">Register</Link>

@@ -1,110 +1,142 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
-import './styles/QuizList.css';
-import { set } from 'mongoose';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
+import "./styles/QuizList.css";
 
 export default function QuizListPublic() {
-  // Constants for auth context and navigation methods
+  const {
+    fetchQuizzesByUser,
+    fetchPublicQuizzes,
+    removeQuiz,
+    generateGuestToken,
+    shareQuiz,
+    authLoading,
+    isLoggedIn,
+    isGuestLoggedIn,
+    isGuest,
+  } = useAuth();
 
-  const { fetchQuizzes, removeQuiz, jwtToken, isLoading, fetchQuizzesByUser, fetchPublicQuizzes, generateGuestToken } = useAuth();
   const navigate = useNavigate();
-  const [isPublic, setVisibility] = useState(true);
+
+  const [isPublic, setIsPublic] = useState(true);
   const [quizzes, setQuizzes] = useState([]);
-  const [viewTitle, setViewTitle] = useState('Click to View Your Own Quizzes');
+  const [viewTitle, setViewTitle] = useState("Public Quizzes");
+  const [loadingQuizzes, setLoadingQuizzes] = useState(false);
 
-  const [shareToEmail, setShareToEmail] = useState('');
-
-  // Using authContext - fetch all quizzes and load them into state
   useEffect(() => {
-    const load = async () => {
-      //calls fetchQuizzes from auth context - ensures token is used
-      let data;
-      if (isPublic) {
-      data = await fetchPublicQuizzes();
-      } else {
-      data = await fetchQuizzesByUser();
+    const loadQuizzes = async () => {
+      try {
+        setLoadingQuizzes(true);
+
+        let data = [];
+
+        if (isGuestLoggedIn || isGuest || isPublic) {
+          data = await fetchPublicQuizzes();
+        } else if (isLoggedIn) {
+          data = await fetchQuizzesByUser();
+        }
+
+        setQuizzes(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Failed to load quizzes:", err);
+        setQuizzes([]);
+      } finally {
+        setLoadingQuizzes(false);
       }
-      setQuizzes(data);
-      console.log('Fetched quizzes:', data);
     };
 
-    if (!isLoading) load();
-  }, [jwtToken, isLoading, isPublic]);
+    if (!authLoading) {
+      loadQuizzes();
+    }
+  }, [
+    authLoading,
+    isPublic,
+    isLoggedIn,
+    isGuestLoggedIn,
+    isGuest,
+    fetchPublicQuizzes,
+    fetchQuizzesByUser,
+  ]);
 
-  // EVENT HANDLERS
-  // Delete a quiz
   const handleDelete = async (quizId) => {
     const result = await removeQuiz(quizId);
+
     if (result && !result.error) {
       setQuizzes((prev) => prev.filter((q) => q._id !== quizId));
     } else {
-      console.error('Error deleting quiz:', result.message);
+      console.error("Error deleting quiz:", result?.message);
     }
   };
 
-  //Open specific quiz to play
   const handleOpenQuiz = (quiz) => {
     navigate(`/play/${quiz._id}`, {
       state: { quiz },
     });
   };
 
-  // Edit a quiz
-  const handleEditQuiz = (quiz) => {
-    navigate(`/edit/${quiz._id}`, {
-      state: { quiz },
-    });
+  const handleShareQuizEmail = async (quiz) => {
+    const email = prompt("Enter the email address to share the quiz with:");
+
+    if (!email?.trim()) return;
+
+    try {
+      await shareQuiz(quiz._id, email.trim());
+      alert("Quiz shared successfully!");
+    } catch (err) {
+      console.error("Failed to share quiz by email:", err);
+      alert("Failed to share quiz.");
+    }
   };
 
-  const handleShareQuizEmail = async (quiz) => {
-    //alert message with input for email
-    setShareToEmail(prompt('Enter the email address to share the quiz with:'));
-    console.log(shareToEmail);
-    const result = await shareQuiz(quiz._id, shareToEmail);
-
-  }
-
   const handleShareQuiz = async (quiz) => {
-    const guestToken = await generateGuestToken(quiz._id);
-    const guestLink = `${window.location.origin}/play/${quiz._id}?guestToken=${guestToken}`;    
-    navigator.clipboard.writeText(guestLink)
-      .then(() => {
-        alert('Guest link copied to clipboard!');
-      })
-      .catch((err) => {
-        console.error('Failed to copy guest link:', err);
-        alert('Failed to copy guest link. Please try again.');
-      });
+    try {
+      const guestToken = await generateGuestToken(quiz._id);
+      const guestLink = `${window.location.origin}/play/${quiz._id}?guestToken=${guestToken}`;
+
+      await navigator.clipboard.writeText(guestLink);
+
+      alert("Guest link copied to clipboard!");
+    } catch (err) {
+      console.error("Failed to copy guest link:", err);
+      alert("Failed to copy guest link. Please try again.");
+    }
   };
 
   const handleVisibility = () => {
-    if (isPublic) {
-      setVisibility(false);
-      setViewTitle('My Quizzes');
-    }
-    else {
-      setVisibility(true);
-      setViewTitle('Public Quizzes');
+    setIsPublic((prev) => {
+      const next = !prev;
+      setViewTitle(next ? "Public Quizzes" : "My Quizzes");
+      return next;
+    });
+  };
 
-    }
+  const canManageQuizzes = isLoggedIn && !isGuestLoggedIn && !isGuest && !isPublic;
+
+  if (authLoading || loadingQuizzes) {
+    return <p>Loading quizzes...</p>;
   }
-
-  if (isLoading) return <p>Loading quizzes...</p>;
 
   return (
     <section>
+      <div className="header-bar">
+        {isGuestLoggedIn || isGuest ? (
+          <h2>Public Quizzes</h2>
+        ) : (
+          <button className="heading-btn" onClick={handleVisibility}>
+            {viewTitle}
+          </button>
+        )}
 
-
-  <div className="header-bar">
-    <button className="heading-btn" onClick={handleVisibility}>
-      {viewTitle}
-    </button>
-
-    <button title="Create a new quiz" className="create-btn" onClick={() => navigate('/create')}>
-      +
-    </button>
-  </div>
+        {isLoggedIn && !isGuestLoggedIn && !isGuest && (
+          <button
+            title="Create a new quiz"
+            className="create-btn"
+            onClick={() => navigate("/create")}
+          >
+            +
+          </button>
+        )}
+      </div>
 
       {quizzes.length === 0 ? (
         <p className="empty">No quizzes available.</p>
@@ -114,48 +146,63 @@ export default function QuizListPublic() {
             <div key={quiz._id} className="quiz-card">
               <span className="quiz-title">{quiz.title}</span>
 
+              <div className="quiz-actions">
+                <button
+                  className="play-btn"
+                  onClick={() => handleOpenQuiz(quiz)}
+                >
+                  Play
+                </button>
 
-                <div className="quiz-actions">
-                  <button className="play-btn" onClick={() => handleOpenQuiz(quiz)}>
-                    Play
-                  </button>
+                {canManageQuizzes && (
+                  <>
+                    <button
+                      className="edit-btn"
+                      onClick={() => navigate("/edit", { state: { quiz } })}
+                      title="Edit Quiz"
+                    >
+                      Edit
+                    </button>
 
-                  {!isPublic && (
-                    <>
-                      <button
-                        className="edit-btn"
-                        onClick={() => navigate('/edit', { state: { quiz } })}
-                        title="Edit Quiz"
-                      >
-                        Edit
-                      </button>
+                    <button
+                      className="delete-btn"
+                      onClick={() => handleDelete(quiz._id)}
+                    >
+                      Delete
+                    </button>
 
-                      <button
-                        className="delete-btn"
-                        onClick={() => handleDelete(quiz._id)}
-                      >
-                        Delete
-                      </button>
+                    <button
+                      className="share-btn"
+                      disabled={quiz.visibility === "private"}
+                      title={
+                        quiz.visibility === "private"
+                          ? "Cannot share private quiz"
+                          : "Get guest link"
+                      }
+                      onClick={() => handleShareQuiz(quiz)}
+                    >
+                      Share Link
+                    </button>
 
-      
-                      <button className="share-btn"
-                        disabled={quiz.visibility === 'private'}
-                        title={quiz.visibility === 'private' ? 'Cannot Share Private Quiz' : 'Get Link to Share'}
-                        onClick={() => handleShareQuiz(quiz)}
-                      >
-                        Share
-                      </button>
-
-                    </>
-                  )}
-                </div>
-
+                    <button
+                      className="share-btn"
+                      disabled={quiz.visibility === "private"}
+                      title={
+                        quiz.visibility === "private"
+                          ? "Cannot share private quiz"
+                          : "Share quiz by email"
+                      }
+                      onClick={() => handleShareQuizEmail(quiz)}
+                    >
+                      Share Email
+                    </button>
+                  </>
+                )}
+              </div>
             </div>
           ))}
         </div>
-        
       )}
-
     </section>
   );
 }

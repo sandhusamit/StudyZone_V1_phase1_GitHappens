@@ -1,6 +1,6 @@
 import DragDropQuestionCard from "../PlayQuiz/DDQ/DragDropQuestion.jsx";
 import MCQ_Play from "../PlayQuiz/MCQ/MCQ_Play.jsx";
-
+import Matrix_Play from "../PlayQuiz/Matrix/Matrix_Play.jsx";
 export default function QuestionPlaycard({
   q,
   qIndex,
@@ -15,7 +15,7 @@ export default function QuestionPlaycard({
     <div className="play-question-card">
       {/* HEADER */}
       <h3>
-        {qIndex + 1}. {q.text}
+        {qIndex + 1}. {q.text || q.prompt}
       </h3>
 
       <h4>Points: {q.points || 0}</h4>
@@ -47,6 +47,17 @@ export default function QuestionPlaycard({
           }
           disabled={disabled}
           showResults={disabled}
+        />
+      )}
+
+      {/* MATRIX */}
+      {q.questionModel === "MatrixQuestion" && (
+        <Matrix_Play
+          q={q}
+          qIndex={qIndex}
+          answers={answers}
+          setAnswers={setAnswers}
+          disabled={disabled}
         />
       )}
 
@@ -88,6 +99,89 @@ export default function QuestionPlaycard({
                 </div>
               )}
             </>
+          )}
+
+          {q.questionModel === "MatrixQuestion" && result.expectedAnswers && (
+            <div className="matrix-feedback">
+              <h4>Expected Result</h4>
+
+              <div className="matrix-feedback-list">
+                {result.expectedAnswers.map((expected, answerIndex) => {
+                  const isMatrix =
+                    expected &&
+                    typeof expected === "object" &&
+                    Array.isArray(expected.rows);
+
+                  const isScalar = typeof expected === "number";
+
+                  if (isScalar) {
+                    return (
+                      <div key={answerIndex} className="determinant-feedback-block">
+                        <p className="matrix-feedback-label">
+                          {q.answerMode === "steps"
+                            ? `Step ${answerIndex + 1}`
+                            : `Scalar Answer ${answerIndex + 1}`}
+                        </p>
+
+                        <div className="feedback-row">
+                          <span className="label">Your Answer</span>
+                          <span className={result.isCorrect ? "good" : "bad"}>
+                            {result.userAnswers?.[answerIndex] || "No answer"}
+                          </span>
+                        </div>
+
+                        {!result.isCorrect && (
+                          <div className="feedback-row">
+                            <span className="label">Correct Answer</span>
+                            <span className="good">{expected}</span>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  }
+
+                  if (!isMatrix) {
+                    return (
+                      <div key={answerIndex} className="matrix-feedback-block">
+                        <p className="matrix-feedback-label">
+                          Invalid expected answer
+                        </p>
+                      </div>
+                    );
+                  }
+
+                  const matrixRows = expected.rows;
+
+                  return (
+                    <div key={answerIndex} className="matrix-feedback-block">
+                      <p className="matrix-feedback-label">
+                        {expected.label ||
+                          (q.answerMode === "steps"
+                            ? `Step ${answerIndex + 1}`
+                            : `Answer ${answerIndex + 1}`)}
+                      </p>
+
+                      <div
+                        className="matrix-grid"
+                        style={{
+                          gridTemplateColumns: `repeat(${
+                            matrixRows[0]?.length || 1
+                          }, 60px)`,
+                        }}
+                      >
+                        {matrixRows.map((row, r) =>
+                          row.map((val, c) => (
+                            <div key={`${r}-${c}`} className="matrix-cell">
+                              {val}
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           )}
 
           {/* EXPLANATION */}
