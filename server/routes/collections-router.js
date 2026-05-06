@@ -31,9 +31,11 @@ import {
   createQuizWithQuestions,
   migrateQuizQuestionsToRefPath,
   shareQuiz,
+  submitQuizScore,
+  getPublicLeaderboard,
+  generateQuizGuestToken
 } from "../controller/quiz.js";
 
-import generateGuestToken from "../utils/guestJwt.js";
 
 import {
   createQuestion,
@@ -43,6 +45,7 @@ import {
   deleteQuestion,
   getMatrixQuestionById,
   createMatrixQuestion,
+  updateMatrixQuestion,
 } from "../controller/question.js";
 
 import {
@@ -90,13 +93,25 @@ router.post("/api/verify-otp-email", verifyEmailOTP);
 
 /* ================= QUIZ ROUTES ================= */
 
+const optionalAuth = (req, res, next) => {
+  authMiddleware(req, res, (err) => {
+    // If auth fails/missing cookie, continue as anonymous
+    if (err) return next();
+    return next();
+  });
+};
+
 router.get("/api/public/quizzes", getAllPublicQuizzes);
 
-router.get("/api/quizzes/guest/:id", guestMiddleware, getQuizById);
-router.get("/api/quizzes/:id", authMiddleware, getQuizById);
+// Single quiz route: public/unlisted/private logic handled in controller
+router.get("/api/quizzes/:id", optionalAuth, getQuizById);
 
 router.get("/api/quizzes", authMiddleware, getAllQuizzes);
-router.get("/api/quizzes/author/:authorId", authMiddleware, getAllQuizzesByAuthorId);
+router.get(
+  "/api/quizzes/author/:authorId",
+  authMiddleware,
+  getAllQuizzesByAuthorId
+);
 
 router.post("/api/quizzes", authMiddleware, createQuiz);
 router.post("/api/quizzes/bulk-create", authMiddleware, createQuizWithQuestions);
@@ -104,24 +119,19 @@ router.post("/api/quizzes/bulk-create", authMiddleware, createQuizWithQuestions)
 router.put("/api/quizzes/:id", authMiddleware, updateQuiz);
 router.delete("/api/quizzes/:id", authMiddleware, deleteQuiz);
 
-router.post("/api/quizzes/guesttoken", authMiddleware, (req, res) => {
-  const { quizId } = req.body;
+// Generates access token for unlisted quiz sharing
+router.post("/api/quizzes/:quizId/access-token", authMiddleware, generateQuizGuestToken);
 
-  if (!quizId) {
-    return res.status(400).json({ message: "quizId is required" });
-  }
-
-  const token = generateGuestToken(req.user, quizId);
-
-  return res.status(200).json({ token });
-});
+router.post("/api/quizzes/:quizId/share", authMiddleware, shareQuiz);
 
 
-router.post(
-  "/api/quizzes/:quizId/share",
-  authMiddleware,
-  shareQuiz
-);
+/* ================= SCORE ROUTES ================= */
+
+router.post("/api/submit-score", submitQuizScore);
+router.get("/api/leaderboard/public", getPublicLeaderboard);
+// router.get("/api/scores", authMiddleware, getAllScores);
+// router.get("/api/scores/quiz/:quizId", authMiddleware, getScoresByQuizId); 
+// router.get("/api/scores/user/:userId", authMiddleware, getScoresByUserId);
 
 /* ================= QUESTION ROUTES ================= */
 
@@ -143,6 +153,7 @@ router.delete("/api/answers/:id", authMiddleware, deleteAnswer);
 
 router.get("/api/matrix/:matrixId", authMiddleware, getMatrixQuestionById);
 router.post("/api/matrix", authMiddleware, createMatrixQuestion);
+router.put("/api/matrix/:matrixId", authMiddleware, updateMatrixQuestion);
 
 /* ================= DEV/MIGRATION ROUTES ================= */
 

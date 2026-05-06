@@ -10,8 +10,6 @@ export default function GuestRoute({ children, allowGuestToken = false }) {
     authLoading,
   } = useAuth();
 
-  const searchParams = new URLSearchParams(location.search);
-  const guestToken = searchParams.get("guestToken");
 
   if (authLoading) {
     return <p>Loading...</p>;
@@ -21,9 +19,6 @@ export default function GuestRoute({ children, allowGuestToken = false }) {
     return <>{children}</>;
   }
 
-  if (allowGuestToken && guestToken) {
-    return <>{children}</>;
-  }
 
-  return <Navigate to="/" state={{ from: location }} replace />;
-}
+  return <Navigate to="/" state={{ from: location }} replace />
+};

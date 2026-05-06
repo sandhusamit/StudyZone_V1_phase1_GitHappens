@@ -1,10 +1,14 @@
 import QuizSchema from '../model/quizModel.js';
 import QuestionSchema from '../model/questionModel.js';
+import Score from '../model/scoreModel.js';
+import guestModel from '../model/guestModel.js';
 import mongoose from 'mongoose';
 import express from 'express';
 import { Resend } from "resend";
-import generateGuestToken from "../utils/guestJwt.js";
-
+import {
+  generateQuizAccessToken,
+  verifyQuizAccessToken,
+} from "../utils/guestJwt.js";
 
 // Create Quiz
 
@@ -95,13 +99,95 @@ export const getAllPublicQuizzes = async (req, res) => {
 // READ a single quiz by ID
 export const getQuizById = async (req, res) => {
   try {
-    const quiz = await QuizSchema.findById(req.params.id)
-      .populate('author', 'name')
-      .populate('questions.questionId');
-    if (!quiz) return res.status(404).json({ message: 'Quiz not found' });
-    res.status(200).json(quiz);
+    const { id } = req.params;
+    const { access } = req.query; // ?access=token
+
+    // ✅ validate id
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({
+        hasError: true,
+        message: "Invalid quiz ID",
+      });
+    }
+
+    // ✅ fetch quiz
+    const quiz = await QuizSchema.findById(id)
+      .populate("author", "name")
+      .populate("questions.questionId");
+
+    if (!quiz) {
+      return res.status(404).json({
+        hasError: true,
+        message: "Quiz not found",
+      });
+    }
+
+    // ✅ detect logged-in user (if exists)
+    const currentUserId = req.user?._id || req.user?.id || null;
+
+    const isOwner =
+      currentUserId &&
+      quiz.author?._id?.toString() === currentUserId.toString();
+
+    /* ========================================================
+       ACCESS CONTROL
+    ======================================================== */
+
+    // 🔓 PUBLIC → always allowed
+    if (quiz.visibility === "public") {
+      return res.status(200).json({ quiz });
+    }
+
+    // 🔗 UNLISTED → require valid token OR owner
+    if (quiz.visibility === "unlisted") {
+      if (isOwner) {
+        return res.status(200).json({ quiz });
+      }
+
+      if (!access) {
+        return res.status(401).json({
+          hasError: true,
+          message: "This quiz requires a valid shared link.",
+        });
+      }
+
+      const isValid = verifyQuizAccessToken(access, id);
+
+      if (!isValid) {
+        return res.status(401).json({
+          hasError: true,
+          message: "Invalid or expired shared link.",
+        });
+      }
+
+      return res.status(200).json({ quiz });
+    }
+
+    // 🔒 PRIVATE → only owner
+    if (quiz.visibility === "private") {
+      if (!isOwner) {
+        return res.status(403).json({
+          hasError: true,
+          message: "Not authorized to access this private quiz.",
+        });
+      }
+
+      return res.status(200).json({ quiz });
+    }
+
+    // ❌ fallback
+    return res.status(400).json({
+      hasError: true,
+      message: "Invalid quiz visibility.",
+    });
+
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("getQuizById error:", error);
+
+    return res.status(500).json({
+      hasError: true,
+      message: error.message || "Server error",
+    });
   }
 };
 
@@ -173,37 +259,37 @@ export const deleteAllQuizzes = async (req, res) => {
 
 
 //share quiz by id
-export const shareQuizById = async (req, res) => {
-  try {
-    const { email } = req.body;
+// export const shareQuizById = async (req, res) => {
+//   try {
+//     const { email } = req.body;
 
-    //Generate URL 
-    const { id: quizId } = req.params;
+//     //Generate URL 
+//     const { id: quizId } = req.params;
   
-    // optional: ensure user owns quiz
-    // if (quiz.owner.toString() !== req.user.id) return 403
+//     // optional: ensure user owns quiz
+//     // if (quiz.owner.toString() !== req.user.id) return 403
   
-    const payload = {
-      quizId,
-      scope: 'guest_play'
-    };
+//     const payload = {
+//       quizId,
+//       scope: 'guest_play'
+//     };
   
-    const token = jwt.sign(payload, process.env.QUIZ_SHARE_SECRET, {
-      expiresIn: '1h' // industry standard
-    });
+//     const token = jwt.sign(payload, process.env.QUIZ_SHARE_SECRET, {
+//       expiresIn: '1h' // industry standard
+//     });
   
-    const shareUrl = `${process.env.CLIENT_URL}/play/quiz/${quizId}?access=${token}`;
+//     const shareUrl = `${process.env.CLIENT_URL}/play/quiz/${quizId}?access=${token}`;
 
-    //Send URL to email
+//     //Send URL to email
     
 
 
-    // This is a placeholder response for demonstration purposes.
-    res.status(200).json({ message: `Quiz ${quizId} shared with ${email}` });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-}
+//     // This is a placeholder response for demonstration purposes.
+//     res.status(200).json({ message: `Quiz ${quizId} shared with ${email}` });
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// }
 
 
 
@@ -231,18 +317,32 @@ export const shareQuiz = async (req, res) => {
       });
     }
 
-    // 🔒 Optional: only allow owner to share
-    if (req.user.role !== "guest" && quiz.author.toString() !== req.user.id) {
-      return res.status(403).json({
-        hasError: true,
-        message: "Not authorized to share this quiz",
-      });
+    // // 🔒 Optional: only allow owner to share
+    // if (req.user.role !== "guest" && quiz.author.toString() !== req.user.id) {
+    //   return res.status(403).json({
+    //     hasError: true,
+    //     message: "Not authorized to share this quiz",
+    //   });
+    // }
+
+
+        //     guestLink = `${window.location.origin}/play/${
+        //   quiz._id
+        // }?access=${encodeURIComponent(accessToken)}`;
+
+    let guestLink = `${process.env.CLIENT_URL}/play/${quizId}`;
+
+    if (quiz.visibility === "unlisted") {
+      const accessToken = generateQuizAccessToken(req.user, quizId);
+
+      if (!accessToken) {
+        alert("Could not generate share link.");
+        return;
+      }
+
+      guestLink = `${process.env.CLIENT_URL}/play/${quizId}?access=${encodeURIComponent(accessToken)}`;
     }
 
-    // 🔑 Generate guest token
-    const guestToken = generateGuestToken(req.user, quizId);
-
-    const guestLink = `${process.env.CLIENT_URL}/play/${quizId}?guestToken=${guestToken}`;
 
     // 📧 Send email
     await resend.emails.send({
@@ -370,6 +470,160 @@ export const migrateQuizQuestionsToRefPath = async (req, res) => {
     console.error("Migration error:", error);
     res.status(500).json({
       message: error.message,
+    });
+  }
+};
+
+export const submitQuizScore = async (req, res) => {
+  try {
+    const { quizId, score, userId, guestId } = req.body;
+
+    console.log("Submitting:", { quizId, userId, guestId, score });
+
+    if (!mongoose.Types.ObjectId.isValid(quizId)) {
+      return res.status(400).json({
+        hasError: true,
+        message: "Invalid quiz ID",
+      });
+    }
+
+    const quiz = await QuizSchema.findById(quizId);
+
+    if (!quiz) {
+      return res.status(404).json({
+        hasError: true,
+        message: "Quiz not found",
+      });
+    }
+
+    const payload = {
+      quiz: quizId,
+      score,
+
+    };
+
+    if (userId && mongoose.Types.ObjectId.isValid(userId)) {
+      payload.user = userId;
+    }
+
+    if (guestId) {
+      const guestUser = await guestModel.findById(guestId);
+
+      if (!guestUser) {
+        return res.status(404).json({
+          hasError: true,
+          message: "Guest not found",
+        });
+      }
+
+      payload.guest = guestUser._id;
+      console.log("Found guest user for score submission:", guestUser._id);
+    }
+
+    if (!payload.user && !payload.guest) {
+      return res.status(400).json({
+        hasError: true,
+        message: "Score must belong to a user or guest.",
+      });
+    }
+
+    const newScore = await Score.create(payload);
+    await newScore.save();
+
+    return res.status(201).json({
+      hasError: false,
+      message: "Score submitted successfully",
+      score: newScore,
+    });
+  } catch (error) {
+    console.error("Submit score error:", error);
+
+    return res.status(500).json({
+      hasError: true,
+      message: "Failed to submit score",
+    });
+  }
+};
+
+
+export const getPublicLeaderboard = async (req, res) => {
+  try {
+    const scores = await Score.find()
+      .populate({
+        path: "quiz",
+        select: "title visibility",
+        match: { visibility: "public" },
+      })
+      .populate("user", "firstName lastName username email")
+      .populate("guest", "name")
+      .sort({ score: -1, createdAt: 1 });
+
+    
+
+
+    const publicScores = scores.filter((s) => s.quiz);
+
+    return res.status(200).json({
+      hasError: false,
+      scores: publicScores,
+    });
+  } catch (error) {
+    console.error("Get public leaderboard error:", error);
+
+    return res.status(500).json({
+      hasError: true,
+      message: "Failed to load leaderboard.",
+    });
+  }
+};
+
+
+
+export const generateQuizGuestToken = async (req, res) => {
+  try {
+    const { quizId, expiresIn } = req.body;
+
+    if (!mongoose.Types.ObjectId.isValid(quizId)) {
+      return res.status(400).json({
+        hasError: true,
+        message: "Invalid quiz ID",
+      });
+    }
+
+    const quiz = await QuizSchema.findById(quizId);
+
+    if (!quiz) {
+      return res.status(404).json({
+        hasError: true,
+        message: "Quiz not found",
+      });
+    }
+
+    if (quiz.visibility === "private") {
+      return res.status(403).json({
+        hasError: true,
+        message: "Private quizzes cannot be shared.",
+      });
+    }
+
+    if (quiz.author.toString() !== req.user.id) {
+      return res.status(403).json({
+        hasError: true,
+        message: "Not authorized to share this quiz.",
+      });
+    }
+
+    const token = generateQuizAccessToken(req.user, quizId, expiresIn);
+
+    return res.status(200).json({
+      hasError: false,
+      token,
+    });
+  } catch (error) {
+    console.error("generateQuizGuestToken error:", error);
+    return res.status(500).json({
+      hasError: true,
+      message: "Failed to generate share token.",
     });
   }
 };

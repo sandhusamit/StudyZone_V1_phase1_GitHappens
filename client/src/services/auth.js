@@ -29,19 +29,28 @@ export const loginUser = async (userData) => {
 };
 
 export const loginGuest = async (guestCreds) => {
-  const res = await fetch('/api/login-guest', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+  const res = await fetch("/api/login-guest", {
+    method: "POST",
+    credentials: "include", // ✅ needed for cookies
+    headers: {
+      "Content-Type": "application/json",
+    },
     body: JSON.stringify(guestCreds),
   });
 
+  const data = await res.json();
+
   if (!res.ok) {
-    return { hasError: true, message: 'A problem occurred logging in as a guest.' };
+    console.log("Guest login failed:", data.message || "Unknown error");
+
+    return {
+      hasError: true,
+      message: data.message || "Guest login failed.",
+    };
+
   }
 
-  const { user, token } = await res.json();
-
-  return { hasError: false, user, token };
+  return data;
 };
 
 export const logoutUser = async () => {

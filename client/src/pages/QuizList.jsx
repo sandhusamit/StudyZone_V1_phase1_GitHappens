@@ -8,7 +8,7 @@ export default function QuizListPublic() {
     fetchQuizzesByUser,
     fetchPublicQuizzes,
     removeQuiz,
-    generateGuestToken,
+    generateAccessToken,
     shareQuiz,
     authLoading,
     isLoggedIn,
@@ -30,13 +30,13 @@ export default function QuizListPublic() {
 
         let data = [];
 
-        if (isGuestLoggedIn || isGuest || isPublic) {
+        if (isPublic || isGuestLoggedIn || isGuest) {
           data = await fetchPublicQuizzes();
         } else if (isLoggedIn) {
           data = await fetchQuizzesByUser();
         }
 
-        setQuizzes(Array.isArray(data) ? data : []);
+        setQuizzes(Array.isArray(data) ? data : data?.quizzes || []);
       } catch (err) {
         console.error("Failed to load quizzes:", err);
         setQuizzes([]);
@@ -58,23 +58,62 @@ export default function QuizListPublic() {
     fetchQuizzesByUser,
   ]);
 
+  const handleOpenQuiz = (quiz) => {
+    navigate(`/play/${quiz._id}`);
+  };
+
   const handleDelete = async (quizId) => {
     const result = await removeQuiz(quizId);
 
-    if (result && !result.error) {
+    if (result && !result.error && !result.hasError) {
       setQuizzes((prev) => prev.filter((q) => q._id !== quizId));
     } else {
       console.error("Error deleting quiz:", result?.message);
+      alert(result?.message || "Failed to delete quiz.");
     }
   };
 
-  const handleOpenQuiz = (quiz) => {
-    navigate(`/play/${quiz._id}`, {
-      state: { quiz },
-    });
+  const handleShareQuiz = async (quiz) => {
+    try {
+      if (quiz.visibility === "private") {
+        alert("Private quizzes cannot be shared.");
+        return;
+      }
+
+      let guestLink = `${window.location.origin}/play/${quiz._id}`;
+      let shareExpiry = "7d";
+
+      if (quiz.visibility === "unlisted") {
+        shareExpiry = prompt(
+          "Enter share link expiry (e.g. '1h' for 1 hour, '7d' for 7 days):",
+          shareExpiry
+        );
+        const accessToken = await generateAccessToken(quiz._id, shareExpiry);
+
+        if (!accessToken) {
+          alert("Could not generate share link.");
+          return;
+        }
+
+        guestLink = `${window.location.origin}/play/${
+          quiz._id
+        }?access=${encodeURIComponent(accessToken)}`;
+      }
+
+      await navigator.clipboard.writeText(guestLink);
+      alert("Guest link copied to clipboard!");
+    } catch (err) {
+      console.error("Failed to copy guest link:", err);
+      alert("Failed to copy guest link. Please try again.");
+    }
   };
 
   const handleShareQuizEmail = async (quiz) => {
+    if (quiz.visibility === "private") {
+      alert("Private quizzes cannot be shared.");
+      return;
+    }
+
     const email = prompt("Enter the email address to share the quiz with:");
 
     if (!email?.trim()) return;
@@ -88,20 +127,6 @@ export default function QuizListPublic() {
     }
   };
 
-  const handleShareQuiz = async (quiz) => {
-    try {
-      const guestToken = await generateGuestToken(quiz._id);
-      const guestLink = `${window.location.origin}/play/${quiz._id}?guestToken=${guestToken}`;
-
-      await navigator.clipboard.writeText(guestLink);
-
-      alert("Guest link copied to clipboard!");
-    } catch (err) {
-      console.error("Failed to copy guest link:", err);
-      alert("Failed to copy guest link. Please try again.");
-    }
-  };
-
   const handleVisibility = () => {
     setIsPublic((prev) => {
       const next = !prev;
@@ -110,7 +135,8 @@ export default function QuizListPublic() {
     });
   };
 
-  const canManageQuizzes = isLoggedIn && !isGuestLoggedIn && !isGuest && !isPublic;
+  const canManageQuizzes =
+    isLoggedIn && !isGuestLoggedIn && !isGuest && !isPublic;
 
   if (authLoading || loadingQuizzes) {
     return <p>Loading quizzes...</p>;
@@ -121,10 +147,12 @@ export default function QuizListPublic() {
       <div className="header-bar">
         {isGuestLoggedIn || isGuest ? (
           <h2>Public Quizzes</h2>
-        ) : (
+        ) : isLoggedIn ? (
           <button className="heading-btn" onClick={handleVisibility}>
             {viewTitle}
           </button>
+        ) : (
+          <h2>Public Quizzes</h2>
         )}
 
         {isLoggedIn && !isGuestLoggedIn && !isGuest && (

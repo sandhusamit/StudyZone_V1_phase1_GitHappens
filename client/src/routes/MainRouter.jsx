@@ -18,6 +18,7 @@ import Success from "../pages/Success";
 import EditQuiz from "../pages/EditQuiz";
 import DiagramQuestion from "../pages/DiagramQuestion";
 import CreateDiagramQuestion from "../pages/CreateDiagramQuestion";
+import Whiteboard from "../components/Tools/Whiteboard";
 
 const MainRouter = () => {
   return (
@@ -54,9 +55,7 @@ const MainRouter = () => {
         <Route
           path="/play/:quizId"
           element={
-            <GuestRoute allowGuestToken>
               <QuizPlay />
-            </GuestRoute>
           }
         />
 
@@ -90,6 +89,7 @@ const MainRouter = () => {
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route path="/success" element={<Success />} />
         <Route path="/error" element={<ErrorPage />} />
+        <Route path="/whiteboard" element={<Whiteboard />} />
       </Routes>
     </>
   );

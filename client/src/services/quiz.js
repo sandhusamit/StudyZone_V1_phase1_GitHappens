@@ -146,48 +146,93 @@ export const shareQuiz = async (quizId, email) => {
 };  
 
 //get quiz by id
-export const fetchQuizById = async (quizId) => {
-  const res = await fetch(`${END_POINT}/${quizId}`, {
-    method: 'GET',
-    credentials: 'include',
+// get quiz by id
+export const fetchQuizById = async (quizId, accessToken = null) => {
+  let url = `${END_POINT}/${quizId}`;
+
+  if (accessToken) {
+    console.log("Using access token for quiz fetch");
+    url += `?access=${encodeURIComponent(accessToken)}`;
+  }
+
+  const res = await fetch(url, {
+    method: "GET",
+    credentials: "include",
   });
 
   const data = await res.json();
 
   if (!res.ok) {
-    return { hasError: true, message: data.message };
+    return {
+      hasError: true,
+      status: res.status,
+      message: data.message || "A problem occurred getting quiz.",
+    };
   }
 
   return data;
 };
 
-export const fetchQuizByIdGuest = async (quizId, guestToken) => {
-  const res = await fetch(`/api/quizzes/guest/${quizId}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${guestToken}`,
-    },
-  });
-
-  const data = await res.json();
-
-  if (!res.ok) {
-    return { hasError: true, message: data.message };
-  }
-
-  return data;
-};
-
+// generate unlisted share token
 export const generateGuestToken = async (quizId) => {
-  const res = await fetch('/api/quizzes/guesttoken', {
-    method: 'POST',
+  const res = await fetch("/api/quizzes/guesttoken", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
-      
+      "Content-Type": "application/json",
     },
-    credentials: 'include',
-
+    credentials: "include",
     body: JSON.stringify({ quizId }),
   });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    return {
+      hasError: true,
+      message: data.message || "Failed to generate share token.",
+    };
+  }
+
+  return data.token;
+};
+
+export const submitQuizScore = async (quizId, score, userId, guestId) => {
+  console.log("Submitting score:", { quizId, score, userId, guestId });
+  const res = await fetch("/api/submit-score", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify({ quizId, score, userId, guestId }),
+  });
+
+  const data = await res.json();
+
+  if (res.status !== 201) {
+    console.error("Submit score failed:", data);
+    return { hasError: true, message: data.message };
+  }
+
+  return data;
+};
+
+export const getPublicLeaderboard = async () => {
+  const res = await fetch("/api/leaderboard/public", {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    return {
+      hasError: true,
+      message: data.message || "A problem occurred loading leaderboard.",
+    };
+  }
+
+  return data;
 };

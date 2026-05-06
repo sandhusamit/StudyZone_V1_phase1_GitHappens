@@ -23,7 +23,8 @@ import {
   getPublicQuizzes as fetchPublicQuizzesService,
   createBulkQuiz as createBulkQuizService,
   fetchQuizById as fetchQuizByIdService,
-  fetchQuizByIdGuest as fetchGuestQuizByIdService,
+  submitQuizScore as submitQuizScoreService,
+  getPublicLeaderboard as getPublicLeaderboardService,
 } from "../services/quiz";
 
 import {
@@ -38,6 +39,7 @@ import {
   updateQuestion as updateQuestionService,
   getQuestionById as fetchQuestionByIdService,
   createMatrixQuestion as createMatrixQuestionService,
+  updateMatrixQuestion as updateMatrixQuestionService,
 } from "../services/question";
 
 export const AuthContext = createContext();
@@ -46,6 +48,8 @@ export function AuthProvider({ children }) {
   const navigate = useNavigate();
 
   const [authUserId, setAuthUserId] = useState(null);
+  const [guestId, setGuestId] = useState(null);
+
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isGuestLoggedIn, setIsGuestLoggedIn] = useState(false);
   const [isGuest, setIsGuest] = useState(false);
@@ -53,6 +57,7 @@ export function AuthProvider({ children }) {
 
   const [authLoading, setAuthLoading] = useState(true);
   const [quizLoading, setQuizLoading] = useState(false);
+
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -73,8 +78,9 @@ export function AuthProvider({ children }) {
         const user = data.user;
 
         setAuthUserId(user?._id || user?.guestId || null);
+        setGuestId(user?.guestId || null);
 
-        if (user?.role === "guest") {
+        if (user?.isGuest) {
           setIsGuest(true);
           setIsGuestLoggedIn(true);
           setIsLoggedIn(false);
@@ -162,7 +168,7 @@ export function AuthProvider({ children }) {
 
       const guest = data.user;
 
-      setAuthUserId(guest?._id || guest?.guestId || null);
+      setGuestId(guest?._id || null);
       setIsLoggedIn(false);
       setIsGuestLoggedIn(true);
       setIsGuest(true);
@@ -286,36 +292,18 @@ export function AuthProvider({ children }) {
   );
 
   const fetchQuiz = useCallback(
-    async (quizId) => {
-      const data = await fetchQuizByIdService(quizId);
+    async (quizId, accessToken = null) => {
+      const data = await fetchQuizByIdService(quizId, accessToken);
 
       if (data?.hasError) {
-        navigate("/error", { state: data });
-        return null;
+        return data;
       }
 
       return data?.quiz ?? data ?? null;
     },
-    [navigate]
+    []
   );
 
-  const fetchGuestQuiz = useCallback(
-    async (quizId, guestToken) => {
-      const data = await fetchGuestQuizByIdService(quizId, guestToken);
-
-      if (data?.hasError) {
-        console.log("Error fetching guest quiz:", data.message);
-        navigate("/error", { state: data });
-        return null;
-      }
-
-      setIsGuest(true);
-      setIsGuestLoggedIn(true);
-
-      return data?.quiz ?? data ?? null;
-    },
-    [navigate]
-  );
 
   const newQuiz = useCallback(
     async (quiz) => {
@@ -404,24 +392,24 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  const generateGuestToken = useCallback(async (quizId) => {
+  const generateAccessToken = useCallback(async (quizId, expiresIn) => {
     try {
-      const res = await fetch("/api/quizzes/guesttoken", {
+      const res = await fetch(`/api/quizzes/${quizId}/access-token`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ quizId }),
+        body: JSON.stringify({ quizId, expiresIn }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        throw new Error(data.message || "Failed to generate guest token");
+        throw new Error(data.message || "Failed to generate access token");
       }
 
       return data.token;
     } catch (error) {
-      console.error("Error generating guest token:", error);
+      console.error("Error generating access token:", error);
       throw error;
     }
   }, []);
@@ -468,6 +456,18 @@ export function AuthProvider({ children }) {
     [navigate]
   );
 
+  const updateMatrixQuestion = useCallback(
+    async (questionId, updatedQuestion) => {
+      const data = await updateMatrixQuestionService(questionId, updatedQuestion);
+      if (data?.hasError) {
+        navigate("/error", { state: data });
+        return null;
+      }
+      return data;
+    },
+    [navigate]
+  );
+
   const updateQuestion = useCallback(
     async (questionId, updatedQuestion) => {
       const data = await updateQuestionService(questionId, updatedQuestion);
@@ -496,6 +496,39 @@ export function AuthProvider({ children }) {
     [navigate]
   );
 
+  const createScore = useCallback(
+      async (scoreData) => {
+        if (!authUserId && !guestId) {
+          console.error("No user or guest ID available");
+          return;
+        }
+        const data = await submitQuizScoreService(
+          scoreData.quizId,
+          scoreData.score,  
+          authUserId,
+          guestId, 
+        );
+
+        if (data?.hasError) {
+          navigate("/error", { state: data });
+          return null;
+        }
+
+        return data;
+      },
+      [navigate, authUserId, guestId]
+  );
+
+  const fetchPublicLeaderboard = useCallback(async () => {
+    const data = await getPublicLeaderboardService();
+
+    if (data?.hasError) {
+      return [];
+    }
+
+    return data?.scores || [];
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
@@ -503,6 +536,7 @@ export function AuthProvider({ children }) {
         isLoggedIn,
         isGuestLoggedIn,
         isGuest,
+        guestId,
         isAuthorized,
 
         authLoading,
@@ -518,22 +552,24 @@ export function AuthProvider({ children }) {
         fetchQuizzes,
         newQuiz,
         fetchQuiz,
-        fetchGuestQuiz,
         createBulkQuiz,
         removeQuiz,
         updateQuiz,
+        createScore,
+        fetchPublicLeaderboard,
 
         fetchQuestions,
         createQuestion,
         updateQuestion,
         fetchQuestionById,
         createMatrixQuestion,
+        updateMatrixQuestion,
 
         verifyOTP,
         fetchQuizzesByUser,
         fetchPublicQuizzes,
         shareQuiz,
-        generateGuestToken,
+        generateAccessToken,
       }}
     >
       {children}

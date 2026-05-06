@@ -1,18 +1,29 @@
+//Style
+import "./styles/Login.css";
+//Hooks
 import { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import "./styles/Login.css";
+import { useGuestLogin } from "../utils/GuestLogin.js";
+//Components
+import GuestLoginCard from "../components/Login/GuestLoginCard.jsx";
+
 
 export default function Login() {
+
+  //Context Methods
   const { loginUser, loginGuest, verifyOTP } = useAuth();
   const navigate = useNavigate();
+  const { handleGuestLogin } = useGuestLogin();
 
+  //States - Causes Rendering on change
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [guestName, setGuestName] = useState("");
   const [otpCode, setOtpCode] = useState("");
   const [step, setStep] = useState(1); // 1 = login, 2 = OTP, 4 = guest
 
+
+  //Component Methods
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -44,25 +55,24 @@ export default function Login() {
     navigate("/");
   };
 
-  const handleGuestLogin = async (e) => {
-    e.preventDefault();
+  //   e.preventDefault();
 
-    if (!guestName.trim()) {
-      alert("Please enter a guest name.");
-      return;
-    }
+  //   if (!guestName.trim()) {
+  //     alert("Please enter a guest name.");
+  //     return;
+  //   }
 
-    const guestData = await loginGuest({
-      name: guestName.trim(),
-    });
+  //   const guestData = await loginGuest({
+  //     name: guestName.trim(),
+  //   });
 
-    if (guestData?.hasError) {
-      alert(guestData.message || "Guest login failed. Please try again.");
-      return;
-    }
+  //   if (guestData?.hasError) {
+  //     alert(guestData.message || "Guest login failed. Please try again.");
+  //     return;
+  //   }
 
-    navigate("/");
-  };
+  //   navigate("/");
+  // };
 
   return (
     <div className="login-page">
@@ -128,24 +138,10 @@ export default function Login() {
         )}
 
         {step === 4 && (
-          <form onSubmit={handleGuestLogin} className="guest-login-section">
-            <input
-              type="text"
-              placeholder="Guest Name"
-              className="form-inputs login-input"
-              value={guestName}
-              onChange={(e) => setGuestName(e.target.value)}
-              required
-            />
+          <GuestLoginCard
+            onGuestLogin={handleGuestLogin}
+           />
 
-            <button type="submit" className="guest-login-button">
-              Continue as Guest
-            </button>
-
-            <button type="button" onClick={() => setStep(1)}>
-              Back to Login
-            </button>
-          </form>
         )}
       </div>
     </div>

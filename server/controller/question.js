@@ -116,5 +116,28 @@ export const getMatrixQuestionById = async (req, res) => {
   }
 };
 
+  export const updateMatrixQuestion = async (req, res) => {
+    try {
+      const updatedMatrixQuestion =
+        await MatrixQuestionSchema.findByIdAndUpdate(
+          req.params.matrixId,
+          req.body,
+          {
+            new: true,
+            runValidators: true,
+          }
+        );
+
+      if (!updatedMatrixQuestion) {
+        return res.status(404).json({
+          message: "Matrix question not found",
+        });
+      }
+
+      res.status(200).json(updatedMatrixQuestion);
+    } catch (error) {
+      res.status(500).json({ message: error.message });
+    }
+  };
 
 

@@ -2,9 +2,10 @@ import otplib from "otplib";
 import qrcode from "qrcode";
 import { Resend } from "resend";
 import { randomUUID } from "crypto";
+import mongoose from "mongoose";
 
 import generateToken from "../utils/jwt.js";
-import generateGuestToken from "../utils/guestJwt.js";
+import { generateGuestToken } from "../utils/guestJwt.js";
 
 import userModel from "../model/userModel.js";
 import guestModel from "../model/guestModel.js";
@@ -212,56 +213,71 @@ export const loginUser = async (req, res) => {
   }
 };
 
+
 export const loginGuest = async (req, res) => {
   try {
     const { name } = req.body;
 
-    if (!name?.trim()) {
+    const cleanName = String(name ?? "").trim();
+
+    if (!cleanName) {
       return res.status(400).json({
         hasError: true,
         message: "Name is required for guest login",
       });
     }
 
-    const guestId = req.cookies?.guestId || randomUUID();
+    const existingGuestId = req.cookies?.guestId;
 
-    let guestUser = await guestModel.findOne({ guestId });
+    let guestUser = null;
+
+    if (existingGuestId && mongoose.Types.ObjectId.isValid(existingGuestId)) {
+      guestUser = await guestModel.findById(existingGuestId);
+    }
 
     if (!guestUser) {
       guestUser = await guestModel.create({
-        guestId,
-        name: name.trim(),
+        name: cleanName,
       });
     } else {
-      guestUser.name = name.trim();
+      guestUser.name = cleanName;
       await guestUser.save();
     }
 
+    const guestMongoId = guestUser._id.toString();
     const token = generateGuestToken(guestUser);
 
-    res.cookie("guestId", guestId, {
+    const isProduction = process.env.NODE_ENV === "production";
+
+    res.cookie("guestId", guestMongoId, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "Strict",
+      secure: isProduction,
+      sameSite: isProduction ? "None" : "Lax",
       maxAge: 24 * 60 * 60 * 1000,
     });
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "Strict",
+      secure: isProduction,
+      sameSite: isProduction ? "None" : "Lax",
       maxAge: 24 * 60 * 60 * 1000,
     });
 
     return res.status(200).json({
       hasError: false,
       message: "Guest logged in successfully",
-      user: guestUser,
+      user: {
+        _id: guestUser._id,
+        name: guestUser.name,
+        role: "guest",
+      },
     });
   } catch (error) {
-    res.status(500).json({
+    console.error("Guest login error:", error);
+
+    return res.status(500).json({
       hasError: true,
-      message: error.message,
+      message: "Guest login failed.",
     });
   }
 };
@@ -288,35 +304,36 @@ export const logoutUser = async (req, res) => {
 
 export const getCurrentUser = async (req, res) => {
   try {
-    if (!req.user) {
+    if (!req.user?.id && !req.user?.guestId) {
       return res.status(401).json({ message: "Not authenticated" });
     }
 
-    if (req.user.role === "guest") {
-      return res.status(200).json({
-        user: {
-          _id: req.user.guestId || req.user.id,
-          guestId: req.user.guestId,
-          name: req.user.name,
-          role: "guest",
-        },
-      });
-    }
 
     const user = await userModel
       .findById(req.user.id)
       .select("-password -otpSecret");
 
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
+    if (user) {
+      return res.status(200).json({ user });
     }
 
-    return res.status(200).json({ user });
+    const guest = await guestModel.findById(req.user.guestId);
+
+    if (guest) {
+      return res.status(200).json({
+        user: {
+          _id: guest._id,
+          name: guest.name,
+          isGuest: true,
+        },
+      });
+    }
+
+    return res.status(404).json({ message: "User not found" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    return res.status(500).json({ message: error.message });
   }
 };
-
 /* ================= EMAIL OTP ================= */
 
 export const sendEmailOTP = async (req, res) => {

@@ -1,4 +1,4 @@
-import BulkQuestionImportPanel from "../../../BulkImport/BulkQuizImportPanel.jsx";
+import BulkQuestionImportPanel from "../../../BulkImport/Panel/BulkQuizImportPanel.jsx";
 import NewQuestionCard from "./NewQuestionCard.jsx";
 
 export default function Step2BuildQuestions({

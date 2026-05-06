@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import "client/src/pages/styles/BulkQuizImportPanel.css";
-import { parseBulkQuestions } from "../../utils/QuestionManagement.js";
+import { parseBulkQuestions } from "../../../utils/QuestionManagement.js";
 import BulkImportPreview from "./BulkImportPreview.jsx";
 
 export default function BulkQuestionImportPanel({ onImport, onClose }) {
@@ -10,7 +10,7 @@ export default function BulkQuestionImportPanel({ onImport, onClose }) {
   const [parseErrors, setParseErrors] = useState([]);
   const [status, setStatus] = useState("");
 
-  const exampleFormat = `1. What is HTML?
+const exampleFormat = `1. What is HTML?
 Type: mcq
 A. HyperText Markup Language
 B. HighText Markdown Language
@@ -29,7 +29,55 @@ DragItem: html | HTML | frontend
 DragItem: node | Node.js | backend
 
 Explanation: HTML is used on the frontend, Node.js on the backend.
-Subject: SWE`;
+Subject: SWE
+
+3. Add matrices A and B.
+Type: matrix
+MatrixType: addition
+Prompt: Find A + B
+Points: 1
+Difficulty: easy
+Subject: Math
+
+Matrix: A | square | 2x2
+1 2
+3 4
+
+Matrix: B | square | 2x2
+5 6
+7 8
+
+Expected: Answer | square | 2x2
+6 8
+10 12
+
+Explanation: Add corresponding elements.
+
+4. Reduce matrix to RREF.
+Type: matrix
+MatrixType: RREF
+Prompt: Convert the matrix to RREF
+Points: 1
+Difficulty: medium
+Subject: Math
+
+Matrix: A | square | 2x2
+1 2
+3 4
+
+Expected: Step 1 | square | 2x2
+1 2
+0 -2
+
+Expected: Step 2 | square | 2x2
+1 2
+0 1
+
+Expected: Final | square | 2x2
+1 0
+0 1
+
+Explanation: Apply row operations step-by-step to reach RREF.`;
 
   const canImport = useMemo(() => {
     return parsedQuestions.length > 0 && parseErrors.length === 0;

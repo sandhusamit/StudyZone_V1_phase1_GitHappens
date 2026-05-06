@@ -1,5 +1,6 @@
-import MCQPreviewCard from "./MCQPreviewCard.jsx";
-import DDQPreviewCard from "./DDQPreviewCard.jsx";
+import MCQPreviewCard from "../Question/MCQPreviewCard.jsx";
+import DDQPreviewCard from "../Question/DDQPreviewCard.jsx";
+import MatrixPreviewCard from "../Matrix/MatrixPreviewCard.jsx";
 
 export default function BulkImportPreview({ questions }) {
   return (
@@ -13,6 +14,10 @@ export default function BulkImportPreview({ questions }) {
 
         if (question.questionType === "ddq") {
           return <DDQPreviewCard key={index} question={question} index={index} />;
+        }
+
+        if (question.questionModel === "MatrixQuestion") { 
+          return <MatrixPreviewCard key={index} question={question} index={index} />;
         }
 
         <p>Points: {question.points}</p>
