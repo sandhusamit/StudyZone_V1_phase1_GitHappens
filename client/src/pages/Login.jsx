@@ -4,7 +4,7 @@ import "./styles/Login.css";
 import { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
-import { useGuestLogin } from "../utils/GuestLogin.js";
+import { useGuestLogin } from "../utils/Hooks/GuestLogin.js";
 //Components
 import GuestLoginCard from "../components/Login/GuestLoginCard.jsx";
 

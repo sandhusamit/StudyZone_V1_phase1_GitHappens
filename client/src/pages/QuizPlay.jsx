@@ -5,7 +5,7 @@ import "./styles/QuizPlay.css";
 import { useAuth } from "../contexts/AuthContext";
 import QuestionPlaycard from "../components/PlayQuiz/QuestionPlaycard";
 import GuestLoginCard from "../components/Login/GuestLoginCard.jsx";
-import { useGuestLogin } from "../utils/GuestLogin.js";
+import { useGuestLogin } from "../utils/Hooks/GuestLogin.js";
 
 export default function QuizPlay() { 
   const { quizId } = useParams();

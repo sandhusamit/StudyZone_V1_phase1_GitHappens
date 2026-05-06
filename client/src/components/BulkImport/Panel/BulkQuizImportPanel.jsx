@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import "client/src/pages/styles/BulkQuizImportPanel.css";
-import { parseBulkQuestions } from "../../../utils/QuestionManagement.js";
+import { parseBulkQuestions } from "../../../utils/QuestionProduction/BulkParser.js";
 import BulkImportPreview from "./BulkImportPreview.jsx";
 
 export default function BulkQuestionImportPanel({ onImport, onClose }) {
