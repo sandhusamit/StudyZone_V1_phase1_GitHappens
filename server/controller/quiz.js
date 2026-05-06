@@ -295,7 +295,7 @@ export const deleteAllQuizzes = async (req, res) => {
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-export const shareQuiz = async (req, res) => {
+export const shareQuizViaEmail = async (req, res) => {
   try {
     const { quizId } = req.params;
     const { email } = req.body;

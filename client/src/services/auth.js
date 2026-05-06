@@ -1,5 +1,47 @@
 const END_POINT = '/api/login';
 
+export const checkAuth = async () => {
+  const res = await fetch("/api/me", {
+    credentials: "include",
+  });
+
+  if (res.status === 401) {
+    return { isAuthenticated: false, user: null };
+  }
+  if (!res.ok) {
+    console.error("Error checking auth:", res.statusText);
+    return { isAuthenticated: false, user: null };
+  }
+
+  const data = await res.json();
+  return { isAuthenticated: true, user: data.user };
+
+};
+
+export const verifyOTPService = async (email, otpCode) => {
+    const res = await fetch("/api/verify-2fa-login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ email, token: otpCode }),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    return {
+      hasError: true,
+      message: data.message || "Invalid OTP",
+    };
+  }
+
+  return {
+    hasError: false,
+    isAuthenticated: true,
+    user: data.user,
+  };
+};
+
 export const loginUser = async (userData) => {
   console.log('AuthService: Logging in user with data:', userData);
 

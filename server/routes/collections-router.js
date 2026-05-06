@@ -30,10 +30,10 @@ import {
   getAllPublicQuizzes,
   createQuizWithQuestions,
   migrateQuizQuestionsToRefPath,
-  shareQuiz,
   submitQuizScore,
   getPublicLeaderboard,
-  generateQuizGuestToken
+  generateQuizGuestToken,
+  shareQuizViaEmail
 } from "../controller/quiz.js";
 
 
@@ -122,7 +122,7 @@ router.delete("/api/quizzes/:id", authMiddleware, deleteQuiz);
 // Generates access token for unlisted quiz sharing
 router.post("/api/quizzes/:quizId/access-token", authMiddleware, generateQuizGuestToken);
 
-router.post("/api/quizzes/:quizId/share", authMiddleware, shareQuiz);
+router.post("/api/quizzes/:quizId/share", authMiddleware, shareQuizViaEmail);
 
 
 /* ================= SCORE ROUTES ================= */

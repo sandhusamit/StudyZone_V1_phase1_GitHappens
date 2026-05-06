@@ -127,8 +127,8 @@ export const updateQuiz = async (quizId, updatedQuiz, token) => {
 };
 
 //share quiz
-export const shareQuiz = async (quizId, email) => {
-  const res = await fetch(`${END_POINT}/share/${quizId}`, {
+export const shareQuizViaEmail = async (quizId, email) => {
+  const res = await fetch(`${END_POINT}/${quizId}/share`, {
     method: 'POST',
     credentials: 'include',
     headers: {
@@ -138,7 +138,7 @@ export const shareQuiz = async (quizId, email) => {
   });
 
   if (res.status !== 200) {
-    return { error: true, message: 'A problem occured while sharing quiz.' };
+    return { hasError: true, message: 'A problem occured while sharing quiz.' };
   }
 
   const data = await res.json();

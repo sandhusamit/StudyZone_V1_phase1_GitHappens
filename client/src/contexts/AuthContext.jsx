@@ -25,12 +25,15 @@ import {
   fetchQuizById as fetchQuizByIdService,
   submitQuizScore as submitQuizScoreService,
   getPublicLeaderboard as getPublicLeaderboardService,
+  shareQuizViaEmail as shareQuizViaEmailService,
 } from "../services/quiz";
 
 import {
   loginUser as loginUserService,
   logoutUser as logoutService,
   loginGuest as loginGuestService,
+  checkAuth as checkAuthService,
+  verifyOTPService,
 } from "../services/auth";
 
 import {
@@ -62,11 +65,10 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await fetch("/api/me", {
-          credentials: "include",
-        });
+        const data = await checkAuthService();
+        
 
-        if (!res.ok) {
+        if (!data.isAuthenticated) {
           setAuthUserId(null);
           setIsLoggedIn(false);
           setIsGuest(false);
@@ -74,7 +76,6 @@ export function AuthProvider({ children }) {
           return;
         }
 
-        const data = await res.json();
         const user = data.user;
 
         setAuthUserId(user?._id || user?.guestId || null);
@@ -182,7 +183,15 @@ export function AuthProvider({ children }) {
 
   const verifyOTP = useCallback(async (email, otpCode) => {
     try {
-      const res = await fetch("/api/verify-2fa-login", {
+
+      const data = await verifyOTPService(email, otpCode);
+
+      if (data?.hasError) {
+        return data;
+      }
+
+      /*
+        const res = await fetch("/api/verify-2fa-login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -197,6 +206,7 @@ export function AuthProvider({ children }) {
           message: data.message || "Invalid OTP",
         };
       }
+      */
 
       setAuthUserId(data.user?._id || null);
       setIsLoggedIn(true);
@@ -372,17 +382,20 @@ export function AuthProvider({ children }) {
 
   const shareQuiz = useCallback(async (quizId, email) => {
     try {
-      const res = await fetch(`/api/quizzes/${quizId}/share`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ email }),
-      });
+      // const res = await fetch(`/api/quizzes/${quizId}/share`, {
+      //   method: "POST",
+      //   headers: { "Content-Type": "application/json" },
+      //   credentials: "include",
+      //   body: JSON.stringify({ email }),
+      // });
 
-      const data = await res.json();
+      const data = await shareQuizViaEmailService(quizId, email);
 
-      if (!res.ok) {
-        throw new Error(data.message || "Failed to share quiz");
+      if (data?.hasError) {
+        return {
+          hasError: true,
+          message: data.message || "Failed to share quiz.",
+        };
       }
 
       return data;
