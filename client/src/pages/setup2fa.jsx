@@ -95,7 +95,7 @@ export default function Setup2FA() {
       {/* STEP 2 - Show QR and prompt for OTP */}
       {step === 2 && (
         <>
-          <h3>Scan This QR Code</h3>
+          <h3>Scan This QR Code inside Microsoft Authenticator App</h3>
 
           {qrCode && (
             <img
