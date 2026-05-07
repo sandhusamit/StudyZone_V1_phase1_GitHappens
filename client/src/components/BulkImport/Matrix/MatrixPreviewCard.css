@@ -1,0 +1,167 @@
+/* ================= MATRIX BULK PREVIEW - PREMIUM ================= */
+
+.matrix-preview-section {
+  margin-top: 22px;
+}
+
+.matrix-preview-section > p {
+  margin: 0 0 14px;
+  color: #8dffbf;
+  font-size: 1.2rem;
+  font-weight: 900;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+}
+
+.matrix-preview-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+/* Matrix card */
+
+.matrix-preview-block {
+  width: fit-content;
+  max-width: 100%;
+  padding: 18px;
+
+  border-radius: 22px;
+
+  background:
+    radial-gradient(circle at top left, rgba(106, 180, 255, 0.12), transparent 38%),
+    linear-gradient(180deg, #111b33, #080e1f);
+
+  border: 1px solid rgba(145, 185, 255, 0.32);
+
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.34),
+    0 0 22px rgba(106, 180, 255, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.045);
+
+  overflow-x: auto;
+}
+
+.matrix-preview-block h6 {
+  margin: 0 0 14px;
+
+  color: #e7efff;
+
+  font-size: 0.88rem;
+  font-weight: 900;
+
+  letter-spacing: 0.9px;
+  text-align: center;
+}
+
+/* Grid */
+
+.matrix-preview-grid {
+  display: grid;
+  gap: 29px;
+  width: fit-content;
+  padding: 10px 40px;
+  padding-right: 50px;
+
+  position: relative;
+
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+/* Matrix brackets */
+
+.matrix-preview-grid::before,
+.matrix-preview-grid::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  width: 12px;
+  height: 100%;
+}
+
+.matrix-preview-grid::before {
+  left: 0;
+  border-left: 3px solid #7db4ff;
+  border-top: 3px solid #7db4ff;
+  border-bottom: 3px solid #7db4ff;
+  border-radius: 10px 0 0 10px;
+}
+
+.matrix-preview-grid::after {
+  right: 0;
+  border-right: 3px solid #7db4ff;
+  border-top: 3px solid #7db4ff;
+  border-bottom: 3px solid #7db4ff;
+  border-radius: 0 10px 10px 0;
+}
+
+/* Cells */
+
+.matrix-preview-cell {
+  width: 62px;
+  height: 48px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 13px;
+
+  border: 1px solid rgba(145, 185, 255, 0.46);
+
+  background:
+    linear-gradient(180deg, #1a2b4d, #111d36);
+
+  color: #ffffff;
+
+  font-size: 1.05rem;
+  font-weight: 900;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 4px 10px rgba(0, 0, 0, 0.26);
+
+  transition: 0.16s ease;
+}
+
+.matrix-preview-cell:hover {
+  transform: translateY(-2px);
+  border-color: rgba(125, 255, 181, 0.75);
+  background:
+    linear-gradient(180deg, #204064, #142848);
+  box-shadow:
+    0 0 14px rgba(125, 255, 181, 0.13),
+    0 6px 14px rgba(0, 0, 0, 0.3);
+}
+
+/* Scalar answer */
+
+.matrix-preview-scalar {
+  min-width: 120px;
+  height: 56px;
+  padding: 0 24px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 16px;
+
+  background:
+    radial-gradient(circle at top left, rgba(125, 255, 181, 0.18), transparent 40%),
+    linear-gradient(180deg, #143b2b, #0a2119);
+
+  border: 1px solid rgba(125, 255, 181, 0.58);
+
+  color: #ffffff;
+
+  font-size: 1.2rem;
+  font-weight: 900;
+
+  box-shadow:
+    0 10px 22px rgba(0, 0, 0, 0.28),
+    0 0 18px rgba(125, 255, 181, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}

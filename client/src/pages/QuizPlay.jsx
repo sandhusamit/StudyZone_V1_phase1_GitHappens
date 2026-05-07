@@ -1,66 +1,117 @@
+import "./styles/QuizPlay.css";
+
+// Hooks
 import { useLocation, useParams } from "react-router-dom";
 import { useEffect, useState, useMemo } from "react";
-import "./styles/QuizPlay.css";
+import { useGuestLogin } from "../utils/Hooks/GuestLogin.js";
 import { useAuth } from "../contexts/AuthContext";
-import DragDropQuestionCard from "../components/PlayQuiz/DDQ/DragDropQuestion.jsx";
-import QuestionPlaycard from "../components/PlayQuiz/QuestionPlaycard";
 
-export default function QuizPlay() {
+// Components
+import QuestionPlaycard from "../components/PlayQuiz/QuestionPlaycard";
+import GuestLoginCard from "../components/Login/GuestLoginCard.jsx";
+
+
+export default function QuizPlay() { 
   const { quizId } = useParams();
   const location = useLocation();
-  const guestToken = useMemo(
-    () => new URLSearchParams(location.search).get("guestToken"),
+  const { handleGuestLogin } = useGuestLogin();
+
+  const accessToken = useMemo(
+    () => new URLSearchParams(location.search).get("access"),
     [location.search]
   );
 
-  
-
-  const { fetchQuiz, fetchGuestQuiz, authLoading } = useAuth();
+  const {
+    fetchQuiz,
+    authLoading,
+    createScore,
+    isGuestLoggedIn,
+    isLoggedIn,
+  } = useAuth();
 
   const [quiz, setQuiz] = useState(location.state?.quiz ?? null);
   const [answers, setAnswers] = useState({});
   const [score, setScore] = useState(null);
   const [results, setResults] = useState([]);
   const [roster, setRoster] = useState([]);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [accessError, setAccessError] = useState(null);
 
-  /* ========================================================
-     LOAD QUIZ
-  ======================================================== */
-  useEffect(() => {
-    if (authLoading || !quizId || quiz) return;
+/* ========================================================
+   LOAD QUIZ ONLY AFTER AUTH/GUEST LOGIN
+======================================================== */
+useEffect(() => {
+  const canPlay = isLoggedIn || isGuestLoggedIn;
 
-    let alive = true;
+  if (authLoading || !quizId || !canPlay) {
+    setPageLoading(false);
+    return;
+  }
 
-    const load = async () => {
-      try {
-        const data = guestToken
-          ? await fetchGuestQuiz(quizId, guestToken)
-          : await fetchQuiz(quizId);
+  let alive = true;
 
-        const quizData = data?.quiz ?? data;
+  const load = async () => {
+    try {
+      setPageLoading(true);
+      setAccessError(null);
 
-        if (!alive || !quizData) return;
+      const data = await fetchQuiz(quizId, accessToken);
 
-        setQuiz(quizData);
-      } catch (err) {
-        console.error("Quiz load failed:", err);
+      if (!alive) return;
+
+      if (data?.hasError) {
+        setQuiz(null);
+        setAccessError(data.message || "You are not allowed to access this quiz.");
+        return;
       }
-    };
 
-    load();
+      const quizData = data?.quiz ?? data;
 
-    return () => {
-      alive = false;
-    };
-  }, [quizId, guestToken, authLoading, fetchQuiz, fetchGuestQuiz, quiz]);
+      if (!quizData) {
+        setQuiz(null);
+        setAccessError("Quiz not found.");
+        return;
+      }
+
+      setQuiz(quizData);
+    } catch (err) {
+      console.error("Quiz load failed:", err);
+
+      if (alive) {
+        setQuiz(null);
+        setAccessError("Quiz load failed.");
+      }
+    } finally {
+      if (alive) setPageLoading(false);
+    }
+  };
+
+  load();
+
+  return () => {
+    alive = false;
+  };
+}, [quizId, accessToken, authLoading, isLoggedIn, isGuestLoggedIn, fetchQuiz]);
 
   /* ========================================================
      ROSTER
   ======================================================== */
-  useEffect(() => {
-    if (!quiz?.questions?.length) return;
+  const unwrapQuestion = (item) => {
+    const q = item.questionId || item;
 
-    const questions = quiz.questions;
+    return {
+      ...q,
+      questionModel: item.questionModel || q.questionModel || "Question",
+    };
+  };
+
+  useEffect(() => {
+    if (!quiz?.questions?.length) {
+      setRoster([]);
+      return;
+    }
+
+    const questions = quiz.questions.map(unwrapQuestion);
 
     const count =
       typeof quiz.rotation === "number" && quiz.rotation > 0
@@ -75,8 +126,6 @@ export default function QuizPlay() {
     setRoster(shuffled.slice(0, count));
   }, [quiz]);
 
-  if (authLoading || !quiz) return <p>Loading quiz...</p>;
-
   /* ========================================================
      ANSWERS
   ======================================================== */
@@ -90,7 +139,26 @@ export default function QuizPlay() {
   };
 
   /* ========================================================
-     GRADING ENGINE (FIXED)
+     SCORE SUBMISSION
+  ======================================================== */
+  const submitScore = async (scoreData) => {
+    const data = await createScore(scoreData);
+
+    if (!data) {
+      console.error("Score submission failed: no response");
+      return;
+    }
+
+    if (data.hasError) {
+      console.error("Score submission failed:", data.message);
+      return;
+    }
+
+    console.log("Score submitted successfully:", data);
+  };
+
+  /* ========================================================
+     GRADING ENGINE
   ======================================================== */
   const handleSubmit = () => {
     let earned = 0;
@@ -110,8 +178,8 @@ export default function QuizPlay() {
       /* ================= MCQ ================= */
       if (q.questionType === "mcq") {
         const selectedIndex = answers[index];
-
         const correctIndex = q.choices?.findIndex((c) => c?.isCorrect);
+
         const selectedChoice = q.choices?.[selectedIndex];
         const correctChoice = q.choices?.[correctIndex];
 
@@ -122,11 +190,8 @@ export default function QuizPlay() {
 
         result.selectedIndex = selectedIndex;
         result.correctIndex = correctIndex;
-
-        result.selectedText =
-          selectedChoice?.text || "No answer selected";
-        result.correctText =
-          correctChoice?.text || "Missing correct answer";
+        result.selectedText = selectedChoice?.text || "No answer selected";
+        result.correctText = correctChoice?.text || "Missing correct answer";
 
         if (isCorrect) earned += result.points;
       }
@@ -154,16 +219,70 @@ export default function QuizPlay() {
         if (isCorrect) earned += result.points;
       }
 
-      result.isCorrect = isCorrect;
+      /* ================= MATRIX ================= */
+      if (q.questionModel === "MatrixQuestion") {
+        const expectedAnswers =
+          q.expectedAnswers || (q.expectedAnswer ? [q.expectedAnswer] : []);
 
+        const userAnswers = answers[index] || [];
+
+        const isMatrixAnswer = (answer) =>
+          answer && typeof answer === "object" && Array.isArray(answer.rows);
+
+        const isScalarAnswer = (answer) => typeof answer === "number";
+
+        const compareMatrix = (expectedMatrix, userMatrix) => {
+          if (!expectedMatrix?.rows || !Array.isArray(userMatrix)) return false;
+
+          return expectedMatrix.rows.every((row, r) =>
+            row.every((val, c) => Number(userMatrix?.[r]?.[c]) === Number(val))
+          );
+        };
+
+        const compareScalar = (expectedScalar, userScalar) => {
+          return (
+            userScalar !== undefined &&
+            userScalar !== "" &&
+            Number(userScalar) === Number(expectedScalar)
+          );
+        };
+
+        isCorrect =
+          expectedAnswers.length > 0 &&
+          expectedAnswers.every((expected, answerIndex) => {
+            const userAnswer = userAnswers?.[answerIndex];
+
+            if (isScalarAnswer(expected)) {
+              return compareScalar(expected, userAnswer);
+            }
+
+            if (isMatrixAnswer(expected)) {
+              return compareMatrix(expected, userAnswer);
+            }
+
+            return false;
+          });
+
+        result.expectedAnswers = expectedAnswers;
+        result.userAnswers = userAnswers;
+
+        if (isCorrect) earned += result.points;
+      }
+
+      result.isCorrect = isCorrect;
       return result;
     });
 
     setResults(review);
 
-    setScore({
-      earned,
-      total: roster.reduce((sum, q) => sum + (q.points || 0), 0),
+    const total = roster.reduce((sum, q) => sum + (q.points || 0), 0);
+    const percentage = total > 0 ? Math.max(0, Math.min(1, earned / total)) : 0;
+
+    setScore({ earned, total });
+
+    submitScore({
+      quizId,
+      score: percentage,
     });
   };
 
@@ -185,45 +304,105 @@ export default function QuizPlay() {
     return "";
   };
 
+
+
+  /* ========================================================
+     UI STATES
+  ======================================================== */
+/* ========================================================
+   UI STATES
+======================================================== */
+  const canPlay = isLoggedIn || isGuestLoggedIn;
+
+  const redirectTo = `/play/${quizId}${
+    accessToken ? `?access=${encodeURIComponent(accessToken)}` : ""
+  }`;
+
+  if (authLoading) {
+    return <p>Checking login...</p>;
+  }
+
+  if (!canPlay) {
+    return (
+      <div className="ParentContainer">
+        <GuestLoginCard
+          onGuestLogin={handleGuestLogin}
+          redirectTo={redirectTo}
+        />
+      </div>
+    );
+  }
+
+  if (pageLoading) {
+    return <p>Loading quiz...</p>;
+  }
+
+  if (accessError) {
+    return (
+      <div className="ParentContainer">
+        <h2>Access denied</h2>
+        <p>{accessError}</p>
+      </div>
+    );
+  }
+
+  if (!quiz) {
+    return (
+      <div className="ParentContainer">
+        <h2>Quiz not found</h2>
+      </div>
+    );
+  }
+
   /* ========================================================
      UI
   ======================================================== */
   return (
-    <div className="play-quiz-container">
-      <h1>{quiz?.title}</h1>
-      <p>{quiz?.description}</p>
+    <div className="ParentContainer">
+      {canPlay ? (
+        <div className="play-quiz-container">
+          <h1>{quiz?.title}</h1>
+          <p>{quiz?.description}</p>
 
-      <div className="play-quiz-meta">
-        <span>Questions: {roster.length}</span>
-      </div>
+          <div className="play-quiz-meta">
+            <span>Questions: {roster.length}</span>
+          </div>
 
-      {roster.map((q, qIndex) => {
-        const result = results[qIndex];
+          {roster.map((q, qIndex) => {
+            const result = results[qIndex];
 
-        return (
-          <QuestionPlaycard
-            key={q._id || qIndex}
-            q={q}
-            qIndex={qIndex}
-            answers={answers}
-            setAnswers={setAnswers}
-            result={result}
-            getChoiceClass={getChoiceClass}
-            handleSelect={handleSelect}
-            disabled={!!score}
-          />
-        );
-      })}
+            return (
+              <QuestionPlaycard
+                key={q._id || qIndex}
+                q={q}
+                qIndex={qIndex}
+                answers={answers}
+                setAnswers={setAnswers}
+                result={result}
+                getChoiceClass={getChoiceClass}
+                handleSelect={handleSelect}
+                disabled={!!score}
+              />
+            );
+          })}
 
-      {/* ✅ ONLY SUBMIT HERE */}
-      {score ? (
-        <div className="quiz-score">
-          <h2>
-            Score: {score.earned} / {score.total}
-          </h2>
+
+
+          {score ? (
+            <div className="quiz-score">
+              <h2>
+                Score: {score.earned} / {score.total}
+              </h2>
+            </div>
+          ) : (
+            <button onClick={handleSubmit}>Submit Quiz</button>
+          )}
         </div>
       ) : (
-        <button onClick={handleSubmit}>Submit Quiz</button>
+        <GuestLoginCard
+          onGuestLogin={handleGuestLogin}
+          redirectTo={redirectTo}
+        />
       )}
     </div>
   );

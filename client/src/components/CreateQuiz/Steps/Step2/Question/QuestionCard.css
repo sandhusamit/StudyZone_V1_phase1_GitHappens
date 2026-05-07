@@ -1,0 +1,245 @@
+/* ================= QUESTION TYPE CARDS ================= */
+
+.question-type-card {
+  margin-top: 18px;
+  padding: 18px;
+  border-radius: 18px;
+
+  background: rgba(8, 13, 28, 0.58);
+  border: 1px solid rgba(120, 150, 255, 0.16);
+  box-shadow: 0 0 22px rgba(106, 180, 255, 0.08);
+
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.question-type-header {
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(120, 150, 255, 0.14);
+}
+
+.question-type-header h5 {
+  color: #dceaff;
+  font-size: 1.05rem;
+  margin-bottom: 4px;
+}
+
+.question-type-header p {
+  color: #9fb3df;
+  font-size: 0.92rem;
+}
+
+/* ================= LISTS / ROWS ================= */
+
+.choice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.choice-row {
+  display: grid;
+  grid-template-columns: 42px 1fr auto auto;
+  gap: 12px;
+  align-items: center;
+
+  padding: 12px;
+  border-radius: 14px;
+
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(120, 150, 255, 0.12);
+
+  transition: 0.2s ease;
+}
+
+.choice-row:hover {
+  border-color: rgba(106, 180, 255, 0.35);
+  background: rgba(106, 180, 255, 0.055);
+}
+
+.choice-index {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: #7dffb5;
+  font-weight: 800;
+
+  background: rgba(125, 255, 181, 0.08);
+  border: 1px solid rgba(125, 255, 181, 0.25);
+}
+
+.choice-input {
+  min-width: 0;
+}
+
+/* ================= MCQ CORRECT PILL ================= */
+
+.correct-pill {
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 999px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  color: #9fb3df;
+  font-size: 0.92rem;
+  font-weight: 700;
+
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(120, 150, 255, 0.14);
+
+  cursor: pointer;
+  transition: 0.2s ease;
+  white-space: nowrap;
+}
+
+.correct-pill input {
+  width: auto;
+  accent-color: #7dffb5;
+}
+
+.correct-pill.active {
+  color: #7dffb5;
+  background: rgba(125, 255, 181, 0.09);
+  border-color: rgba(125, 255, 181, 0.35);
+  box-shadow: 0 0 12px rgba(125, 255, 181, 0.15);
+}
+
+/* ================= DDQ ================= */
+
+.ddq-section {
+  padding: 14px;
+  border-radius: 16px;
+
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid rgba(120, 150, 255, 0.1);
+}
+
+.ddq-section-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin-bottom: 12px;
+}
+
+.ddq-section-title h6 {
+  color: #9bd0ff;
+  font-size: 0.95rem;
+  letter-spacing: 0.3px;
+}
+
+.ddq-section-title span {
+  color: #9fb3df;
+  font-size: 0.82rem;
+  padding: 4px 10px;
+  border-radius: 999px;
+
+  background: rgba(106, 180, 255, 0.08);
+  border: 1px solid rgba(106, 180, 255, 0.16);
+}
+
+.ddq-row {
+  grid-template-columns: 42px 1fr minmax(170px, 230px) auto;
+}
+
+.ddq-select {
+  min-width: 170px;
+}
+
+.ddq-id-input {
+  max-width: 210px;
+  color: #7f8daf;
+  font-size: 0.85rem;
+  cursor: not-allowed;
+  opacity: 0.75;
+}
+
+/* ================= BUTTONS ================= */
+
+.mini-danger-btn {
+  height: 42px;
+  padding: 0 14px;
+  border-radius: 12px;
+
+  border: 1px solid rgba(255, 90, 90, 0.35);
+  background: rgba(255, 90, 90, 0.08);
+  color: #ff9a9a;
+
+  font-weight: 800;
+  cursor: pointer;
+  transition: 0.2s ease;
+  white-space: nowrap;
+}
+
+.mini-danger-btn:hover:not(:disabled) {
+  background: rgba(255, 90, 90, 0.16);
+  transform: translateY(-1px);
+  box-shadow: 0 0 14px rgba(255, 90, 90, 0.18);
+}
+
+.mini-danger-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.add-choice-btn {
+  align-self: flex-start;
+  margin-top: 4px;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 900px) {
+  .choice-row,
+  .ddq-row {
+    grid-template-columns: 42px 1fr;
+  }
+
+  .correct-pill,
+  .ddq-select,
+  .ddq-id-input,
+  .mini-danger-btn {
+    grid-column: 2;
+    width: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  .question-type-card {
+    padding: 14px;
+  }
+
+  .choice-row,
+  .ddq-row {
+    grid-template-columns: 1fr;
+  }
+
+  .choice-index,
+  .correct-pill,
+  .ddq-select,
+  .ddq-id-input,
+  .mini-danger-btn {
+    grid-column: 1;
+    width: 100%;
+  }
+
+  .choice-index {
+    width: 100%;
+  }
+
+  .add-choice-btn {
+    width: 100%;
+  }
+}

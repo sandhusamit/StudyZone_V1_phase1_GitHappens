@@ -1,0 +1,39 @@
+.leaderboard-page {
+  padding: 2rem;
+}
+
+.leaderboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.leaderboard-header select {
+  padding: 0.6rem;
+  border-radius: 8px;
+}
+
+.leaderboard-card {
+  margin-bottom: 2rem;
+  padding: 1.2rem;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+}
+
+.leaderboard-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.leaderboard-table th,
+.leaderboard-table td {
+  padding: 0.8rem;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+}
+
+.leaderboard-table th {
+  font-weight: bold;
+}

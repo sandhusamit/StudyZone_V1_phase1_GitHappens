@@ -1,3 +1,4 @@
+import './MCQ_Play.css';
 export default function MCQ_Play({
     q,
     qIndex,
@@ -20,6 +21,7 @@ export default function MCQ_Play({
                     key={cIndex}
                     className={[
                     selected ? "selected" : "",
+                    disabled ? "disabled" : "",
                     getChoiceClass(qIndex, cIndex),
                     ].join(" ")}
                 >

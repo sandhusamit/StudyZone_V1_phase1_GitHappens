@@ -1,60 +1,106 @@
-import BulkQuestionImportPanel from "../../../BulkImport/BulkQuizImportPanel.jsx";
+import BulkQuestionImportPanel from "../../../BulkImport/Panel/BulkQuizImportPanel.jsx";
 import NewQuestionCard from "./NewQuestionCard.jsx";
 
 export default function Step2BuildQuestions({
-    quizData, handlers, removePoolQuestionFromQuiz, setStep, showBulkImport, setShowBulkImport, handleBulkImport,
+  quizData,
+  handlers,
+  removePoolQuestionFromQuiz,
+  setStep,
+  showBulkImport,
+  setShowBulkImport,
+  handleBulkImport,
+}) {
+  const {
+    addMcqQuestion,
+    addDdqQuestion,
+    addMatrixQuestion,
 
-    }) {
-    const { updateQuestionField, updateChoiceText, setCorrectChoice, updateDragItemText, updateDragItemDropbox, updateDropBoxTitle,
-        addDragItem, removeDragItem, addDropBox, removeDropBox,
-        addChoice, removeChoice, addMcqQuestion, addDdqQuestion, removeQuestion
-    } = handlers;
+    updateQuestionField,
+    removeQuestion,
 
-    return (
-    
+    addChoice,
+    removeChoice,
+    updateChoiceText,
+    setCorrectChoice,
+
+    addDragItem,
+    removeDragItem,
+    updateDragItemText,
+    updateDragItemDropbox,
+    addDropBox,
+    removeDropBox,
+    updateDropBoxTitle,
+
+    addRow,
+    removeRow,
+    addColumn,
+    removeColumn,
+    addMatrix,
+    removeMatrix,
+    updateMatrixLabel,
+    getDuplicateMatrixLabels,
+
+    addExpectedAnswerMatrix,
+    removeExpectedAnswerMatrix,
+    updateExpectedAnswerLabel,
+    addAnswerRow,
+    removeAnswerRow,
+    addAnswerColumn,
+    removeAnswerColumn,
+  } = handlers;
+
+  return (
     <section className="cq-section">
-        <div className="cq-toolbar">
-            <h2>Build Questions</h2>
+      <div className="cq-toolbar">
+        <h2>Build Questions</h2>
 
-            <div className="cq-toolbar-actions">
-                <button
-                type="button"
-                className="cq-btn add-choice-btn"
-                onClick={addMcqQuestion}
-                >
-                + Add MCQ
-                </button>
+        <div className="cq-toolbar-actions">
+          <button
+            type="button"
+            className="cq-btn add-choice-btn"
+            onClick={addMcqQuestion}
+          >
+            + Add MCQ
+          </button>
 
-                <button
-                type="button"
-                className="cq-btn add-choice-btn"
-                onClick={addDdqQuestion}
-                >
-                + Add DDQ
-                </button>
+          <button
+            type="button"
+            className="cq-btn add-choice-btn"
+            onClick={addDdqQuestion}
+          >
+            + Add DDQ
+          </button>
 
-                <button
-                type="button"
-                className="cq-btn add-choice-btn"
-                onClick={() => setShowBulkImport((prev) => !prev)}
-                >
-                {showBulkImport ? "Hide Bulk Import" : "+ Bulk Import MCQs"}
-                </button>
-            </div>
+          <button
+            type="button"
+            className="cq-btn add-choice-btn"
+            onClick={addMatrixQuestion}
+          >
+            + Add Matrix
+          </button>
+
+          <button
+            type="button"
+            className="cq-btn add-choice-btn"
+            onClick={() => setShowBulkImport((prev) => !prev)}
+          >
+            {showBulkImport ? "Hide Bulk Import" : "+ Bulk Import MCQs"}
+          </button>
         </div>
+      </div>
 
-        {showBulkImport && (
+      {showBulkImport && (
         <BulkQuestionImportPanel
-            onImport={handleBulkImport}
-            onClose={() => setShowBulkImport(false)}
+          onImport={handleBulkImport}
+          onClose={() => setShowBulkImport(false)}
         />
-        )}
+      )}
 
-        {quizData.questions.length === 0 && (
+      {quizData.questions.length === 0 && (
         <p className="cq-empty">No questions added yet.</p>
-        )}
+      )}
 
-        <NewQuestionCard
+      <NewQuestionCard
         quizData={quizData}
         updateQuestionField={updateQuestionField}
         updateChoiceText={updateChoiceText}
@@ -70,19 +116,37 @@ export default function Step2BuildQuestions({
         removeDropBox={removeDropBox}
         addChoice={addChoice}
         removeChoice={removeChoice}
-        />
+        addRow={addRow}
+        addColumn={addColumn}
+        removeRow={removeRow}
+        removeColumn={removeColumn}
+        addAnswerRow={addAnswerRow}
+        addAnswerColumn={addAnswerColumn}
+        removeAnswerRow={removeAnswerRow}
+        removeAnswerColumn={removeAnswerColumn}
+        addMatrix={addMatrix}
+        removeMatrix={removeMatrix}
+        updateMatrixLabel={updateMatrixLabel}
+        getDuplicateMatrixLabels={getDuplicateMatrixLabels}
+        addExpectedAnswerMatrix={addExpectedAnswerMatrix}
+        removeExpectedAnswerMatrix={removeExpectedAnswerMatrix}
+        updateExpectedAnswerLabel={updateExpectedAnswerLabel}
+      />
 
-        <div className="cq-nav">
+      <div className="cq-nav">
         <button type="button" className="cq-btn" onClick={() => setStep(1)}>
-            Back
+          Back
         </button>
 
-        <button title="Next Step" type="button" className="cq-btn" onClick={() => setStep(3)}>
-            Next
+        <button
+          title="Next Step"
+          type="button"
+          className="cq-btn"
+          onClick={() => setStep(3)}
+        >
+          Next
         </button>
-        </div>
+      </div>
     </section>
-    );
+  );
 }
-
-    

@@ -1,127 +1,149 @@
-import { useState } from 'react';
-import { useAuth } from '../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
+//Style
 import "./styles/Login.css";
+//Hooks
+import { useState } from "react";
+import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { useGuestLogin } from "../utils/Hooks/GuestLogin.js";
+//Components
+import GuestLoginCard from "../components/Login/GuestLoginCard.jsx";
 
 
 export default function Login() {
-  const { loginUser, verifyOTP } = useAuth();
+
+  //Context Methods
+  const { loginUser, loginGuest, verifyOTP } = useAuth();
   const navigate = useNavigate();
+  const { handleGuestLogin } = useGuestLogin();
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  //States - Causes Rendering on change
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [otpCode, setOtpCode] = useState("");
+  const [step, setStep] = useState(1); // 1 = login, 2 = OTP, 4 = guest
 
-  // 2FA step
-  const [otpCode, setOtpCode] = useState('');
-  const [step, setStep] = useState(1); // 1: login, 2: OTP
 
-
-  const handleVerifyOTP = async (e) => {
-    e.preventDefault();
-  
-    const result = await verifyOTP(email, otpCode);
-  
-    console.log("OTP Result:", result);
-  
-    if (result?.hasError) {
-      alert("Invalid OTP. Try again.");
-      return;
-    }
-  
-    // OTP success → user is authenticated
-    navigate("/");
-  };
-  
-
+  //Component Methods
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const creds = { email, password };
-
-    // loginUser now returns backend data
-    const userData = await loginUser(creds);
+    const userData = await loginUser({ email, password });
 
     if (userData?.hasError) {
-      alert(userData.message || 'Login failed. Please try again.');
+      alert(userData.message || "Login failed. Please try again.");
       return;
     }
 
-    console.log("Login: Received userData:", userData);
-    // If login requires 2FA:
-    if (userData && userData.is2FAEnabled) {
+    if (userData?.is2FAEnabled) {
       setStep(2);
       return;
     }
 
-    if (userData && !userData.hasError && !userData.is2FAEnabled) {
-      // Login successful without 2FA
-
-      navigate('/');
-    }
+    navigate("/");
   };
 
-return (
-  <div className="login-page">
+  const handleVerifyOTP = async (e) => {
+    e.preventDefault();
 
-    <div className="login-container">
+    const result = await verifyOTP(email, otpCode);
 
-      <h1 className="login-title">Login</h1>
+    if (result?.hasError) {
+      alert("Invalid OTP. Try again.");
+      return;
+    }
 
-      {step === 1 && (
-        <form onSubmit={handleSubmit} className="login-form">
+    navigate("/");
+  };
 
-          <input
-            type="email"
-            placeholder="Email"
-            className="form-inputs login-input"
-            value={email}
-            onChange={({ target }) => setEmail(target.value)}
-          />
+  //   e.preventDefault();
 
-          <input
-            type="password"
-            placeholder="Password"
-            className="form-inputs login-input"
-            value={password}
-            onChange={({ target }) => setPassword(target.value)}
-          />
+  //   if (!guestName.trim()) {
+  //     alert("Please enter a guest name.");
+  //     return;
+  //   }
 
-          <button type="submit" className="login-button">
-            Login to StudyZone
-          </button>
+  //   const guestData = await loginGuest({
+  //     name: guestName.trim(),
+  //   });
 
-        </form>
-      )}
+  //   if (guestData?.hasError) {
+  //     alert(guestData.message || "Guest login failed. Please try again.");
+  //     return;
+  //   }
 
-      {step === 2 && (
-        <div className="otp-section">
+  //   navigate("/");
+  // };
 
-          <h2>Two-Factor Authentication</h2>
-          <p>Enter the 6-digit code from your authenticator app:</p>
+  return (
+    <div className="login-page">
+      <div className="login-container">
+        <h1 className="login-title">Login</h1>
 
-          <input
-            type="text"
-            className="form-inputs otp-input"
-            value={otpCode}
-            onChange={({ target }) => setOtpCode(target.value)}
-          />
+        {step === 1 && (
+          <form onSubmit={handleSubmit} className="login-form">
+            <input
+              type="email"
+              placeholder="Email"
+              className="form-inputs login-input"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
 
-          <button onClick={handleVerifyOTP}>
-            Verify OTP
-          </button>
+            <input
+              type="password"
+              placeholder="Password"
+              className="form-inputs login-input"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
 
-        </div>
-      )}
+            <button type="submit" className="login-button">
+              Login to StudyZone
+            </button>
 
-      {step === 3 && (
-        <p className="login-status">
-          Login successful! Redirecting...
-        </p>
-      )}
+            <button
+              type="button"
+              className="guest-login-button"
+              onClick={() => setStep(4)}
+            >
+              Guest Login
+            </button>
+          </form>
+        )}
 
+        {step === 2 && (
+          <form onSubmit={handleVerifyOTP} className="otp-section">
+            <h2>Two-Factor Authentication</h2>
+            <p>Enter the 6-digit code from your authenticator app:</p>
+
+            <input
+              type="text"
+              className="form-inputs otp-input"
+              placeholder="123456"
+              value={otpCode}
+              onChange={(e) => setOtpCode(e.target.value)}
+              required
+            />
+
+            <button type="submit" className="login-button">
+              Verify OTP
+            </button>
+
+            <button type="button" onClick={() => setStep(1)}>
+              Back
+            </button>
+          </form>
+        )}
+
+        {step === 4 && (
+          <GuestLoginCard
+            onGuestLogin={handleGuestLogin}
+           />
+
+        )}
+      </div>
     </div>
-
-  </div>
-);
+  );
 }
-

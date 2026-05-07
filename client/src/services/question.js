@@ -37,6 +37,43 @@ export const createQuestion = async (question) => {
     return data;
   };
 
+  export const createMatrixQuestion = async (question) => {
+    console.log("Creating matrix question: ", question);
+    const res = await fetch('/api/matrix', {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(question),
+    });
+    
+    if (res.status !== 201) {
+      return { error: true, message: 'A problem occured while adding matrix question.' };
+    }
+  
+    const data = await res.json();
+    return data;
+  };
+
+  export const updateMatrixQuestion = async (questionId, updatedQuestion) => {
+    console.log("Updating matrix question: ", questionId, updatedQuestion);
+    const res = await fetch(`/api/matrix/${questionId}`, {
+      method: 'PUT',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(updatedQuestion),
+    });
+
+    if (res.status !== 200) {
+      return { error: true, message: 'A problem occured while updating matrix question.' };
+    }
+
+    const data = await res.json();
+    return data;
+  };
 
 export const updateQuestion = async (questionId, updatedQuestion, token) => {
     const res = await fetch(`${END_POINT}/${questionId}`, {

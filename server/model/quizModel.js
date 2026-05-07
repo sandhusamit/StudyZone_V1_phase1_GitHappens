@@ -15,8 +15,16 @@ const QuizSchema = new mongoose.Schema({
   // Array of references to Question model
   questions: [
     {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Question"
+      questionId: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+        refPath: "questions.questionModel"
+      },
+      questionModel: {
+        type: String,
+        required: true,
+        enum: ["Question", "MatrixQuestion"]
+      }
     }
   ],
   visibility: {

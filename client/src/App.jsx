@@ -8,6 +8,8 @@ function App() {
     <AuthProvider>
       <MainRouter />
     </AuthProvider>
+    
+    
   );
 }
 export default App;

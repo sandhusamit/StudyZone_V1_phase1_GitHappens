@@ -11,7 +11,8 @@
 }
 
 .cq-container {
-  max-width: 1080px;
+  max-width: 1480px;
+  max-height: none;
   margin: 0 auto;
   padding: 28px;
   color: #e0e8ff;
@@ -211,7 +212,8 @@
   transition: 0.24s ease;
   background: transparent;
   color: #cbd8ff;
-  border: 1px solid rgba(195, 211, 255, 0.35);
+  border: 7px solid rgba(195, 211, 255, 0.35);
+  font-size: 1.6rem;
 }
 
 .cq-btn:hover:not(:disabled) {
