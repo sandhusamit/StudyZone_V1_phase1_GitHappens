@@ -318,6 +318,7 @@ export default function CreateQuiz() {
             3. Question Pool
           </button>
 
+
           <button
             type="button"
             className={`cq-step ${step === 4 ? "active" : ""}`}
@@ -406,7 +407,7 @@ export default function CreateQuiz() {
               removeQuestion={removeQuestion}
             />
           )}
-
+          
           {step === 4 && (
             <section className="cq-section">
               <h2>Quiz Created</h2>

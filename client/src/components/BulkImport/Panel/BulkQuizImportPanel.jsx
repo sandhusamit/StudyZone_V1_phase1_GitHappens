@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
-import "client/src/pages/styles/BulkQuizImportPanel.css";
 import { parseBulkQuestions } from "../../../utils/QuestionProduction/BulkParser.js";
 import BulkImportPreview from "./BulkImportPreview.jsx";
+import "./BulkQuizImportPanel.css";
 
 export default function BulkQuestionImportPanel({ onImport, onClose }) {
   // State for raw input, parsed questions, errors, and status messages
@@ -28,13 +28,13 @@ Dropbox: backend | Backend
 DragItem: html | HTML | frontend
 DragItem: node | Node.js | backend
 
-Explanation: HTML is used on the frontend, Node.js on the backend.
+Explanation: HTML is used on the frontend, Node.js is used on the backend.
 Subject: SWE
 
 3. Add matrices A and B.
 Type: matrix
 MatrixType: addition
-Prompt: Find A + B
+Prompt: Find A + B.
 Points: 1
 Difficulty: easy
 Subject: Math
@@ -53,31 +53,31 @@ Expected: Answer | square | 2x2
 
 Explanation: Add corresponding elements.
 
-4. Reduce matrix to RREF.
+4. Reduce an augmented matrix to RREF.
 Type: matrix
 MatrixType: RREF
-Prompt: Convert the matrix to RREF
+Prompt: Convert the augmented matrix to RREF.
 Points: 1
 Difficulty: medium
 Subject: Math
 
-Matrix: A | square | 2x2
-1 2
-3 4
+Matrix: Augmented Matrix | rectangular | 2x3 | divider=2
+1 2 5
+3 4 11
 
-Expected: Step 1 | square | 2x2
-1 2
-0 -2
+Expected: Step 1 | rectangular | 2x3 | divider=2
+1 2 5
+0 -2 -4
 
-Expected: Step 2 | square | 2x2
-1 2
-0 1
+Expected: Step 2 | rectangular | 2x3 | divider=2
+1 2 5
+0 1 2
 
-Expected: Final | square | 2x2
-1 0
-0 1
+Expected: Final | rectangular | 2x3 | divider=2
+1 0 1
+0 1 2
 
-Explanation: Apply row operations step-by-step to reach RREF.`;
+Explanation: The divider appears after column 2 to separate coefficients from constants.`;
 
   const canImport = useMemo(() => {
     return parsedQuestions.length > 0 && parseErrors.length === 0;
@@ -129,7 +129,21 @@ Explanation: Apply row operations step-by-step to reach RREF.`;
         you can still edit or remove them like any other question.
       </p>
 
-      <label className="cq-label">Required Format</label>
+      <div className="bulk-import-format-header">
+        <label className="cq-label">Required Format</label>
+
+        <button
+          type="button"
+          className="bulk-copy-btn"
+          onClick={() => {
+            navigator.clipboard.writeText(exampleFormat);
+            setStatus("Copied example format to clipboard.");
+          }}
+        >
+          Copy Format
+        </button>
+      </div>
+
       <pre className="bulk-import-example">{exampleFormat}</pre>
 
       <label className="cq-label">Paste Questions</label>

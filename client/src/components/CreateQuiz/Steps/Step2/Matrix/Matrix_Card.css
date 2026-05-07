@@ -89,18 +89,49 @@
 
 /* ================= LABEL INPUT ================= */
 
-.matrix-label-input {
-  width: 130px;
-  padding: 9px 11px;
+.matrix-input {
+  width: 96px;
+  min-width: 96px;
+  height: 52px;
+
+  padding: 0 10px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
   text-align: center;
+
+  appearance: textfield;
+  -moz-appearance: textfield;
+
+  border-radius: 12px;
+  border: 1px solid rgba(120, 150, 255, 0.32);
+
+  background: #101a33 !important;
+
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+
+  font-size: 1.1rem;
   font-weight: 800;
-  font-size: 1rem;
-  border-radius: 11px;
-  border: 1px solid rgba(120, 150, 255, 0.28);
-  background: rgba(255, 255, 255, 0.055);
-  color: #eef3ff;
+  line-height: 1;
+
   outline: none;
   transition: 0.18s ease;
+
+  box-sizing: border-box;
+
+  overflow: visible;
+  white-space: nowrap;
+}
+
+.matrix-input::-webkit-inner-spin-button,
+.matrix-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+  display: none;
 }
 
 .matrix-label-input:focus {
@@ -110,7 +141,7 @@
 
 .matrix-label-input.error {
   border-color: rgba(255, 90, 90, 0.75);
-  background: rgba(255, 90, 90, 0.08);
+  background: rgba(60, 15, 15, 0.9);
   box-shadow: 0 0 0 2px rgba(255, 90, 90, 0.13);
 }
 
@@ -185,8 +216,8 @@
   padding: 9px 11px;
   border-radius: 11px;
   border: 1px solid rgba(120, 150, 255, 0.24);
-  background: rgba(12, 18, 34, 0.95);
-  color: #eef3ff;
+  background: rgba(12, 18, 34, 0.98);
+  color: #ffffff;
   outline: none;
   transition: 0.18s ease;
 }
@@ -278,29 +309,56 @@
 .matrix-input {
   width: 72px;
   height: 48px;
+
   text-align: center;
+
   border-radius: 12px;
-  border: 1px solid rgba(120, 150, 255, 0.3);
-  background: rgba(255, 255, 255, 0.055);
-  color: #ffffff;
-  font-size: 1rem;
-  font-weight: 750;
+
+  border: 1px solid rgba(120, 150, 255, 0.32);
+
+  background: rgba(15, 24, 45, 0.98) !important;
+
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+
+  font-size: 1.08rem;
+  font-weight: 800;
+
   outline: none;
   transition: 0.18s ease;
+
   box-sizing: border-box;
+
+  opacity: 1 !important;
+  caret-color: #ffffff;
+}
+
+.matrix-input::placeholder {
+  color: rgba(220, 230, 255, 0.55);
+  -webkit-text-fill-color: rgba(220, 230, 255, 0.55);
 }
 
 .matrix-input:hover {
   border-color: rgba(125, 255, 181, 0.58);
-  background: rgba(125, 255, 181, 0.075);
+  background: rgba(24, 38, 64, 0.98) !important;
 }
 
 .matrix-input:focus {
   border-color: rgba(0, 255, 255, 0.72);
-  background: rgba(0, 255, 255, 0.08);
+
+  background: rgba(12, 35, 48, 0.98) !important;
+
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+
   box-shadow:
     0 0 0 2px rgba(0, 255, 255, 0.13),
     0 0 18px rgba(0, 255, 255, 0.18);
+}
+
+.matrix-input::-webkit-inner-spin-button,
+.matrix-input::-webkit-outer-spin-button {
+  opacity: 0.7;
 }
 
 /* ================= AUGMENTED LINE ================= */
@@ -361,13 +419,14 @@
 
 .matrix-answer-builder .matrix-input {
   border-color: rgba(125, 255, 181, 0.35);
-  background: rgba(125, 255, 181, 0.055);
-  color: #eafff4;
+  background: rgba(15, 36, 26, 0.98) !important;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
 }
 
 .matrix-answer-builder .matrix-input:focus {
   border-color: rgba(77, 255, 154, 0.88);
-  background: rgba(77, 255, 154, 0.1);
+  background: rgba(18, 52, 38, 0.98) !important;
   box-shadow:
     0 0 0 2px rgba(77, 255, 154, 0.2),
     0 0 18px rgba(77, 255, 154, 0.24);
@@ -425,4 +484,23 @@
   .matrix-action-btn {
     width: 100%;
   }
+}
+
+.matrix-input {
+  appearance: textfield;
+  -moz-appearance: textfield;
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background: #101a33 !important;
+  text-align: center;
+  font-size: 1.15rem !important;
+  font-weight: 900 !important;
+}
+
+.matrix-input::-webkit-inner-spin-button,
+.matrix-input::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  appearance: none;
+  margin: 0;
+  display: none;
 }

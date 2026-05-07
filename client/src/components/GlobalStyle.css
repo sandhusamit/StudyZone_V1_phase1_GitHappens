@@ -33,7 +33,7 @@
 }
 
 /* --------------------------------------------------------
-   BODY + ROOT WRAPPER
+   BODY + ROOT
 -------------------------------------------------------- */
 html {
   min-height: 100%;
@@ -50,9 +50,9 @@ body {
 
 #root {
   width: 100%;
-  max-width: 1250px;
+  max-width: 1550px;
   margin: 0 auto;
-  padding: 125px 2rem 2rem;
+  padding: 150px 2rem 2rem;
   min-height: 100vh;
   animation: fadeIn 0.8s ease forwards;
 }
@@ -62,6 +62,7 @@ body {
     opacity: 0;
     transform: translateY(14px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -71,33 +72,60 @@ body {
 /* --------------------------------------------------------
    NAVBAR
 -------------------------------------------------------- */
-nav {
-  width: min(1220px, calc(100% - 32px));
+.navspace {
   position: fixed;
   top: 12px;
   left: 50%;
   transform: translateX(-50%);
 
-  min-height: 86px;
+  width: min(1220px, calc(100% - 32px));
+  z-index: 9999;
+}
+
+.navbar-main {
+  width: 100%;
+  min-height: 104px;
   padding: 0 28px;
 
-  background: rgba(20, 26, 41, 0.72);
+  background: rgba(20, 26, 41, 0.88);
   backdrop-filter: blur(16px);
+
   border: 1px solid var(--border);
   border-radius: 0 0 var(--radius) var(--radius);
   box-shadow: var(--shadow);
 
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 24px;
+}
+
+.nav-left,
+.nav-center,
+.nav-right {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 24px;
+}
 
-  z-index: 999;
+.nav-left {
+  justify-content: flex-start;
+}
+
+.nav-center {
+  justify-content: center;
+  gap: clamp(18px, 2vw, 34px);
+  flex-wrap: wrap;
+}
+
+.nav-right {
+  justify-content: flex-end;
+  gap: 14px;
+  flex-wrap: wrap;
 }
 
 .logo {
-  height: 128px;
-  width: 128px;
+  height: 120px;
+  width: 120px;
   border-radius: 50%;
   object-fit: cover;
   box-shadow: var(--glow);
@@ -110,62 +138,41 @@ nav {
   box-shadow: var(--glow-hover);
 }
 
-.navbar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: clamp(14px, 2vw, 32px);
-  flex-wrap: wrap;
-}
-
-.navbar a {
+.nav-center a,
+.nav-right a {
   color: var(--text-light);
-  font-weight: 600;
-  font-size: clamp(1.95rem, 1.4vw, 1.45rem);
+  font-weight: 800;
+  font-size: clamp(1.8rem, 2.4vw, 1.7rem);
   text-decoration: none;
   transition: var(--transition);
   position: relative;
   white-space: nowrap;
 }
 
-.navbar a::after {
+.nav-center a::after,
+.nav-right a::after {
   content: "";
   position: absolute;
-  bottom: -5px;
+  bottom: -6px;
   left: 0;
+
   width: 0;
-  height: 4px;
+  height: 3px;
+
   background: var(--accent);
   box-shadow: var(--glow);
   transition: width 0.25s ease;
 }
 
-.navbar a:hover {
+.nav-center a:hover,
+.nav-right a:hover {
   color: var(--accent-bright);
+  text-shadow: var(--glow);
 }
 
-.navbar a:hover::after {
+.nav-center a:hover::after,
+.nav-right a:hover::after {
   width: 100%;
-}
-
-/* --------------------------------------------------------
-   TYPOGRAPHY
--------------------------------------------------------- */
-h1,
-h2,
-h3 {
-  color: var(--text);
-  font-weight: 700;
-  letter-spacing: -0.4px;
-  margin-bottom: 10px;
-}
-
-h1 {
-  font-size: clamp(2rem, 4vw, 2.9rem);
-}
-
-p {
-  color: var(--text-light);
 }
 
 /* --------------------------------------------------------
@@ -179,8 +186,8 @@ button,
 
   background: linear-gradient(
     135deg,
-    rgba(106, 180, 255, 0.15),
-    rgba(106, 180, 255, 0.05)
+    rgba(106, 180, 255, 0.18),
+    rgba(106, 180, 255, 0.08)
   );
 
   color: var(--accent-bright);
@@ -209,25 +216,208 @@ button:disabled,
 }
 
 /* --------------------------------------------------------
-   CARDS / PANELS
+   TOOLS DROPDOWN
 -------------------------------------------------------- */
-.card {
-  background: var(--card-bg);
+.tools-dropdown {
+  margin-top: 12px;
+  padding: 1rem;
+
+  background: rgba(20, 26, 41, 0.97);
   border: 1px solid var(--border);
-  padding: 1.8rem;
-  border-radius: var(--radius);
-  margin: 1.2rem 0;
+  border-radius: 22px;
 
-  backdrop-filter: blur(12px);
-  box-shadow: var(--shadow);
-  transition: var(--transition);
+  box-shadow:
+    0 18px 42px rgba(0, 0, 0, 0.4),
+    0 0 24px rgba(106, 180, 255, 0.08);
+
+  backdrop-filter: blur(18px);
+
+  max-height: calc(100vh - 135px);
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  transform-origin: top center;
+
+  transition:
+    opacity 0.24s ease,
+    transform 0.24s ease,
+    max-height 0.24s ease,
+    padding 0.24s ease,
+    border-color 0.24s ease;
 }
 
-.card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 0 24px rgba(106, 180, 255, 0.25);
-  border-color: rgba(106, 180, 255, 0.45);
+.tools-dropdown-show {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
 }
+
+.tools-dropdown-hide {
+  opacity: 0;
+  transform: translateY(-12px) scale(0.98);
+
+  pointer-events: none;
+
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+
+  border-color: transparent;
+  overflow: hidden;
+}
+
+.tools-dropdown-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.tools-dropdown-header h3 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.tools-dropdown-header p {
+  margin: 0.25rem 0 0;
+  font-size: 0.9rem;
+  color: var(--text-light);
+}
+
+.close-tools-btn {
+  width: 42px;
+  height: 42px;
+
+  padding: 0;
+
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 1rem;
+  font-weight: 900;
+}
+
+.tools-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  margin-bottom: 1rem;
+}
+
+/* --------------------------------------------------------
+   SHARED TOOL PANELS
+-------------------------------------------------------- */
+.navbar-whiteboard-panel,
+.navbar-calculator-panel {
+  overflow: hidden;
+
+  border-radius: 22px;
+  border: 1px solid rgba(106, 180, 255, 0.22);
+
+  background: rgba(5, 8, 22, 0.9);
+
+  box-shadow:
+    inset 0 0 24px rgba(106, 180, 255, 0.06),
+    0 0 24px rgba(0, 0, 0, 0.25);
+
+  transform-origin: top center;
+
+  transition:
+    opacity 0.24s ease,
+    transform 0.24s ease,
+    max-height 0.3s ease,
+    margin-top 0.24s ease,
+    border-color 0.24s ease;
+}
+
+/* --------------------------------------------------------
+   WHITEBOARD PANEL
+-------------------------------------------------------- */
+.navbar-whiteboard-show {
+  opacity: 1;
+  max-height: 5000px;
+  margin-top: 1rem;
+
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.navbar-whiteboard-hide {
+  opacity: 0;
+  max-height: 0;
+  margin-top: 0;
+
+  transform: translateY(-8px) scale(0.98);
+  pointer-events: none;
+
+  border-color: transparent;
+}
+
+.navbar-whiteboard-panel .whiteboard-page {
+  overflow: visible;
+}
+
+.navbar-whiteboard-panel .whiteboard-canvas {
+  background: transparent !important;
+  border: none;
+  box-shadow: none;
+}
+
+/* --------------------------------------------------------
+   CALCULATOR PANEL
+-------------------------------------------------------- */
+.navbar-calculator-show {
+  opacity: 1;
+  max-height: 2200px;
+  margin-top: 1rem;
+
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.navbar-calculator-hide {
+  opacity: 0;
+  max-height: 0;
+  margin-top: 0;
+
+  transform: translateY(-8px) scale(0.98);
+  pointer-events: none;
+
+  border-color: transparent;
+}
+
+.navbar-calculator-panel .smart-calc {
+  overflow: visible;
+}
+
+/* --------------------------------------------------------
+   TYPOGRAPHY
+-------------------------------------------------------- */
+h1,
+h2,
+h3 {
+  color: var(--text);
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  margin-bottom: 10px;
+}
+
+h1 {
+  font-size: clamp(2rem, 4vw, 2.9rem);
+}
+
+p {
+  color: var(--text-light);
+}
+
+
 
 /* --------------------------------------------------------
    FORMS
@@ -248,10 +438,13 @@ select {
   width: 100%;
   padding: 14px;
   font-size: 1rem;
+
   border-radius: var(--radius);
   border: 1px solid var(--border);
+
   background: rgba(255, 255, 255, 0.055);
   color: var(--text);
+
   transition: var(--transition);
   font-family: inherit;
 }
@@ -293,7 +486,7 @@ a:hover {
    HELPERS
 -------------------------------------------------------- */
 .page {
-  padding: 20px 0;
+  padding: 120px 0;
 }
 
 .center {
@@ -319,181 +512,54 @@ a:hover {
   color: var(--danger);
 }
 
-/* --------------------------------------------------------
-   BULK QUIZ IMPORT
--------------------------------------------------------- */
-.bulk-quiz-page {
-  width: 100%;
-}
 
-.bulk-quiz-container {
-  width: 100%;
-  max-width: 950px;
-  margin: 0 auto;
-  padding: 2rem;
-  background: var(--card-bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  backdrop-filter: blur(12px);
-  box-shadow: var(--shadow);
-}
-
-.bulk-quiz-heading {
-  margin-bottom: 8px;
-}
-
-.bulk-quiz-subheading {
-  color: var(--text-light);
-  margin-bottom: 24px;
-}
-
-.bulk-quiz-form {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.bulk-quiz-section {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.bulk-quiz-row {
-  display: flex;
-  gap: 16px;
-  align-items: flex-end;
-}
-
-.bulk-quiz-field {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.bulk-quiz-field-grow {
-  flex: 1;
-}
-
-.bulk-quiz-field-points {
-  width: 140px;
-}
-
-.bulk-quiz-label {
-  font-weight: 600;
-  color: var(--text);
-}
-
-.bulk-quiz-textarea-small {
-  min-height: 90px;
-}
-
-.bulk-quiz-textarea-large {
-  min-height: 360px;
-  line-height: 1.5;
-}
-
-.bulk-quiz-example-box {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 16px;
-  color: var(--text-light);
-  white-space: pre-wrap;
-  overflow-x: auto;
-  line-height: 1.6;
-}
-
-.bulk-quiz-button-row {
-  display: flex;
-  gap: 14px;
-  flex-wrap: wrap;
-  margin-top: 8px;
-}
-
-.bulk-quiz-status {
-  margin-top: 22px;
-  padding: 14px 16px;
-  border-radius: var(--radius);
-  border: 1px solid rgba(106, 180, 255, 0.25);
-  background: rgba(106, 180, 255, 0.08);
-  color: var(--accent-bright);
-}
-
-.bulk-quiz-error-box {
-  margin-top: 22px;
-  padding: 18px;
-  border-radius: var(--radius);
-  border: 1px solid rgba(255, 90, 90, 0.3);
-  background: rgba(255, 90, 90, 0.08);
-}
-
-.bulk-quiz-error-heading {
-  color: var(--danger);
-  margin-bottom: 10px;
-}
-
-.bulk-quiz-preview-section {
-  margin-top: 28px;
-}
-
-.bulk-quiz-preview-heading {
-  margin-bottom: 18px;
-}
-
-.bulk-quiz-question-card {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 18px;
-  margin-bottom: 16px;
-  transition: var(--transition);
-}
-
-.bulk-quiz-question-card:hover {
-  border-color: var(--accent);
-  box-shadow: 0 0 18px rgba(106, 180, 255, 0.2);
-}
-
-.bulk-quiz-choice-item {
-  margin-bottom: 8px;
-  color: var(--text-light);
-}
-
-.bulk-quiz-correct-badge {
-  color: var(--success);
-  margin-left: 8px;
-}
-
-.bulk-quiz-points-text {
-  margin-top: 14px;
-  color: var(--text-light);
-  font-size: 0.95rem;
-}
 
 /* --------------------------------------------------------
    RESPONSIVE
 -------------------------------------------------------- */
-@media (max-width: 768px) {
+@media (max-width: 900px) {
   #root {
-    padding: 150px 1rem 1rem;
+    padding: 175px 1rem 1rem;
   }
 
-  nav {
-    min-height: auto;
-    padding: 14px 18px;
-    flex-direction: column;
-    gap: 12px;
+  .navspace {
+    width: calc(100% - 24px);
+  }
+
+  .navbar-main {
+    grid-template-columns: 1fr;
+    padding: 16px;
+    gap: 14px;
+    border-radius: var(--radius);
+  }
+
+  .nav-left,
+  .nav-center,
+  .nav-right {
+    justify-content: center;
   }
 
   .logo {
-    height: 64px;
-    width: 64px;
+    height: 68px;
+    width: 68px;
   }
 
-  .navbar {
-    width: 100%;
+  .nav-center {
     gap: 14px;
+  }
+
+  .nav-center a,
+  .nav-right a {
+    font-size: 1rem;
+  }
+
+  .tools-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .tools-actions button {
+    width: 100%;
   }
 
   .bulk-quiz-container {
@@ -517,4 +583,55 @@ a:hover {
   .bulk-quiz-button-row button {
     width: 100%;
   }
+}
+
+@media (max-width: 520px) {
+  #root {
+    padding-top: 215px;
+  }
+
+  .navspace {
+    width: calc(100% - 20px);
+  }
+
+  .nav-center,
+  .nav-right {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .nav-right button,
+  .nav-right a {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+.navbar-calculator-panel {
+  overflow: hidden;
+  border-radius: 22px;
+  border: 1px solid rgba(106, 180, 255, 0.22);
+  background: rgba(5, 8, 22, 0.9);
+  transition:
+    opacity 0.24s ease,
+    transform 0.24s ease,
+    max-height 0.3s ease,
+    margin-top 0.24s ease;
+}
+
+.navbar-calculator-show {
+  opacity: 1;
+  max-height: 3000px;
+  margin-top: 1rem;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.navbar-calculator-hide {
+  opacity: 0;
+  max-height: 0;
+  margin-top: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+  border-color: transparent;
 }

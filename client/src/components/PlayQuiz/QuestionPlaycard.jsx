@@ -1,6 +1,34 @@
 import DragDropQuestionCard from "../PlayQuiz/DDQ/DragDropQuestion.jsx";
 import MCQ_Play from "../PlayQuiz/MCQ/MCQ_Play.jsx";
 import Matrix_Play from "../PlayQuiz/Matrix/Matrix_Play.jsx";
+import "./QuestionPlaycard.css";
+const decimalToFraction = (value, tolerance = 1e-6) => {
+  if (value === "" || value === null || value === undefined) return "";
+
+  const number = Number(value);
+
+  if (Number.isNaN(number)) return value;
+  if (Number.isInteger(number)) return String(number);
+
+  let bestNumerator = Math.round(number);
+  let bestDenominator = 1;
+  let bestError = Math.abs(number - bestNumerator / bestDenominator);
+
+  for (let denominator = 1; denominator <= 100; denominator++) {
+    const numerator = Math.round(number * denominator);
+    const error = Math.abs(number - numerator / denominator);
+
+    if (error < bestError) {
+      bestNumerator = numerator;
+      bestDenominator = denominator;
+      bestError = error;
+    }
+
+    if (error < tolerance) break;
+  }
+
+  return `${bestNumerator}/${bestDenominator}`;
+};
 export default function QuestionPlaycard({
   q,
   qIndex,
@@ -126,14 +154,13 @@ export default function QuestionPlaycard({
                         <div className="feedback-row">
                           <span className="label">Your Answer</span>
                           <span className={result.isCorrect ? "good" : "bad"}>
-                            {result.userAnswers?.[answerIndex] || "No answer"}
-                          </span>
+                            {decimalToFraction(result.userAnswers?.[answerIndex]) || "No answer"}                          </span>
                         </div>
 
                         {!result.isCorrect && (
                           <div className="feedback-row">
                             <span className="label">Correct Answer</span>
-                            <span className="good">{expected}</span>
+                              <span className="good">{decimalToFraction(expected)}</span>
                           </div>
                         )}
                       </div>
@@ -172,7 +199,7 @@ export default function QuestionPlaycard({
                         {matrixRows.map((row, r) =>
                           row.map((val, c) => (
                             <div key={`${r}-${c}`} className="matrix-cell">
-                              {val}
+                              {decimalToFraction(val) }
                             </div>
                           ))
                         )}

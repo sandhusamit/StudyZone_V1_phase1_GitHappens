@@ -25,7 +25,7 @@ const emptyDraggableItem = () => ({
   label: "",
 });
 
-export default function CreateDiagramQuestion() {
+export default function CreateDiagramQuestion()  {
   const [title, setTitle] = useState("Untitled Diagram Question");
   const [instructions, setInstructions] = useState(
     "Drag each label into the correct position."

@@ -30,13 +30,10 @@ export default function NewQuestionCard({
   removeMatrix,
   updateMatrixLabel,
   getDuplicateMatrixLabels,
-  addExpectedAnswerMatrix,
-  removeExpectedAnswerMatrix,
-  updateExpectedAnswerLabel,
 }) {
   return (
     <div>
-      {quizData.questions.map((q, qIndex) => (
+      {(quizData.questions || []).map((q, qIndex) => (
         <div key={q._id || qIndex} className="cq-question-card">
           <div className="cq-question-header">
             <h3>
@@ -81,7 +78,7 @@ export default function NewQuestionCard({
                 type="number"
                 min="1"
                 className="cq-input small"
-                value={q.points}
+                value={q.points ?? 1}
                 onChange={(e) =>
                   updateQuestionField(qIndex, "points", Number(e.target.value))
                 }
@@ -92,7 +89,7 @@ export default function NewQuestionCard({
               <label className="cq-label">Subject</label>
               <select
                 className="cq-select"
-                value={q.subject}
+                value={q.subject || "General"}
                 onChange={(e) =>
                   updateQuestionField(qIndex, "subject", e.target.value)
                 }
@@ -109,7 +106,7 @@ export default function NewQuestionCard({
           <textarea
             title="Explain why it is correct."
             className="cq-input cq-textarea"
-            value={q.explanation}
+            value={q.explanation || ""}
             onChange={(e) =>
               updateQuestionField(qIndex, "explanation", e.target.value)
             }
@@ -158,12 +155,9 @@ export default function NewQuestionCard({
               removeMatrix={removeMatrix}
               updateMatrixLabel={updateMatrixLabel}
               duplicateLabels={getDuplicateMatrixLabels(
-                q.expectedAnswers,
-                q.matrices
+                q.expectedAnswers || [],
+                q.matrices || []
               )}
-              addExpectedAnswerMatrix={addExpectedAnswerMatrix}
-              removeExpectedAnswerMatrix={removeExpectedAnswerMatrix}
-              updateExpectedAnswerLabel={updateExpectedAnswerLabel}
             />
           )}
         </div>

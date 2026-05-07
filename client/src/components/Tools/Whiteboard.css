@@ -1,45 +1,584 @@
 .whiteboard-page {
-  min-height: 100vh;
-  padding: 2rem;
-  background: #050816;
+  height: auto;
+  min-height: 1820px;
+  padding: 1.25rem;
+
+  background:
+    radial-gradient(circle at top left, rgba(56, 189, 248, 0.14), transparent 34%),
+    radial-gradient(circle at bottom right, rgba(124, 58, 237, 0.12), transparent 32%),
+    #050816;
+
   color: white;
+
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  overflow: visible;
 }
 
+/* --------------------------------------------------------
+   TOOLBAR
+-------------------------------------------------------- */
 .whiteboard-toolbar {
+  flex-shrink: 0;
+
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 1rem;
-  margin-bottom: 1rem;
+
+  padding: 1rem;
+
+  background: rgba(255, 255, 255, 0.055);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(14px);
+}
+
+.whiteboard-title-group {
+  min-width: 190px;
+}
+
+.whiteboard-title-group h2 {
+  margin: 0;
+  font-size: 1.45rem;
+  color: #e4e8ff;
+}
+
+.whiteboard-title-group p {
+  margin-top: 0.25rem;
+  font-size: 0.88rem;
+  color: #9aa3c2;
+}
+
+.whiteboard-tools {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
   flex-wrap: wrap;
 }
 
-.whiteboard-toolbar h2 {
-  margin-right: auto;
-}
-
-.whiteboard-toolbar label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
+/* --------------------------------------------------------
+   BUTTONS
+-------------------------------------------------------- */
 .whiteboard-toolbar button {
-  padding: 0.6rem 1rem;
-  border: none;
-  border-radius: 8px;
-  background: #7c3aed;
-  color: white;
+  padding: 0.62rem 0.95rem;
+
+  border: 1px solid rgba(106, 180, 255, 0.35);
+  border-radius: 12px;
+
+  background: rgba(106, 180, 255, 0.12);
+  color: #9bd0ff;
+
+  font-weight: 800;
   cursor: pointer;
+
+  transition:
+    transform 0.18s ease,
+    background 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
 }
 
 .whiteboard-toolbar button:hover {
-  background: #6d28d9;
+  transform: translateY(-2px);
+  background: rgba(106, 180, 255, 0.22);
+  box-shadow: 0 0 18px rgba(106, 180, 255, 0.35);
 }
 
-.whiteboard-canvas {
-  background: #111827;
-  border: 2px solid #38bdf8;
-  border-radius: 16px;
-  box-shadow: 0 0 25px rgba(56, 189, 248, 0.35);
+.whiteboard-toolbar button.active-tool {
+  background: rgba(124, 58, 237, 0.9);
+  color: white;
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 18px rgba(124, 58, 237, 0.35);
+}
+
+.soft-clear-btn {
+  border-color: rgba(255, 231, 129, 0.45) !important;
+  color: #fff0a6 !important;
+}
+
+.soft-clear-btn:hover {
+  background: rgba(255, 231, 129, 0.13) !important;
+  box-shadow: 0 0 18px rgba(255, 231, 129, 0.22) !important;
+}
+
+.clear-board-btn {
+  border-color: rgba(255, 123, 123, 0.45) !important;
+  color: #ffb4b4 !important;
+}
+
+.clear-board-btn:hover {
+  background: rgba(255, 123, 123, 0.16) !important;
+  box-shadow: 0 0 18px rgba(255, 123, 123, 0.25) !important;
+}
+
+/* --------------------------------------------------------
+   CONTROLS
+-------------------------------------------------------- */
+.whiteboard-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  padding: 0.45rem 0.7rem;
+
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  color: #e4e8ff;
+
+  font-weight: 800;
+  font-size: 0.88rem;
+}
+
+.whiteboard-control input[type="color"] {
+  width: 40px;
+  height: 32px;
+
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+
+  background: transparent;
+  cursor: pointer;
+}
+
+.whiteboard-control input[type="color"]:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.brush-control {
+  min-width: 165px;
+}
+
+.brush-control input[type="range"] {
+  width: 95px;
+  cursor: pointer;
+}
+
+/* --------------------------------------------------------
+   MATRIX CONTROL
+-------------------------------------------------------- */
+.matrix-size-control {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  padding: 0.35rem;
+
+  border-radius: 12px;
+
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.matrix-size-control span {
+  color: #9bd0ff;
+  font-weight: 900;
+}
+
+.matrix-size-control input {
+  width: 52px;
+
+  padding: 0.45rem;
+
+  text-align: center;
+
+  border-radius: 8px;
+  border: 1px solid rgba(106, 180, 255, 0.25);
+
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+
+  font-weight: 800;
+}
+
+/* --------------------------------------------------------
+   CANVAS AREA
+-------------------------------------------------------- */
+.whiteboard-canvas-wrapper {
+  position: relative;
+
+  flex: 1;
+  min-height: 1600px;
+
+  border-radius: 22px;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+
+  background:
+    linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+    #111827;
+
+  background-size: 32px 32px;
+
+  box-shadow:
+    inset 0 0 24px rgba(56, 189, 248, 0.1),
+    0 0 25px rgba(56, 189, 248, 0.25);
+
+  overflow: hidden;
+}
+
+/* --------------------------------------------------------
+   TRANSPARENT DRAWING CANVAS
+-------------------------------------------------------- */
+.whiteboard-canvas,
+.navbar-whiteboard-panel .whiteboard-canvas {
+  position: absolute;
+  inset: 0;
+
+  width: 100%;
+  height: 100%;
+
+  display: block;
+
+  background: transparent !important;
+
+  border-radius: 22px;
+
+  touch-action: none;
+}
+
+.whiteboard-canvas.draw-mode {
+  z-index: 3;
+  pointer-events: auto;
   cursor: crosshair;
+}
+
+.whiteboard-canvas.select-mode {
+  z-index: 1;
+  pointer-events: none;
+  cursor: default;
+}
+
+/* --------------------------------------------------------
+   OBJECT LAYER
+-------------------------------------------------------- */
+.whiteboard-object-layer {
+  position: absolute;
+  inset: 0;
+
+  z-index: 2;
+
+  pointer-events: none;
+}
+
+.whiteboard-object {
+  position: absolute;
+
+  pointer-events: auto;
+
+  cursor: grab;
+  user-select: none;
+
+  padding: 0.5rem;
+
+  border-radius: 14px;
+
+  background: rgba(5, 8, 22, 0.84);
+  border: 1px solid rgba(106, 180, 255, 0.35);
+
+  box-shadow:
+    0 0 18px rgba(106, 180, 255, 0.22),
+    0 8px 22px rgba(0, 0, 0, 0.28);
+
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    border-color 0.12s ease;
+}
+
+.whiteboard-object:hover {
+  border-color: rgba(155, 208, 255, 0.65);
+  box-shadow:
+    0 0 22px rgba(106, 180, 255, 0.34),
+    0 8px 24px rgba(0, 0, 0, 0.32);
+}
+
+.whiteboard-object:active {
+  cursor: grabbing;
+  transform: scale(1.01);
+}
+
+/* --------------------------------------------------------
+   DELETE BUTTON
+-------------------------------------------------------- */
+.object-delete-btn {
+  position: absolute;
+
+  top: -10px;
+  right: -10px;
+
+  width: 24px;
+  height: 24px;
+
+  padding: 0;
+
+  border-radius: 50%;
+
+  background: rgba(255, 123, 123, 0.96);
+  color: white;
+
+  border: none;
+
+  font-weight: 900;
+  line-height: 1;
+
+  cursor: pointer;
+
+  z-index: 5;
+
+  box-shadow: 0 0 10px rgba(255, 123, 123, 0.35);
+}
+
+/* --------------------------------------------------------
+   TEXT + STICKY NOTES
+-------------------------------------------------------- */
+.whiteboard-object.text textarea,
+.whiteboard-object.sticky textarea {
+  width: 205px;
+  min-height: 78px;
+
+  resize: both;
+
+  border: none;
+  outline: none;
+
+  border-radius: 10px;
+
+  padding: 0.75rem;
+
+  font-size: 1rem;
+  line-height: 1.35;
+
+  font-family: inherit;
+}
+
+.whiteboard-object.text textarea {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+}
+
+.whiteboard-object.sticky {
+  background: rgba(255, 231, 129, 0.16);
+  border-color: rgba(255, 231, 129, 0.48);
+}
+
+.whiteboard-object.sticky textarea {
+  background: rgba(255, 231, 129, 0.12);
+  color: #fff7c2;
+}
+
+/* --------------------------------------------------------
+   MATRIX OBJECT
+-------------------------------------------------------- */
+.matrix-object {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.matrix-grid {
+  display: grid;
+  gap: 0.35rem;
+
+  grid-template-columns: repeat(var(--cols), 46px);
+}
+
+.matrix-grid input {
+  width: 46px;
+  height: 40px;
+
+  text-align: center;
+
+  border-radius: 9px;
+  border: 1px solid rgba(106, 180, 255, 0.38);
+
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+
+  font-weight: 800;
+  font-size: 1rem;
+}
+
+.matrix-grid input:focus {
+  outline: none;
+  border-color: #9bd0ff;
+  background: rgba(106, 180, 255, 0.12);
+  box-shadow: 0 0 12px rgba(106, 180, 255, 0.45);
+}
+
+.matrix-bracket {
+  font-size: 4.25rem;
+  line-height: 1;
+
+  color: #9bd0ff;
+
+  font-weight: 300;
+  text-shadow: 0 0 12px rgba(106, 180, 255, 0.25);
+}
+
+/* --------------------------------------------------------
+   SHAPES
+-------------------------------------------------------- */
+.shape-object {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 3px solid #9bd0ff;
+
+  background: rgba(106, 180, 255, 0.055);
+
+  box-shadow:
+    inset 0 0 12px rgba(106, 180, 255, 0.08),
+    0 0 14px rgba(106, 180, 255, 0.18);
+
+  overflow: hidden;
+}
+
+.shape-object textarea {
+  width: 100%;
+  height: 100%;
+
+  resize: none;
+
+  border: none;
+  outline: none;
+
+  background: transparent;
+
+  color: #dbeafe;
+
+  font-size: 1rem;
+  font-weight: 700;
+
+  text-align: center;
+
+  padding: 0.7rem;
+
+  font-family: inherit;
+}
+
+.shape-object textarea::placeholder {
+  color: rgba(219, 234, 254, 0.45);
+}
+
+.shape-object.rectangle {
+  width: 150px;
+  height: 95px;
+
+  border-radius: 14px;
+}
+
+.shape-object.circle {
+  width: 110px;
+  height: 110px;
+
+  border-radius: 50%;
+}
+
+.shape-object.circle textarea {
+  padding: 1.2rem;
+}
+
+/* --------------------------------------------------------
+   MODE BADGE
+-------------------------------------------------------- */
+.whiteboard-mode-badge {
+  position: absolute;
+
+  right: 14px;
+  bottom: 14px;
+
+  z-index: 4;
+
+  padding: 0.48rem 0.85rem;
+
+  border-radius: 999px;
+
+  background: rgba(5, 8, 22, 0.82);
+  border: 1px solid rgba(106, 180, 255, 0.35);
+
+  color: #9bd0ff;
+
+  font-size: 0.85rem;
+  font-weight: 900;
+
+  pointer-events: none;
+
+  box-shadow: 0 0 18px rgba(0, 0, 0, 0.35);
+}
+
+.mode-select {
+  color: #9bd0ff;
+}
+
+.mode-pen {
+  color: #7dffb5;
+}
+
+.mode-eraser {
+  color: #ffb4b4;
+}
+
+/* --------------------------------------------------------
+   MOBILE
+-------------------------------------------------------- */
+@media (max-width: 768px) {
+  .whiteboard-page {
+    padding: 1rem;
+    min-height: 1300px;
+  }
+
+  .whiteboard-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .whiteboard-title-group {
+    min-width: 0;
+  }
+
+  .whiteboard-tools {
+    justify-content: flex-start;
+  }
+
+  .brush-control {
+    width: 100%;
+  }
+
+  .brush-control input[type="range"] {
+    flex: 1;
+    width: 100%;
+  }
+
+  .matrix-size-control {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .matrix-size-control button {
+    flex: 1;
+  }
+
+  .whiteboard-canvas-wrapper {
+    min-height: 1050px;
+  }
+
+  .matrix-grid {
+    grid-template-columns: repeat(var(--cols), 40px);
+  }
+
+  .matrix-grid input {
+    width: 40px;
+    height: 36px;
+  }
 }

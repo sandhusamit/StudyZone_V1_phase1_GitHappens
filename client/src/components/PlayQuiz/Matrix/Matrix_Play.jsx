@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "./Matrix_Play.css";
 
-const CELL_WIDTH = 60;
+const CELL_WIDTH = 90;
 const CELL_GAP = 8;
 const BRACKET_PADDING = 18;
 
@@ -19,8 +19,50 @@ const getDividerLeft = (dividerIndex) => {
 const isMatrixAnswer = (answer) =>
   answer && typeof answer === "object" && Array.isArray(answer.rows);
 
-const isScalarAnswer = (answer) =>
-  typeof answer === "number" || answer === "";
+const isScalarAnswer = (answer) => typeof answer === "number" || answer === "";
+
+const parseNumberInput = (value) => {
+  if (value === "") return "";
+
+  const trimmed = String(value).trim();
+
+  if (/^-?\d+\/-?\d+$/.test(trimmed)) {
+    const [num, den] = trimmed.split("/").map(Number);
+    if (den === 0) return value;
+    return num / den;
+  }
+
+  const number = Number(trimmed);
+  return Number.isNaN(number) ? value : number;
+};
+
+const decimalToFraction = (value, tolerance = 1e-6) => {
+  if (value === "" || value === null || value === undefined) return "";
+
+  const number = Number(value);
+
+  if (Number.isNaN(number)) return value;
+  if (Number.isInteger(number)) return String(number);
+
+  let bestNumerator = Math.round(number);
+  let bestDenominator = 1;
+  let bestError = Math.abs(number - bestNumerator / bestDenominator);
+
+  for (let denominator = 1; denominator <= 100; denominator++) {
+    const numerator = Math.round(number * denominator);
+    const error = Math.abs(number - numerator / denominator);
+
+    if (error < bestError) {
+      bestNumerator = numerator;
+      bestDenominator = denominator;
+      bestError = error;
+    }
+
+    if (error < tolerance) break;
+  }
+
+  return `${bestNumerator}/${bestDenominator}`;
+};
 
 const cloneMatrix = (matrix) => matrix.map((row) => [...row]);
 
@@ -29,7 +71,9 @@ function applyRowOperation(rows, operation) {
 
   const r1 = Number(operation.rowA);
   const r2 = Number(operation.rowB);
-  const factor = Number(operation.factor);
+  const factor = parseNumberInput(operation.factor);
+
+  if (typeof factor !== "number" || Number.isNaN(factor)) return next;
 
   if (operation.type === "swap") {
     [next[r1], next[r2]] = [next[r2], next[r1]];
@@ -68,9 +112,7 @@ function RowOperationPanel({ rows, answerIndex, onPerform, disabled }) {
 
   return (
     <div className="row-op-panel">
-      <div className="row-op-title">
-        Row Operation for Step {answerIndex + 1}
-      </div>
+      <div className="row-op-title">Row Operation for Step {answerIndex + 1}</div>
 
       <div className="row-op-controls">
         <select
@@ -134,11 +176,13 @@ function RowOperationPanel({ rows, answerIndex, onPerform, disabled }) {
             <span>by 1 /</span>
 
             <input
-              type="number"
+              type="text"
+              inputMode="decimal"
               value={operation.factor}
               disabled={disabled}
               onChange={(e) => updateOp("factor", e.target.value)}
               className="row-op-number"
+              placeholder="2 or 3/4"
             />
           </>
         )}
@@ -146,11 +190,13 @@ function RowOperationPanel({ rows, answerIndex, onPerform, disabled }) {
         {operation.type === "pivot" && (
           <>
             <input
-              type="number"
+              type="text"
+              inputMode="decimal"
               value={operation.factor}
               disabled={disabled}
               onChange={(e) => updateOp("factor", e.target.value)}
               className="row-op-number"
+              placeholder="-2 or -5/3"
             />
 
             <span>×</span>
@@ -225,15 +271,17 @@ function MatrixDisplay({ matrix, editable = false, value, onChange, disabled }) 
               editable ? (
                 <input
                   key={`${r}-${c}`}
-                  type="number"
-                  value={val}
+                  type="text"
+                  inputMode="decimal"
+                  value={decimalToFraction(val)}
                   disabled={disabled}
                   onChange={(e) => onChange(r, c, e.target.value)}
                   className="matrix-input"
+                  placeholder="0"
                 />
               ) : (
                 <div key={`${r}-${c}`} className="matrix-cell">
-                  {val}
+                  {decimalToFraction(val)}
                 </div>
               )
             )
@@ -281,13 +329,12 @@ export default function Matrix_Play({
 
   const handleMatrixCellChange = (answerIndex, r, c, value) => {
     const matrixAnswer = userAnswers[answerIndex].map((row) => [...row]);
-    matrixAnswer[r][c] = value;
-
+    matrixAnswer[r][c] = parseNumberInput(value);
     updateAnswerAt(answerIndex, matrixAnswer);
   };
 
   const handleScalarChange = (answerIndex, value) => {
-    updateAnswerAt(answerIndex, value);
+    updateAnswerAt(answerIndex, parseNumberInput(value));
   };
 
   const handlePerformOperation = (answerIndex, operation) => {
@@ -308,7 +355,7 @@ export default function Matrix_Play({
       <h3 className="matrix-prompt">{q.questionType}</h3>
 
       <div className="matrix-given">
-        {q.matrices.map((matrix) => (
+        {(q.matrices || []).map((matrix) => (
           <MatrixDisplay key={matrix.label} matrix={matrix} />
         ))}
       </div>
@@ -329,9 +376,10 @@ export default function Matrix_Play({
                     </label>
 
                     <input
-                      type="number"
+                      type="text"
+                      inputMode="decimal"
                       className="matrix-input determinant-answer-input"
-                      value={userAnswers[answerIndex] ?? ""}
+                      value={decimalToFraction(userAnswers[answerIndex])}
                       disabled={disabled}
                       onChange={(e) =>
                         handleScalarChange(answerIndex, e.target.value)

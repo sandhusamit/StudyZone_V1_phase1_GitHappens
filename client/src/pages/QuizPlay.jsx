@@ -1,11 +1,15 @@
-import { useLocation, useParams } from "react-router-dom";
-import { useEffect, useState, useMemo } from "react";
 import "./styles/QuizPlay.css";
 
+// Hooks
+import { useLocation, useParams } from "react-router-dom";
+import { useEffect, useState, useMemo } from "react";
+import { useGuestLogin } from "../utils/Hooks/GuestLogin.js";
 import { useAuth } from "../contexts/AuthContext";
+
+// Components
 import QuestionPlaycard from "../components/PlayQuiz/QuestionPlaycard";
 import GuestLoginCard from "../components/Login/GuestLoginCard.jsx";
-import { useGuestLogin } from "../utils/Hooks/GuestLogin.js";
+
 
 export default function QuizPlay() { 
   const { quizId } = useParams();
@@ -300,6 +304,8 @@ useEffect(() => {
     return "";
   };
 
+
+
   /* ========================================================
      UI STATES
   ======================================================== */
@@ -379,6 +385,8 @@ useEffect(() => {
               />
             );
           })}
+
+
 
           {score ? (
             <div className="quiz-score">

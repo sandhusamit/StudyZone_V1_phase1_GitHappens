@@ -106,6 +106,11 @@ export default function Home() {
           <p>RESTful APIs and modular backend architecture designed for scalability and future feature expansion.</p>
         </div>
 
+        <div className="feature-card">
+          <span>🛠️</span>
+          <h3>Utility Tools</h3>
+          <p>Built-in tools for formatting matrices, converting decimals to fractions, and other study aids.</p>
+        </div>
 
 
 

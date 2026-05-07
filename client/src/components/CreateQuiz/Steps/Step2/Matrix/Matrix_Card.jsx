@@ -1,9 +1,52 @@
 import "./Matrix_Card.css";
 import { useEffect, useState } from "react";
 
-const CELL_WIDTH = 72;
+const CELL_WIDTH = 96;
 const CELL_GAP = 8;
 const BRACKET_PADDING = 18;
+
+const parseNumberInput = (value) => {
+  if (value === "") return "";
+
+  const trimmed = String(value).trim();
+
+  if (/^-?\d+\/-?\d+$/.test(trimmed)) {
+    const [num, den] = trimmed.split("/").map(Number);
+    if (den === 0) return value;
+    return num / den;
+  }
+
+  const number = Number(trimmed);
+  return Number.isNaN(number) ? value : number;
+};
+
+const decimalToFraction = (value, tolerance = 1e-6) => {
+  if (value === "" || value === null || value === undefined) return "";
+
+  const number = Number(value);
+
+  if (Number.isNaN(number)) return value;
+  if (Number.isInteger(number)) return String(number);
+
+  let bestNumerator = Math.round(number);
+  let bestDenominator = 1;
+  let bestError = Math.abs(number - bestNumerator / bestDenominator);
+
+  for (let denominator = 1; denominator <= 100; denominator++) {
+    const numerator = Math.round(number * denominator);
+    const error = Math.abs(number - numerator / denominator);
+
+    if (error < bestError) {
+      bestNumerator = numerator;
+      bestDenominator = denominator;
+      bestError = error;
+    }
+
+    if (error < tolerance) break;
+  }
+
+  return `${bestNumerator}/${bestDenominator}`;
+};
 
 const makeLocalMatrix = (label = "Answer", rowCount = 2, columnCount = 2) => ({
   label,
@@ -17,8 +60,7 @@ const makeLocalMatrix = (label = "Answer", rowCount = 2, columnCount = 2) => ({
 const isMatrixAnswer = (answer) =>
   answer && typeof answer === "object" && Array.isArray(answer.rows);
 
-const isScalarAnswer = (answer) =>
-  typeof answer === "number" || answer === "";
+const isScalarAnswer = (answer) => typeof answer === "number" || answer === "";
 
 export default function Matrix_Card({
   q,
@@ -39,6 +81,7 @@ export default function Matrix_Card({
 }) {
   const [matrixError, setMatrixError] = useState("");
 
+  const matrices = Array.isArray(q.matrices) ? q.matrices : [];
   const expectedAnswers =
     q.expectedAnswers || (q.expectedAnswer ? [q.expectedAnswer] : []);
 
@@ -81,18 +124,18 @@ export default function Matrix_Card({
 
   const removeExpectedAnswer = (answerIndex) => {
     if (expectedAnswers.length <= 1) return;
-
     updateExpectedAnswers(expectedAnswers.filter((_, i) => i !== answerIndex));
   };
 
   const updateScalarAnswer = (answerIndex, value) => {
     const answers = [...expectedAnswers];
-    answers[answerIndex] = value === "" ? "" : Number(value);
+    answers[answerIndex] = parseNumberInput(value);
     updateExpectedAnswers(answers);
   };
 
   const updateExpectedAnswerLabel = (answerIndex, value) => {
     const answers = [...expectedAnswers];
+    if (!isMatrixAnswer(answers[answerIndex])) return;
 
     answers[answerIndex] = {
       ...answers[answerIndex],
@@ -104,10 +147,12 @@ export default function Matrix_Card({
 
   const updateExpectedAnswerCell = (answerIndex, r, c, value) => {
     const answers = [...expectedAnswers];
-    const answer = { ...answers[answerIndex] };
+    if (!isMatrixAnswer(answers[answerIndex])) return;
 
+    const answer = { ...answers[answerIndex] };
     const updatedRows = answer.rows.map((row) => [...row]);
-    updatedRows[r][c] = Number(value);
+
+    updatedRows[r][c] = parseNumberInput(value);
 
     answers[answerIndex] = {
       ...answer,
@@ -119,6 +164,7 @@ export default function Matrix_Card({
 
   const updateExpectedAnswerDivider = (answerIndex, value) => {
     const answers = [...expectedAnswers];
+    if (!isMatrixAnswer(answers[answerIndex])) return;
 
     answers[answerIndex] = {
       ...answers[answerIndex],
@@ -129,28 +175,31 @@ export default function Matrix_Card({
   };
 
   const updateCell = (matrixIndex, r, c, value) => {
-    const matrices = [...q.matrices];
-    const updatedRows = matrices[matrixIndex].rows.map((row) => [...row]);
+    const nextMatrices = [...matrices];
+    if (!nextMatrices[matrixIndex]?.rows) return;
 
-    updatedRows[r][c] = Number(value);
+    const updatedRows = nextMatrices[matrixIndex].rows.map((row) => [...row]);
 
-    matrices[matrixIndex] = {
-      ...matrices[matrixIndex],
+    updatedRows[r][c] = parseNumberInput(value);
+
+    nextMatrices[matrixIndex] = {
+      ...nextMatrices[matrixIndex],
       rows: updatedRows,
     };
 
-    updateQuestionField(qIndex, "matrices", matrices);
+    updateQuestionField(qIndex, "matrices", nextMatrices);
   };
 
   const updateDivider = (mIndex, value) => {
-    const matrices = [...q.matrices];
+    const nextMatrices = [...matrices];
+    if (!nextMatrices[mIndex]) return;
 
-    matrices[mIndex] = {
-      ...matrices[mIndex],
+    nextMatrices[mIndex] = {
+      ...nextMatrices[mIndex],
       dividerIndex: value,
     };
 
-    updateQuestionField(qIndex, "matrices", matrices);
+    updateQuestionField(qIndex, "matrices", nextMatrices);
   };
 
   const renderAnswerModeSelect = () => (
@@ -200,25 +249,28 @@ export default function Matrix_Card({
     onAddRow,
     onAddColumn,
   }) => {
-    const dividerLeft = getDividerLeft(matrix.dividerIndex);
+    const safeRows = Array.isArray(matrix?.rows) ? matrix.rows : [];
+    const safeColumnCount = matrix?.columnCount || safeRows[0]?.length || 1;
+    const safeRowCount = matrix?.rowCount || safeRows.length || 1;
+    const dividerLeft = getDividerLeft(matrix?.dividerIndex);
 
     return (
       <div className="matrix-editor">
         <div
           className="matrix-col-controls"
           style={{
-            gridTemplateColumns: `44px repeat(${matrix.columnCount}, ${CELL_WIDTH}px)`,
+            gridTemplateColumns: `44px repeat(${safeColumnCount}, ${CELL_WIDTH}px)`,
           }}
         >
           <div className="matrix-control-spacer"></div>
 
-          {Array.from({ length: matrix.columnCount }).map((_, c) => (
+          {Array.from({ length: safeColumnCount }).map((_, c) => (
             <button
               key={c}
               type="button"
               className="matrix-mini-btn"
               onClick={() => onRemoveColumn(c)}
-              disabled={matrix.columnCount <= 1}
+              disabled={safeColumnCount <= 1}
               title={`Remove column ${c + 1}`}
             >
               −
@@ -228,13 +280,13 @@ export default function Matrix_Card({
 
         <div className="matrix-row-shell">
           <div className="matrix-row-buttons">
-            {matrix.rows.map((_, r) => (
+            {safeRows.map((_, r) => (
               <button
                 key={r}
                 type="button"
                 className="matrix-mini-btn"
                 onClick={() => onRemoveRow(r)}
-                disabled={matrix.rowCount <= 1}
+                disabled={safeRowCount <= 1}
                 title={`Remove row ${r + 1}`}
               >
                 −
@@ -253,17 +305,19 @@ export default function Matrix_Card({
             <div
               className="matrix-grid"
               style={{
-                gridTemplateColumns: `repeat(${matrix.columnCount}, ${CELL_WIDTH}px)`,
+                gridTemplateColumns: `repeat(${safeColumnCount}, ${CELL_WIDTH}px)`,
               }}
             >
-              {matrix.rows.map((row, r) =>
+              {safeRows.map((row, r) =>
                 row.map((val, c) => (
                   <input
                     key={`${r}-${c}`}
-                    type="number"
-                    value={val}
+                    type="text"
+                    inputMode="decimal"
+                    value={decimalToFraction(val)}
                     onChange={(e) => onCellChange(r, c, e.target.value)}
                     className="matrix-input"
+                    placeholder="0"
                   />
                 ))
               )}
@@ -307,7 +361,7 @@ export default function Matrix_Card({
 
           <select
             className="cq-select"
-            value={q.questionType}
+            value={q.questionType || "addition"}
             onChange={(e) =>
               updateQuestionField(qIndex, "questionType", e.target.value)
             }
@@ -335,7 +389,7 @@ export default function Matrix_Card({
       </div>
 
       <div className="matrix-list">
-        {q.matrices.map((matrix, mIndex) => (
+        {matrices.map((matrix, mIndex) => (
           <section key={mIndex} className="matrix-block">
             <div className="matrix-header">
               <div>
@@ -343,14 +397,14 @@ export default function Matrix_Card({
 
                 <input
                   type="text"
-                  value={matrix.label}
+                  value={matrix.label || ""}
                   onChange={(e) =>
                     updateMatrixLabel(qIndex, mIndex, e.target.value)
                   }
                   className={`matrix-label-input ${
                     duplicateLabels?.includes(
-                      matrix.label.trim().toUpperCase()
-                    ) || matrix.label.trim() === ""
+                      (matrix.label || "").trim().toUpperCase()
+                    ) || (matrix.label || "").trim() === ""
                       ? "error"
                       : ""
                   }`}
@@ -361,21 +415,21 @@ export default function Matrix_Card({
                 type="button"
                 className="matrix-remove-btn"
                 onClick={() => removeMatrix(qIndex, mIndex)}
-                disabled={q.matrices.length <= 1}
+                disabled={matrices.length <= 1}
                 title="Remove matrix"
               >
                 ✕
               </button>
             </div>
 
-            {matrix.label.trim() === "" && (
-              <div className="matrix-warning">
-                Matrix labels cannot be empty.
-              </div>
+            {(matrix.label || "").trim() === "" && (
+              <div className="matrix-warning">Matrix labels cannot be empty.</div>
             )}
 
-            {renderDividerSelect(matrix.dividerIndex, matrix.columnCount, (val) =>
-              updateDivider(mIndex, val)
+            {renderDividerSelect(
+              matrix.dividerIndex,
+              matrix.columnCount || matrix.rows?.[0]?.length || 1,
+              (val) => updateDivider(mIndex, val)
             )}
 
             {renderMatrixEditor({
@@ -435,13 +489,14 @@ export default function Matrix_Card({
                       </span>
 
                       <input
-                        type="number"
+                        type="text"
+                        inputMode="decimal"
                         className="matrix-input determinant-answer-input"
-                        value={answer}
+                        value={decimalToFraction(answer)}
                         onChange={(e) =>
                           updateScalarAnswer(answerIndex, e.target.value)
                         }
-                        placeholder="Example: -24"
+                        placeholder="Example: -5/3"
                       />
                     </div>
 
@@ -521,7 +576,7 @@ export default function Matrix_Card({
 
                 {renderDividerSelect(
                   answer.dividerIndex,
-                  answer.columnCount,
+                  answer.columnCount || answer.rows?.[0]?.length || 1,
                   (val) => updateExpectedAnswerDivider(answerIndex, val)
                 )}
 
