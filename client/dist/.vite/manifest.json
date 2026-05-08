@@ -1,6 +1,6 @@
 {
   "index.html": {
-    "file": "assets/index-BB48U0YU.js",
+    "file": "assets/index-A0Z2fYqe.js",
     "name": "index",
     "src": "index.html",
     "isEntry": true,
@@ -8,11 +8,11 @@
       "assets/index-CwCy6lvK.css"
     ],
     "assets": [
-      "assets/gitLogo-CMO3cMTm.png"
+      "assets/gitLogo-z3hRF3OO.png"
     ]
   },
   "src/assets/gitLogo.png": {
-    "file": "assets/gitLogo-CMO3cMTm.png",
+    "file": "assets/gitLogo-z3hRF3OO.png",
     "src": "src/assets/gitLogo.png"
   }
 }
