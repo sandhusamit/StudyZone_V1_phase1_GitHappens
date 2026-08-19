@@ -561,7 +561,7 @@ export default function QuizPlay() {
           <span>
             Questions: {roster.length}
           </span>
-
+          
           <span
             className="quiz-stopwatch"
             role="timer"
