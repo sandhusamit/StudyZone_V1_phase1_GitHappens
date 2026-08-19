@@ -41,6 +41,10 @@ function NavBar() {
   const closeTools = () => {
     forceWhiteboardSelect();
     setShowTools(false);
+
+    if (window.matchMedia("(max-width: 1024px)").matches) {
+      setIsMobileMenuOpen(true);
+    }
   };
 
   const toggleMobileMenu = () => {
