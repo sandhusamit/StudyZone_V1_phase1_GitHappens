@@ -48,10 +48,6 @@ app.get(/^(?!\/api).*$/, (req, res) => {
 });
 
 
-app.use('/api/data', (req, res) => {
-  res.json({ message: 'Hello from the backend!' });
-});
-
 app.listen(3000);
 console.log('Server running at http://localhost:3000/');
 

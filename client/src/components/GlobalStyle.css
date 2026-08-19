@@ -95,9 +95,17 @@ body {
   box-shadow: var(--shadow);
 
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: auto 1fr;
   align-items: center;
   gap: 24px;
+}
+
+.nav-menu {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 24px;
+  min-width: 0;
 }
 
 .nav-left,
@@ -123,6 +131,38 @@ body {
   flex-wrap: wrap;
 }
 
+.hamburger-button {
+  display: none;
+  width: 46px;
+  height: 46px;
+  padding: 10px;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.hamburger-line {
+  display: block;
+  width: 24px;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--accent-bright);
+  transition: transform 0.22s ease, opacity 0.22s ease;
+}
+
+.hamburger-button[aria-expanded="true"] .hamburger-line:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.hamburger-button[aria-expanded="true"] .hamburger-line:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger-button[aria-expanded="true"] .hamburger-line:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
 .logo {
   height: 120px;
   width: 120px;
@@ -142,7 +182,7 @@ body {
 .nav-right a {
   color: var(--text-light);
   font-weight: 800;
-  font-size: clamp(1.8rem, 2.4vw, 1.7rem);
+  font-size: clamp(1.5rem, 1.25vw, 1.2rem);
   text-decoration: none;
   transition: var(--transition);
   position: relative;
@@ -517,9 +557,9 @@ a:hover {
 /* --------------------------------------------------------
    RESPONSIVE
 -------------------------------------------------------- */
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
   #root {
-    padding: 175px 1rem 1rem;
+    padding: 120px 1rem 1rem;
   }
 
   .navspace {
@@ -527,16 +567,15 @@ a:hover {
   }
 
   .navbar-main {
-    grid-template-columns: 1fr;
-    padding: 16px;
-    gap: 14px;
+    min-height: 82px;
+    grid-template-columns: 1fr auto;
+    padding: 10px 14px;
+    gap: 12px;
     border-radius: var(--radius);
   }
 
-  .nav-left,
-  .nav-center,
-  .nav-right {
-    justify-content: center;
+  .nav-left {
+    justify-content: flex-start;
   }
 
   .logo {
@@ -544,13 +583,57 @@ a:hover {
     width: 68px;
   }
 
-  .nav-center {
-    gap: 14px;
+  .hamburger-button {
+    display: inline-flex;
+    justify-self: end;
+  }
+
+  .hamburger-button:hover {
+    transform: none;
+  }
+
+  .nav-menu {
+    display: none;
+    grid-column: 1 / -1;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    padding: 10px 0 4px;
+    border-top: 1px solid var(--border);
+    max-height: calc(100vh - 118px);
+    overflow-y: auto;
+  }
+
+  .nav-menu-open {
+    display: grid;
+  }
+
+  .nav-center,
+  .nav-right {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    gap: 6px;
   }
 
   .nav-center a,
-  .nav-right a {
+  .nav-right a,
+  .nav-right button {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border-radius: 10px;
     font-size: 1rem;
+    text-align: left;
+  }
+
+  .nav-center a:hover,
+  .nav-right a:hover {
+    background: rgba(106, 180, 255, 0.1);
+  }
+
+  .nav-center a::after,
+  .nav-right a::after {
+    display: none;
   }
 
   .tools-actions {
@@ -561,6 +644,14 @@ a:hover {
   .tools-actions button {
     width: 100%;
   }
+
+  .tools-dropdown {
+    margin-top: 8px;
+    max-height: calc(100vh - 112px);
+  }
+}
+
+@media (max-width: 900px) {
 
   .bulk-quiz-container {
     padding: 1.25rem;
@@ -587,23 +678,21 @@ a:hover {
 
 @media (max-width: 520px) {
   #root {
-    padding-top: 215px;
+    padding-top: 108px;
   }
 
   .navspace {
     width: calc(100% - 20px);
   }
 
-  .nav-center,
-  .nav-right {
-    flex-direction: column;
-    width: 100%;
+  .navbar-main {
+    min-height: 76px;
+    padding: 8px 10px;
   }
 
-  .nav-right button,
-  .nav-right a {
-    width: 100%;
-    text-align: center;
+  .logo {
+    width: 60px;
+    height: 60px;
   }
 }
 
