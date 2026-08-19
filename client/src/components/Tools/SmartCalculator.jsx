@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import "./SmartCalculator.css";
+import { evaluate } from "mathjs";
 
 export default function SmartCalculator() {
   const [expression, setExpression] = useState("");
@@ -43,17 +44,7 @@ export default function SmartCalculator() {
     setExpression((prev) => prev.slice(0, -1));
   };
 
-  const factorial = (n) => {
-    if (!Number.isInteger(n) || n < 0) return NaN;
 
-    let total = 1;
-
-    for (let i = 2; i <= n; i++) {
-      total *= i;
-    }
-
-    return total;
-  };
 
   const decimalToFraction = (value, tolerance = 1e-8) => {
     const num = Number(value);
@@ -89,74 +80,66 @@ export default function SmartCalculator() {
     return rounded;
   };
 
-  const convertNormalTrig = (expr) => {
-    if (angleMode === "rad") {
-      return expr
-        .replace(/\bsin\(/g, "Math.sin(")
-        .replace(/\bcos\(/g, "Math.cos(")
-        .replace(/\btan\(/g, "Math.tan(");
-    }
 
-    return expr
-      .replace(/\bsin\(/g, "Math.sin((Math.PI/180)*")
-      .replace(/\bcos\(/g, "Math.cos((Math.PI/180)*")
-      .replace(/\btan\(/g, "Math.tan((Math.PI/180)*");
-  };
+  const createMathScope = () => {
+    const toRadians = (value) =>
+      angleMode === "deg"
+        ? value * (Math.PI / 180)
+        : value;
 
-  const convertInverseTrig = (expr) => {
-    if (angleMode === "rad") {
-      return expr
-        .replace(/\basin\(/g, "Math.asin(")
-        .replace(/\bacos\(/g, "Math.acos(")
-        .replace(/\batan\(/g, "Math.atan(");
-    }
+    const fromRadians = (value) =>
+      angleMode === "deg"
+        ? value * (180 / Math.PI)
+        : value;
 
-    return expr
-      .replace(/\basin\(/g, "(180/Math.PI)*Math.asin(")
-      .replace(/\bacos\(/g, "(180/Math.PI)*Math.acos(")
-      .replace(/\batan\(/g, "(180/Math.PI)*Math.atan(");
-  };
+    return {
+      sin: (value) => Math.sin(toRadians(value)),
+      cos: (value) => Math.cos(toRadians(value)),
+      tan: (value) => Math.tan(toRadians(value)),
 
-  const preprocessExpression = (input) => {
-    let formatted = input;
+      asin: (value) =>
+        fromRadians(Math.asin(value)),
 
-    formatted = formatted
-      .replaceAll("π", "Math.PI")
-      .replace(/\be\b/g, "Math.E")
-      .replaceAll("^", "**");
+      acos: (value) =>
+        fromRadians(Math.acos(value)),
 
-    formatted = formatted
-      .replaceAll("sqrt(", "Math.sqrt(")
-      .replace(/root\(([^,]+),([^)]+)\)/g, "Math.pow($1, 1 / ($2))")
-      .replaceAll("log(", "Math.log10(")
-      .replaceAll("ln(", "Math.log(")
-      .replaceAll("abs(", "Math.abs(")
-      .replaceAll("floor(", "Math.floor(")
-      .replaceAll("ceil(", "Math.ceil(")
-      .replaceAll("round(", "Math.round(");
+      atan: (value) =>
+        fromRadians(Math.atan(value)),
 
-    formatted = convertInverseTrig(formatted);
-    formatted = convertNormalTrig(formatted);
+      root: (value, degree) =>
+        Math.pow(value, 1 / degree),
 
-    formatted = formatted.replace(/(\d+(\.\d+)?)!/g, "factorial($1)");
-
-    formatted = formatted.replace(/(\d+(\.\d+)?)%/g, "($1/100)");
-
-    return formatted;
+      log: (value) => Math.log10(value),
+      ln: (value) => Math.log(value),
+    };
   };
 
   const evaluateExpression = () => {
     try {
       if (!expression.trim()) return;
 
-      const formatted = preprocessExpression(expression);
+      const formattedExpression = expression
+        .replaceAll("π", "pi")
+        .replace(
+          /(\d+(?:\.\d+)?)%/g,
+          "($1 / 100)"
+        );
 
-      const evalResult = Function(
-        "factorial",
-        `"use strict"; return (${formatted});`
-      )(factorial);
+      const evaluatedResult = evaluate(
+        formattedExpression,
+        createMathScope()
+      );
 
-      const rounded = formatResult(evalResult);
+      const numericResult =
+        typeof evaluatedResult === "number"
+          ? evaluatedResult
+          : Number(evaluatedResult);
+
+      if (Number.isNaN(numericResult)) {
+        throw new Error("Result is not numeric");
+      }
+
+      const rounded = formatResult(numericResult);
 
       setResult(rounded);
 
@@ -165,14 +148,18 @@ export default function SmartCalculator() {
           expression,
           result: rounded,
           fractionResult:
-            typeof rounded === "number" ? decimalToFraction(rounded) : rounded,
+            typeof rounded === "number"
+              ? decimalToFraction(rounded)
+              : rounded,
         },
         ...prev.slice(0, 19),
       ]);
     } catch (error) {
+      console.error("Calculator error:", error);
       setResult("Invalid Expression");
     }
   };
+
 
   const handleKeyPress = (value) => {
     if (value === "C") {
