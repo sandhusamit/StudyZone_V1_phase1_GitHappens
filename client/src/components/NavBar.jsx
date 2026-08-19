@@ -11,6 +11,7 @@ function NavBar() {
   const musicRef = useRef(null);
 
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showTools, setShowTools] = useState(false);
   const [showWhiteboard, setShowWhiteboard] = useState(false);
   const [showCalculator, setShowCalculator] = useState(false);
@@ -31,12 +32,25 @@ function NavBar() {
     window.dispatchEvent(new CustomEvent("whiteboard-force-select"));
   };
 
+  const handleNavigation = () => {
+    forceWhiteboardSelect();
+    setIsMobileMenuOpen(false);
+    setShowTools(false);
+  };
+
   const closeTools = () => {
     forceWhiteboardSelect();
     setShowTools(false);
   };
 
+  const toggleMobileMenu = () => {
+    if (showTools) forceWhiteboardSelect();
+    setShowTools(false);
+    setIsMobileMenuOpen((prev) => !prev);
+  };
+
   const toggleTools = () => {
+    setIsMobileMenuOpen(false);
     setShowTools((prev) => {
       if (prev) forceWhiteboardSelect();
       return !prev;
@@ -53,6 +67,7 @@ function NavBar() {
 
   const handleLogout = () => {
     forceWhiteboardSelect();
+    setIsMobileMenuOpen(false);
     setShowTools(false);
     logoutUser();
   };
@@ -67,6 +82,26 @@ function NavBar() {
     return () => {
       waterRef.current?.pause();
       musicRef.current?.pause();
+    };
+  }, []);
+
+  useEffect(() => {
+    const desktopQuery = window.matchMedia("(min-width: 1025px)");
+
+    const handleDesktopChange = (event) => {
+      if (event.matches) setIsMobileMenuOpen(false);
+    };
+
+    const handleEscape = (event) => {
+      if (event.key === "Escape") setIsMobileMenuOpen(false);
+    };
+
+    desktopQuery.addEventListener("change", handleDesktopChange);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      desktopQuery.removeEventListener("change", handleDesktopChange);
+      document.removeEventListener("keydown", handleEscape);
     };
   }, []);
 
@@ -89,52 +124,69 @@ function NavBar() {
     setIsPlaying((prev) => !prev);
   };
 
-
   return (
     <div className="navspace">
-      <nav className="navbar-main">
+      <nav className="navbar-main" aria-label="Primary navigation">
         <div className="nav-left">
-          <Link to="/" onClick={forceWhiteboardSelect}>
+          <Link to="/" onClick={handleNavigation}>
             <img src={logo} alt="StudyZone Logo" className="logo" />
           </Link>
         </div>
 
-        <div className="nav-center">
-          <Link to="/" onClick={forceWhiteboardSelect}>Home</Link>
+        <button
+          type="button"
+          className="hamburger-button"
+          onClick={toggleMobileMenu}
+          aria-expanded={isMobileMenuOpen}
+          aria-controls="primary-navigation-menu"
+          aria-label={isMobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+        >
+          <span className="hamburger-line" />
+          <span className="hamburger-line" />
+          <span className="hamburger-line" />
+        </button>
 
-          {!authLoading && isFullUser && (
-            <>
-              <Link to="/dashboard" onClick={forceWhiteboardSelect}>Dashboard</Link>
-              <Link to="/quizlist" onClick={forceWhiteboardSelect}>Quizzes</Link>
-              <Link to="/leaderboard" onClick={forceWhiteboardSelect}>Leaderboard</Link>
-              <Link to="/profile" onClick={forceWhiteboardSelect}>Profile</Link>
-            </>
-          )}
+        <div
+          id="primary-navigation-menu"
+          className={`nav-menu ${isMobileMenuOpen ? "nav-menu-open" : ""}`}
+        >
+          <div className="nav-center">
+            <Link to="/" onClick={handleNavigation}>Home</Link>
 
-          {!authLoading && isGuestUser && (
-            <Link to="/quizlist" onClick={forceWhiteboardSelect}>
-              Public Quizzes
-            </Link>
-          )}
-        </div>
+            {!authLoading && isFullUser && (
+              <>
+                <Link to="/dashboard" onClick={handleNavigation}>Dashboard</Link>
+                <Link to="/quizlist" onClick={handleNavigation}>Quizzes</Link>
+                <Link to="/leaderboard" onClick={handleNavigation}>Leaderboard</Link>
+                <Link to="/profile" onClick={handleNavigation}>Profile</Link>
+              </>
+            )}
 
-        <div className="nav-right">
-          <button type="button" onClick={toggleTools}>
-            Tools ▾
-          </button>
+            {!authLoading && isGuestUser && (
+              <Link to="/quizlist" onClick={handleNavigation}>
+                Public Quizzes
+              </Link>
+            )}
+          </div>
 
-          {!authLoading && isAuthenticated && (
-            <button type="button" onClick={handleLogout}>
-              Logout
+          <div className="nav-right">
+            <button type="button" onClick={toggleTools}>
+              Tools ▾
             </button>
-          )}
 
-          {!authLoading && !isAuthenticated && (
-            <>
-              <Link to="/login" onClick={forceWhiteboardSelect}>Login</Link>
-              <Link to="/register" onClick={forceWhiteboardSelect}>Register</Link>
-            </>
-          )}
+            {!authLoading && isAuthenticated && (
+              <button type="button" onClick={handleLogout}>
+                Logout
+              </button>
+            )}
+
+            {!authLoading && !isAuthenticated && (
+              <>
+                <Link to="/login" onClick={handleNavigation}>Login</Link>
+                <Link to="/register" onClick={handleNavigation}>Register</Link>
+              </>
+            )}
+          </div>
         </div>
       </nav>
 
@@ -167,7 +219,10 @@ function NavBar() {
             {showWhiteboard ? "Hide Whiteboard" : "Open Whiteboard"}
           </button>
 
-          <button type="button" onClick={() => setShowCalculator(!showCalculator)}>
+          <button
+            type="button"
+            onClick={() => setShowCalculator((prev) => !prev)}
+          >
             {showCalculator ? "Hide Calculator" : "Open Calculator"}
           </button>
         </div>
