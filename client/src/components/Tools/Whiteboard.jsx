@@ -38,18 +38,34 @@ export default function Whiteboard() {
     if (!canvas || !wrapper) return;
 
     const resizeCanvas = () => {
-      const oldCanvas = document.createElement("canvas");
-      oldCanvas.width = canvas.width;
-      oldCanvas.height = canvas.height;
+      const nextWidth = Math.floor(wrapper.clientWidth);
+      const nextHeight = Math.floor(wrapper.clientHeight);
 
-      const oldCtx = oldCanvas.getContext("2d");
-      oldCtx.drawImage(canvas, 0, 0);
+      // A display:none parent gives the canvas a 0 x 0 layout size.
+      // Wait for ResizeObserver to call this again when the panel is visible.
+      if (nextWidth <= 0 || nextHeight <= 0) return;
 
-      canvas.width = wrapper.clientWidth;
-      canvas.height = wrapper.clientHeight;
+      if (canvas.width === nextWidth && canvas.height === nextHeight) return;
 
-      const ctx = canvas.getContext("2d");
-      ctx.drawImage(oldCanvas, 0, 0);
+      let oldCanvas = null;
+
+      // drawImage cannot use a canvas whose bitmap is 0 pixels wide or high.
+      if (canvas.width > 0 && canvas.height > 0) {
+        oldCanvas = document.createElement("canvas");
+        oldCanvas.width = canvas.width;
+        oldCanvas.height = canvas.height;
+
+        const oldCtx = oldCanvas.getContext("2d");
+        oldCtx?.drawImage(canvas, 0, 0);
+      }
+
+      canvas.width = nextWidth;
+      canvas.height = nextHeight;
+
+      if (oldCanvas) {
+        const ctx = canvas.getContext("2d");
+        ctx?.drawImage(oldCanvas, 0, 0);
+      }
     };
 
     resizeCanvas();
