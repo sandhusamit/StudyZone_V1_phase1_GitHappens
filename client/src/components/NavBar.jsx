@@ -219,9 +219,9 @@ function NavBar() {
             {isPlaying ? "Pause Music" : "Play Music"}
           </button>
 
-          <button type="button" onClick={toggleWhiteboard}>
+          {/* <button type="button" onClick={toggleWhiteboard}>
             {showWhiteboard ? "Hide Whiteboard" : "Open Whiteboard"}
-          </button>
+          </button> */}
 
           <button
             type="button"
@@ -231,15 +231,15 @@ function NavBar() {
           </button>
         </div>
 
-        <div
+        {/* <div
           className={`navbar-whiteboard-panel ${
             showWhiteboard
               ? "navbar-whiteboard-show"
               : "navbar-whiteboard-hide"
           }`}
         >
-          {/* <Whiteboard /> */}
-        </div>
+          <Whiteboard />
+        </div> */}
 
         <div
           className={`navbar-calculator-panel ${
