@@ -20,7 +20,7 @@ export default function Home() {
         <div className="home-actions">
           {isLoggedIn ? (
             <>
-              <Link to="/createquiz" className="btn">Create Quiz</Link>
+              <Link to="/create" className="btn">Create Quiz</Link>
               <Link to="/quizlist" className="btn btn-secondary">Browse Quizzes</Link>
               <button onClick={logoutUser} className="btn btn-danger">Logout</button>
             </>
