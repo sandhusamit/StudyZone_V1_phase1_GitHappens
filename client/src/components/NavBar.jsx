@@ -238,7 +238,7 @@ function NavBar() {
               : "navbar-whiteboard-hide"
           }`}
         >
-          <Whiteboard />
+          {/* <Whiteboard /> */}
         </div>
 
         <div
