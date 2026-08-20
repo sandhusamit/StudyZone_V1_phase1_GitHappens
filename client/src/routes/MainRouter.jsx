@@ -7,6 +7,7 @@ import NavBar from "../components/NavBar";
 import Home from "../pages/Home";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
+import RegistrationUnavailable from "../pages/RegistrationUnavailable";
 import Dashboard from "../pages/Dashboard";
 import QuizList from "../pages/QuizList";
 import QuizPlay from "../pages/QuizPlay";
@@ -29,7 +30,7 @@ const MainRouter = () => {
         <Route path="/" element={<Home />} />
 
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/register" element={<RegistrationUnavailable />} />
 
         <Route path="/diagram" element={<DiagramQuestion />} />
         <Route path="/create-diagram" element={<CreateDiagramQuestion />} />
