@@ -404,43 +404,46 @@
 /* ===== Pool ===== */
 
 .cq-pool-table-wrapper {
+  width: 100%;
+  max-width: 100%;
   overflow-x: auto;
   border-radius: 14px;
   border: 1px solid rgba(120, 150, 255, 0.16);
   background: rgba(10, 16, 28, 0.45);
+  box-sizing: border-box;
 }
 
 .cq-pool-table {
   width: 100%;
+  min-width: 0;          /* remove the forced 760px width */
+  table-layout: fixed;   /* fit every column inside the row */
   border-collapse: collapse;
-  min-width: 760px;
-}
-
-.cq-pool-table thead {
-  background: rgba(120, 150, 255, 0.08);
 }
 
 .cq-pool-table th,
 .cq-pool-table td {
-  text-align: left;
-  padding: 14px 16px;
-  border-bottom: 1px solid rgba(120, 150, 255, 0.1);
-  color: #dce7ff;
-  vertical-align: top;
+  padding: 5px 10px;
+  overflow-wrap: anywhere;
 }
 
-.cq-pool-table th {
-  color: #eef3ff;
-  font-size: 0.95rem;
-  letter-spacing: 0.5px;
+/* Give the question most of the available space */
+.cq-pool-table th:first-child,
+.cq-pool-table td:first-child {
+  width: 45%;
 }
 
-.cq-pool-table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.03);
+/* Preserve enough space for the Add button */
+.cq-pool-table th:last-child,
+.cq-pool-table td:last-child {
+  width: 85px;
+  text-align: center;
+  white-space: nowrap;
 }
 
-.cq-selected-pool {
-  margin-top: 22px;
+.cq-section,
+.cq-pool-container,
+.cq-pool-table-wrapper {
+  min-width: 0;
 }
 
 /* ===== Bulk import panel embedded ===== */
